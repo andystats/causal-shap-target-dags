@@ -1,0 +1,15 @@
+{
+  "status": "pedagogic_stress_test",
+  "rows": 2500,
+  "features": 18,
+  "held_out_r2": 0.9507357131956421,
+  "tau_vs_truth_standard": 0.14197293500509642,
+  "tau_vs_truth_causal": 0.46648250073103115,
+  "proxy_inflation": 3.0182221481207896,
+  "root_cause_boost": 4.47669707984618,
+  "seed_standard": 20260725,
+  "seed_causal": 20260726,
+  "causal_permutations": 8,
+  "causal_background": 4,
+  "causal_instances": 8
+}

@@ -1,0 +1,19 @@
+{
+  "status": "prototype",
+  "method": "Structural intervention-propagating DAG-asymmetric SHAP",
+  "evaluation_rows": 32,
+  "background_rows": 32,
+  "permutations": 32,
+  "background_reconstruction_max_abs_error": 4.440892098500626e-16,
+  "max_absolute_efficiency_error": 0.0,
+  "kendall_tau_vs_truth": 0.7936507936507936,
+  "spearman_rho_vs_truth": 0.9321291735084838,
+  "top5_recovery": 1.0,
+  "mean_distance": 2.76069566875799,
+  "truth_mean_distance": 2.647907060844409,
+  "pbi": -0.11278860791358092,
+  "poa": -0.0225577215827163,
+  "proximal_mass_distance_le_2": 0.3813340900605722,
+  "seed_exogenous_abduction": 20260723,
+  "seed_permutations": 20260724
+}

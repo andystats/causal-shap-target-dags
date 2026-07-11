@@ -1,0 +1,113 @@
+"method","variable","source_node","distance","structural_role","raw_importance","normalized_importance","rank"
+"Interventional truth","altered_gravity","Altered Gravity",4,"upstream_root",0.0099,0.0223759153783564,16
+"Interventional truth","astronaut_selection","Astronaut Selection",2,"upstream_root",0.0282,0.0637374559262273,5
+"Interventional truth","bisphosphonates","Bisphosphonates",4,"intermediate_ancestor",0.01156,0.0261278365428081,13
+"Interventional truth","bone_fracture_risk","Bone Fracture (Risk)",4,"upstream_root",0.00978,0.022104692161649,17
+"Interventional truth","bone_remodeling","Bone Remodeling",3,"intermediate_ancestor",0.02344,0.0529789349968357,6
+"Interventional truth","co2_risk","CO2 (Risk)",3,"upstream_root",0.01698,0.03837808516409,11
+"Interventional truth","crew_health_and_performance_system","Crew Health and Performance System",4,"intermediate_ancestor",0.00612,0.0138323840520749,19
+"Interventional truth","distance_from_earth","Distance from Earth",6,"upstream_root",2e-04,0.00045203869451225,27
+"Interventional truth","food_and_nutrition_risk","Food and Nutrition (Risk)",5,"upstream_root",0.00598,0.0135159569659163,20
+"Interventional truth","hostile_closed_environment","Hostile Closed Environment",5,"upstream_root",0.0059,0.0133351414881114,21
+"Interventional truth","hsia_risk","HSIA (Risk)",5,"upstream_root",0.00086,0.00194376638640268,26
+"Interventional truth","humidity","Humidity",5,"intermediate_ancestor",0.00578,0.013063918271404,22
+"Interventional truth","hydration","Hydration",4,"intermediate_ancestor",0.01182,0.026715486845674,12
+"Interventional truth","individual_factors","Individual Factors",1,"direct_parent",0.04534,0.102477172045927,3
+"Interventional truth","k_plus_citrate","K+ Citrate",3,"intermediate_ancestor",0.01774,0.0400958322032366,8
+"Interventional truth","medical_prevention_capability","Medical Prevention Capability",3,"intermediate_ancestor",0.0325,0.0734562878582407,4
+"Interventional truth","medical_treatment_capability","Medical Treatment Capability",6,"intermediate_ancestor",0.00096,0.0021697857336588,25
+"Interventional truth","microbiome","Microbiome",3,"intermediate_ancestor",0.01748,0.0395081819003707,10
+"Interventional truth","microhost_risk","Microhost (Risk)",4,"upstream_root",0.00954,0.0215622457282343,18
+"Interventional truth","mineralized_renal_material","Mineralized Renal Material",1,"direct_parent",0.06182,0.139725160473737,1
+"Interventional truth","nutrients","Nutrients",4,"intermediate_ancestor",0.01084,0.024500497242564,15
+"Interventional truth","pharm_risk","Pharm (Risk)",4,"upstream_root",0.0048,0.010848928668294,24
+"Interventional truth","resistive_exercise","Resistive Exercise",4,"intermediate_ancestor",0.01122,0.0253593707621372,14
+"Interventional truth","thiazides","Thiazides",3,"intermediate_ancestor",0.01764,0.0398698128559805,9
+"Interventional truth","urine_chemistry","Urine Chemistry",2,"intermediate_ancestor",0.05084,0.114908236145014,2
+"Interventional truth","urine_concentration","Urine Concentration",3,"intermediate_ancestor",0.01946,0.043983364976042,7
+"Interventional truth","vehicle_design","Vehicle Design",5,"intermediate_ancestor",6e-05,0.000135611608353675,28
+"Interventional truth","water_intake","Water Intake",5,"intermediate_ancestor",0.00568,0.0128378989241479,23
+"Ordinary TreeSHAP","altered_gravity","Altered Gravity",4,"upstream_root",0.00182564633905713,0.00219074048274299,18
+"Ordinary TreeSHAP","astronaut_selection","Astronaut Selection",2,"upstream_root",0.0183845419596764,0.0220610966462163,6
+"Ordinary TreeSHAP","bisphosphonates","Bisphosphonates",4,"intermediate_ancestor",0.00230278593517141,0.00276329881825667,17
+"Ordinary TreeSHAP","bone_fracture_risk","Bone Fracture (Risk)",4,"upstream_root",0.00483403334146715,0.00580074700642776,14
+"Ordinary TreeSHAP","bone_remodeling","Bone Remodeling",3,"intermediate_ancestor",0.0167232118701577,0.0200675325015926,7
+"Ordinary TreeSHAP","co2_risk","CO2 (Risk)",3,"upstream_root",0,0,24.5
+"Ordinary TreeSHAP","crew_health_and_performance_system","Crew Health and Performance System",4,"intermediate_ancestor",0.000602879817051871,0.000723444181487163,20
+"Ordinary TreeSHAP","distance_from_earth","Distance from Earth",6,"upstream_root",0,0,24.5
+"Ordinary TreeSHAP","food_and_nutrition_risk","Food and Nutrition (Risk)",5,"upstream_root",0,0,24.5
+"Ordinary TreeSHAP","hostile_closed_environment","Hostile Closed Environment",5,"upstream_root",0,0,24.5
+"Ordinary TreeSHAP","hsia_risk","HSIA (Risk)",5,"upstream_root",0,0,24.5
+"Ordinary TreeSHAP","humidity","Humidity",5,"intermediate_ancestor",0.00145995357524953,0.00175191620184024,19
+"Ordinary TreeSHAP","hydration","Hydration",4,"intermediate_ancestor",0.0125844247750138,0.0151010676147138,9
+"Ordinary TreeSHAP","individual_factors","Individual Factors",1,"direct_parent",0.255340788688045,0.3064040338521,2
+"Ordinary TreeSHAP","k_plus_citrate","K+ Citrate",3,"intermediate_ancestor",0.00393320541297726,0.00471977082352285,15
+"Ordinary TreeSHAP","medical_prevention_capability","Medical Prevention Capability",3,"intermediate_ancestor",0,0,24.5
+"Ordinary TreeSHAP","medical_treatment_capability","Medical Treatment Capability",6,"intermediate_ancestor",0.0134041918427101,0.0160847723242193,8
+"Ordinary TreeSHAP","microbiome","Microbiome",3,"intermediate_ancestor",0.00570811315628816,0.00684962596754454,12
+"Ordinary TreeSHAP","microhost_risk","Microhost (Risk)",4,"upstream_root",0.00562001305661397,0.00674390754291821,13
+"Ordinary TreeSHAP","mineralized_renal_material","Mineralized Renal Material",1,"direct_parent",0.342348548845621,0.410811672074318,1
+"Ordinary TreeSHAP","nutrients","Nutrients",4,"intermediate_ancestor",0.00994520771655516,0.0119340579212059,10
+"Ordinary TreeSHAP","pharm_risk","Pharm (Risk)",4,"upstream_root",0,0,24.5
+"Ordinary TreeSHAP","resistive_exercise","Resistive Exercise",4,"intermediate_ancestor",0.00712750026286812,0.00855286318745105,11
+"Ordinary TreeSHAP","thiazides","Thiazides",3,"intermediate_ancestor",0.0257972326071467,0.0309561828083316,4
+"Ordinary TreeSHAP","urine_chemistry","Urine Chemistry",2,"intermediate_ancestor",0.0762636970903259,0.0915149692495822,3
+"Ordinary TreeSHAP","urine_concentration","Urine Concentration",3,"intermediate_ancestor",0.0256638691298576,0.0307961492014023,5
+"Ordinary TreeSHAP","vehicle_design","Vehicle Design",5,"intermediate_ancestor",0.00347684873850085,0.00417215159412611,16
+"Ordinary TreeSHAP","water_intake","Water Intake",5,"intermediate_ancestor",0,0,24.5
+"Ordinary interventional SHAP","altered_gravity","Altered Gravity",4,"upstream_root",0.00255550320252951,0.00321205538265966,17
+"Ordinary interventional SHAP","astronaut_selection","Astronaut Selection",2,"upstream_root",0.0172163563279355,0.0216395307030704,7
+"Ordinary interventional SHAP","bisphosphonates","Bisphosphonates",4,"intermediate_ancestor",0.00237329532322406,0.00298303520420449,18
+"Ordinary interventional SHAP","bone_fracture_risk","Bone Fracture (Risk)",4,"upstream_root",0.00499454677571975,0.00627773067903673,13
+"Ordinary interventional SHAP","bone_remodeling","Bone Remodeling",3,"intermediate_ancestor",0.0216515020580914,0.0272141407060343,6
+"Ordinary interventional SHAP","co2_risk","CO2 (Risk)",3,"upstream_root",0,0,24.5
+"Ordinary interventional SHAP","crew_health_and_performance_system","Crew Health and Performance System",4,"intermediate_ancestor",0.000775589083673367,0.000974851093310789,20
+"Ordinary interventional SHAP","distance_from_earth","Distance from Earth",6,"upstream_root",0,0,24.5
+"Ordinary interventional SHAP","food_and_nutrition_risk","Food and Nutrition (Risk)",5,"upstream_root",0,0,24.5
+"Ordinary interventional SHAP","hostile_closed_environment","Hostile Closed Environment",5,"upstream_root",0,0,24.5
+"Ordinary interventional SHAP","hsia_risk","HSIA (Risk)",5,"upstream_root",0,0,24.5
+"Ordinary interventional SHAP","humidity","Humidity",5,"intermediate_ancestor",0.000842070345981938,0.00105841252114734,19
+"Ordinary interventional SHAP","hydration","Hydration",4,"intermediate_ancestor",0.0122577055157649,0.0154069182703421,9
+"Ordinary interventional SHAP","individual_factors","Individual Factors",1,"direct_parent",0.241569628013053,0.303632968715664,2
+"Ordinary interventional SHAP","k_plus_citrate","K+ Citrate",3,"intermediate_ancestor",0.0043292108902051,0.00544145870323618,14
+"Ordinary interventional SHAP","medical_prevention_capability","Medical Prevention Capability",3,"intermediate_ancestor",0,0,24.5
+"Ordinary interventional SHAP","medical_treatment_capability","Medical Treatment Capability",6,"intermediate_ancestor",0.0127443300472976,0.016018564909758,8
+"Ordinary interventional SHAP","microbiome","Microbiome",3,"intermediate_ancestor",0.00417312032769246,0.00524526582388278,15
+"Ordinary interventional SHAP","microhost_risk","Microhost (Risk)",4,"upstream_root",0.00512634652011457,0.00644339201649758,12
+"Ordinary interventional SHAP","mineralized_renal_material","Mineralized Renal Material",1,"direct_parent",0.315675857874282,0.396778347785728,1
+"Ordinary interventional SHAP","nutrients","Nutrients",4,"intermediate_ancestor",0.00907549816776054,0.011407147802131,10
+"Ordinary interventional SHAP","pharm_risk","Pharm (Risk)",4,"upstream_root",0,0,24.5
+"Ordinary interventional SHAP","resistive_exercise","Resistive Exercise",4,"intermediate_ancestor",0.00811296835161102,0.0101973277268232,11
+"Ordinary interventional SHAP","thiazides","Thiazides",3,"intermediate_ancestor",0.0274448024791241,0.0344958384093764,4
+"Ordinary interventional SHAP","urine_chemistry","Urine Chemistry",2,"intermediate_ancestor",0.0749142767120645,0.0941610268822442,3
+"Ordinary interventional SHAP","urine_concentration","Urine Concentration",3,"intermediate_ancestor",0.0270946680405473,0.0340557484861973,5
+"Ordinary interventional SHAP","vehicle_design","Vehicle Design",5,"intermediate_ancestor",0.00267021467323048,0.00335623817865582,16
+"Ordinary interventional SHAP","water_intake","Water Intake",5,"intermediate_ancestor",0,0,24.5
+"DAG-constrained asymmetric SHAP","altered_gravity","Altered Gravity",4,"upstream_root",0.00322817715277779,0.00403670209754559,16
+"DAG-constrained asymmetric SHAP","astronaut_selection","Astronaut Selection",2,"upstream_root",0.0153963310318659,0.0192524755704191,7
+"DAG-constrained asymmetric SHAP","bisphosphonates","Bisphosphonates",4,"intermediate_ancestor",0.0019482696528712,0.00243623067202563,18
+"DAG-constrained asymmetric SHAP","bone_fracture_risk","Bone Fracture (Risk)",4,"upstream_root",0.0046985551994112,0.00587534906892469,12
+"DAG-constrained asymmetric SHAP","bone_remodeling","Bone Remodeling",3,"intermediate_ancestor",0.0233567281634919,0.0292066231520907,6
+"DAG-constrained asymmetric SHAP","co2_risk","CO2 (Risk)",3,"upstream_root",0,0,24.5
+"DAG-constrained asymmetric SHAP","crew_health_and_performance_system","Crew Health and Performance System",4,"intermediate_ancestor",0.000629057062724314,0.000786609855778848,20
+"DAG-constrained asymmetric SHAP","distance_from_earth","Distance from Earth",6,"upstream_root",0,0,24.5
+"DAG-constrained asymmetric SHAP","food_and_nutrition_risk","Food and Nutrition (Risk)",5,"upstream_root",0,0,24.5
+"DAG-constrained asymmetric SHAP","hostile_closed_environment","Hostile Closed Environment",5,"upstream_root",0,0,24.5
+"DAG-constrained asymmetric SHAP","hsia_risk","HSIA (Risk)",5,"upstream_root",0,0,24.5
+"DAG-constrained asymmetric SHAP","humidity","Humidity",5,"intermediate_ancestor",0.000835516709287276,0.0010447791100969,19
+"DAG-constrained asymmetric SHAP","hydration","Hydration",4,"intermediate_ancestor",0.0122669270966185,0.015339285298748,9
+"DAG-constrained asymmetric SHAP","individual_factors","Individual Factors",1,"direct_parent",0.237599245185834,0.297108035285982,2
+"DAG-constrained asymmetric SHAP","k_plus_citrate","K+ Citrate",3,"intermediate_ancestor",0.00445385104171692,0.00556935663421811,13
+"DAG-constrained asymmetric SHAP","medical_prevention_capability","Medical Prevention Capability",3,"intermediate_ancestor",0,0,24.5
+"DAG-constrained asymmetric SHAP","medical_treatment_capability","Medical Treatment Capability",6,"intermediate_ancestor",0.0129100399558411,0.0161434713470721,8
+"DAG-constrained asymmetric SHAP","microbiome","Microbiome",3,"intermediate_ancestor",0.00340095635760918,0.00425275535161034,15
+"DAG-constrained asymmetric SHAP","microhost_risk","Microhost (Risk)",4,"upstream_root",0.00419316855385432,0.00524338395807706,14
+"DAG-constrained asymmetric SHAP","mineralized_renal_material","Mineralized Renal Material",1,"direct_parent",0.322995408012844,0.403892407175087,1
+"DAG-constrained asymmetric SHAP","nutrients","Nutrients",4,"intermediate_ancestor",0.00808304602901444,0.0101075149583422,11
+"DAG-constrained asymmetric SHAP","pharm_risk","Pharm (Risk)",4,"upstream_root",0,0,24.5
+"DAG-constrained asymmetric SHAP","resistive_exercise","Resistive Exercise",4,"intermediate_ancestor",0.00827820664687806,0.0103515552443007,10
+"DAG-constrained asymmetric SHAP","thiazides","Thiazides",3,"intermediate_ancestor",0.0299571375422261,0.037460162261885,4
+"DAG-constrained asymmetric SHAP","urine_chemistry","Urine Chemistry",2,"intermediate_ancestor",0.0736576480520625,0.0921058443574527,3
+"DAG-constrained asymmetric SHAP","urine_concentration","Urine Concentration",3,"intermediate_ancestor",0.0295414506852012,0.0369403630289864,5
+"DAG-constrained asymmetric SHAP","vehicle_design","Vehicle Design",5,"intermediate_ancestor",0.0022768410086087,0.00284709557135671,17
+"DAG-constrained asymmetric SHAP","water_intake","Water Intake",5,"intermediate_ancestor",0,0,24.5

@@ -1,0 +1,4 @@
+"method","max_absolute_efficiency_error"
+"Ordinary TreeSHAP",9.48144588619471e-07
+"Ordinary interventional SHAP",0
+"DAG-constrained asymmetric SHAP",0

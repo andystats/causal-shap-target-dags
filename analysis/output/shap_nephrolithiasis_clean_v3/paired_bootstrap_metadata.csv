@@ -1,0 +1,2 @@
+"bootstrap_replicates","bootstrap_seed","resampling_unit","comparison","interpretation"
+2000,20260718,"evaluation record, paired across methods","Matched-background unrestricted ordinary SHAP versus DAG-constrained asymmetric SHAP","Positive deltas/improvements favor DAG-constrained asymmetric SHAP"
