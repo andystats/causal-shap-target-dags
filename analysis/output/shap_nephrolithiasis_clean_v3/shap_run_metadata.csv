@@ -1,0 +1,2 @@
+"split_seed","model_seed","evaluation_seed","causal_shap_seed","ordinary_shap_seed","n_evaluation","n_background","n_causal_permutations","model_output_scale","ordinary_method","causal_method"
+20260714,20260715,20260716,20260717,20260719,64,128,128,"raw log-odds margin for both SHAP methods","Exact XGBoost TreeSHAP plus unrestricted-permutation interventional SHAP; the latter uses the same fixed empirical background as DAG-asymmetric SHAP","Asymmetric interventional Shapley values averaged over random DAG-consistent topological orders with a fixed empirical background"

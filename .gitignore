@@ -1,0 +1,29 @@
+# Private project-management and correspondence records
+.claude/
+EMAIL-DRAFT.md
+PLAN.md
+PRIVATE_PROJECT_INDEX.md
+notes/
+raw images and figures/
+dag-candidates/*
+!dag-candidates/renal-stone-core-edges.csv
+!dag-candidates/renal-stone-core-nodes.csv
+demo-sources/
+
+# Third-party PDFs remain in the local research workspace. The public NASA DAG
+# source text is explicitly retained because the simulations require it.
+references/*
+!references/renal-stone-dag-code-SA-07566.txt
+
+# Generated/runtime noise
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.Rhistory
+.RData
+.Rproj.user/
+.DS_Store
+Thumbs.db
+
+# PNG and CSV outputs are the canonical checked artifacts; omit duplicate PDFs.
+analysis/output/**/*.pdf

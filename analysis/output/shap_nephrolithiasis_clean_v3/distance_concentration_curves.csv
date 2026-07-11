@@ -1,0 +1,25 @@
+"method","hop_radius","cumulative_importance"
+"Interventional truth",1,0.242202332519664
+"Interventional truth",2,0.420848024590905
+"Interventional truth",3,0.749118524545701
+"Interventional truth",4,0.942545881927493
+"Interventional truth",5,0.997378175571829
+"Interventional truth",6,1
+"Ordinary TreeSHAP",1,0.717215705926418
+"Ordinary TreeSHAP",2,0.830791771822217
+"Ordinary TreeSHAP",3,0.924181033124611
+"Ordinary TreeSHAP",4,0.977991159879814
+"Ordinary TreeSHAP",5,0.983915227675781
+"Ordinary TreeSHAP",6,1
+"Ordinary interventional SHAP",1,0.700411316501392
+"Ordinary interventional SHAP",2,0.816211874086706
+"Ordinary interventional SHAP",3,0.922664326215433
+"Ordinary interventional SHAP",4,0.979566784390439
+"Ordinary interventional SHAP",5,0.983981435090242
+"Ordinary interventional SHAP",6,1
+"DAG-constrained asymmetric SHAP",1,0.701000442461069
+"DAG-constrained asymmetric SHAP",2,0.812358762388941
+"DAG-constrained asymmetric SHAP",3,0.925788022817732
+"DAG-constrained asymmetric SHAP",4,0.979964653971474
+"DAG-constrained asymmetric SHAP",5,0.983856528652928
+"DAG-constrained asymmetric SHAP",6,1

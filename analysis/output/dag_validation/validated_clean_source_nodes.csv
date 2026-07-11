@@ -1,0 +1,52 @@
+"node","x","y","exposure","outcome","latent"
+"Altered Gravity",-0.451,-0.281,TRUE,FALSE,FALSE
+"Astronaut Selection",-0.031,-0.457,FALSE,FALSE,FALSE
+"Bisphosphonates",-0.138,-0.267,FALSE,FALSE,FALSE
+"Bone Fracture (Risk)",-0.395,-0.367,FALSE,FALSE,TRUE
+"Bone Remodeling",-0.296,-0.302,FALSE,FALSE,FALSE
+"CO2 (Risk)",-0.384,-0.182,FALSE,FALSE,TRUE
+"Crew Capability",0.214,-0.369,FALSE,FALSE,FALSE
+"Crew Health and Performance System",-0.174,0.363,FALSE,FALSE,FALSE
+"Detect Long Term Health Outcomes",0.402,0.131,FALSE,FALSE,FALSE
+"Detect MRM/Stone",-0.048,0.017,FALSE,FALSE,FALSE
+"Distance from Earth",-0.434,0.381,TRUE,FALSE,FALSE
+"Evacuation",0.346,-0.31,FALSE,TRUE,FALSE
+"Flight Recertification",0.384,0.387,FALSE,TRUE,FALSE
+"Food and Nutrition (Risk)",-0.405,-0.447,FALSE,FALSE,TRUE
+"HSIA (Risk)",-0.308,0.403,FALSE,FALSE,TRUE
+"Hostile Closed Environment",-0.411,-0.04,TRUE,FALSE,FALSE
+"Humidity",-0.405,0.212,FALSE,FALSE,FALSE
+"Hydration",-0.347,0.09,FALSE,FALSE,FALSE
+"Individual Factors",-0.031,-0.282,FALSE,FALSE,FALSE
+"Individual Readiness",0.232,-0.256,FALSE,FALSE,FALSE
+"K+ Citrate",-0.122,0.124,FALSE,FALSE,FALSE
+"Long Term Health Outcomes",0.407,-0.012,FALSE,TRUE,FALSE
+"Loss of Crew Life",0.416,-0.162,FALSE,TRUE,FALSE
+"Loss of Mission",0.452,-0.47,FALSE,TRUE,FALSE
+"Loss of Mission Objectives",0.381,-0.442,FALSE,TRUE,FALSE
+"Medical Illness",0.207,-0.138,FALSE,FALSE,FALSE
+"Medical Monitoring Capability",0.027,0.36,FALSE,FALSE,FALSE
+"Medical Prevention Capability",-0.146,0.271,FALSE,FALSE,FALSE
+"Medical Treatment Capability",0.251,0.305,FALSE,FALSE,FALSE
+"Medications",0.268,0.005,FALSE,FALSE,FALSE
+"Microbiome",-0.119,-0.365,FALSE,FALSE,FALSE
+"Microhost (Risk)",-0.175,-0.453,FALSE,FALSE,TRUE
+"Mineralized Renal Material",-0.179,-0.106,FALSE,FALSE,FALSE
+"Nephrolithiasis",-0.085,-0.137,FALSE,FALSE,FALSE
+"Nutrients",-0.298,-0.435,FALSE,FALSE,FALSE
+"Percutaneous Nephrostomy",0.125,0.169,FALSE,FALSE,FALSE
+"Pharm (Risk)",0.187,0.401,FALSE,FALSE,TRUE
+"Resistive Exercise",-0.222,-0.352,FALSE,FALSE,FALSE
+"Surveillance",0.337,0.237,FALSE,FALSE,FALSE
+"Tamsulosin",0.2,0.086,FALSE,FALSE,FALSE
+"Task Performance",0.292,-0.416,FALSE,TRUE,FALSE
+"Thiazides",-0.067,0.133,FALSE,FALSE,FALSE
+"Ultrasound",0.031,0.121,FALSE,FALSE,FALSE
+"Ultrasound Manipulation",0.086,-0.019,FALSE,FALSE,FALSE
+"Ureterolithiasis",0.02,-0.138,FALSE,FALSE,FALSE
+"Urinary Retention (Risk)",0.109,-0.307,FALSE,FALSE,TRUE
+"Urine Chemistry",-0.298,-0.142,FALSE,FALSE,FALSE
+"Urine Concentration",-0.283,-0.008,FALSE,FALSE,FALSE
+"Urine Flow",0.11,-0.142,FALSE,FALSE,FALSE
+"Vehicle Design",-0.316,0.294,FALSE,FALSE,FALSE
+"Water Intake",-0.274,0.173,FALSE,FALSE,FALSE

@@ -1,0 +1,43 @@
+node,label,role,source_status,clean_v1,nasa_like_v2,notes
+baseline_fitness,Baseline fitness,selection trait,email augmentation,yes,yes,Pre-selection trait added for the NASA-like observation process
+individual_susceptibility,Individual susceptibility,individual factor,Figure 11.6 abstraction,yes,yes,Summarizes genetic predisposition and other individual factors
+age_z,Standardized age,selection trait,email augmentation,yes,yes,Pre-selection trait added for the NASA-like observation process
+selected_astronaut,Astronaut selection,selection indicator,Figure 11.6 plus email augmentation,fixed at 1,conditioned at 1,Sampling node in v2
+altered_gravity,Altered gravity,hazard,Figure 11.6,yes,yes,
+hostile_closed_environment,Hostile closed environment,hazard,Figure 11.6,yes,yes,
+co2_exposure,CO2 exposure,hazard/risk,Figure 11.6,yes,yes,
+urinary_retention,Urinary retention,risk,Figure 11.6,yes,yes,
+dietary_risk,Dietary risk,contributor,NASA narrative abstraction,yes,yes,Represents nutrient pattern rather than the full Food and Nutrition subgraph
+microbiome_risk,Microbiome risk,contributor,Figure 11.6 abstraction,yes,yes,
+resistive_exercise,Resistive exercise,prevention lever,Figure 11.6,yes,yes,
+bisphosphonate,Bisphosphonate,prevention lever,Figure 11.6,yes,yes,
+adequate_water_intake,Adequate water intake,prevention lever,Figure 11.6,yes,yes,
+potassium_citrate,Potassium citrate,prevention lever,Figure 11.6,yes,yes,
+thiazide,Thiazide,prevention lever,Figure 11.6,yes,yes,
+bone_remodeling,Bone remodeling,mediator,Figure 11.6,yes,yes,
+hydration,Hydration,mediator/intervention target,Figure 11.6,yes,yes,Higher values mean better hydration
+urine_concentration,Urine concentration,mediator,Figure 11.6,yes,yes,Higher values mean more concentrated urine
+urine_chemistry_risk,Urine chemistry risk,mediator,Figure 11.6,yes,yes,Higher values mean more lithogenic chemistry
+mineralized_renal_material,Mineralized renal material,mediator/early outcome,Figure 11.6,yes,yes,
+nephrolithiasis,Nephrolithiasis,primary outcome,Figure 11.6,yes,yes,
+ureterolithiasis,Ureterolithiasis,downstream outcome,Figure 11.6,yes,yes,
+impaired_urine_flow,Impaired urine flow,mediator,Figure 11.6 reparameterization,yes,yes,Risk-oriented inverse of the source node Urine Flow
+renal_colic,Renal colic,medical complication,Chapter 11 expanded block,yes,yes,
+hydronephrosis,Hydronephrosis,medical complication,Chapter 11 expanded block,yes,yes,
+infection,Infection/UTI/pyelonephritis,medical complication,Chapter 11 expanded block,yes,yes,
+sepsis,Sepsis,medical complication,Chapter 11 expanded block,yes,yes,
+renal_failure,Renal failure,medical complication,Chapter 11 expanded block,yes,yes,
+medical_illness,Any renal-stone medical illness,summary outcome,Chapter 11 expanded block,yes,yes,Deterministic summary of the five complication nodes
+individual_readiness_loss,Individual readiness loss,performance mediator,Figure 11.6,yes,yes,
+evacuation,Evacuation,mission outcome,Figure 11.6,yes,yes,
+crew_capability_loss,Crew capability loss,performance mediator,Figure 11.6,yes,yes,
+task_performance_loss,Task performance loss,performance outcome,Figure 11.6,yes,yes,
+loss_mission_objectives,Loss of mission objectives,mission outcome,Figure 11.6,yes,yes,
+loss_mission,Loss of mission,mission outcome,Figure 11.6,yes,yes,
+loss_crew_life,Loss of crew life,mission outcome,Figure 11.6,yes,yes,
+long_term_health_outcome,Long-term health outcome,health outcome,Figure 11.6,yes,yes,
+observe_bone_remodeling,Bone remodeling measured,measurement indicator,email augmentation,no,yes,Informative measurement node
+observe_hydration,Hydration measured,measurement indicator,email augmentation,no,yes,Informative measurement node
+observe_urine_concentration,Urine concentration measured,measurement indicator,email augmentation,no,yes,Informative measurement node
+observe_urine_chemistry,Urine chemistry measured,measurement indicator,email augmentation,no,yes,Informative measurement node
+observe_mineralized_material,Mineralized material measured,measurement indicator,email augmentation,no,yes,Informative measurement node

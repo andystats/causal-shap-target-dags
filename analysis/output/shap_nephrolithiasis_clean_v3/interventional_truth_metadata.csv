@@ -1,0 +1,2 @@
+"target_source_node","target_variable","feature_count","distance_min","distance_max","monte_carlo_n","common_random_number_seed","continuous_contrast","binary_contrast","truth_scale"
+"Nephrolithiasis","nephrolithiasis",28,1,6,50000,20260713,"Observed clean-v3 Q75 versus Q25","1 versus 0","Absolute total risk difference, normalized across ancestors"

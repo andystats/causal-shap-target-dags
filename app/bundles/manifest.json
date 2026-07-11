@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "bundles": [
+    {
+      "id": "nasa_renal_clean_v3",
+      "label": "NASA renal-stone clean v3",
+      "kind": "source_aligned_primary",
+      "target": "Nephrolithiasis",
+      "paths": {
+        "data": "analysis/output/source_aligned_clean/renal_stone_source_aligned_clean_v3.csv",
+        "dag": "analysis/output/dag_validation/nasa_source_dag.png",
+        "ancestor_map": "analysis/output/shap_nephrolithiasis_clean_v3/ancestor_importance_maps.png",
+        "distance_plot": "analysis/output/shap_nephrolithiasis_clean_v3/distance_concentration_curves.png",
+        "importance_plot": "analysis/output/shap_nephrolithiasis_clean_v3/feature_importance_comparison.png",
+        "auc_plot": "analysis/output/shap_nephrolithiasis_clean_v3/predictive_signal_diagnostics.png",
+        "model_metrics": "analysis/output/shap_nephrolithiasis_clean_v3/model_metrics.csv",
+        "attribution_metrics": "analysis/output/shap_nephrolithiasis_clean_v3/attribution_summary_metrics.csv",
+        "structural_summary": "analysis/output/shap_nephrolithiasis_clean_v3/structural_causal_shap_summary.json",
+        "structural_importance": "analysis/output/shap_nephrolithiasis_clean_v3/structural_causal_shap_importance.csv"
+      }
+    },
+    {
+      "id": "acic_proxy_stress_test",
+      "label": "Pedagogic mediator/proxy stress test",
+      "kind": "pedagogic_stress_test",
+      "target": "AcuteRisk",
+      "paths": {
+        "data": "app/bundles/acic_proxy_stress_test/data.csv",
+        "dag": "app/bundles/acic_proxy_stress_test/dag.png",
+        "importance": "app/bundles/acic_proxy_stress_test/importance.csv",
+        "metrics": "app/bundles/acic_proxy_stress_test/metrics.json"
+      }
+    }
+  ]
+}

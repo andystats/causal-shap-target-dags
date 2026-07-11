@@ -1,0 +1,106 @@
+Renal Stone Risk Narrative DAG SA-07566
+
+dag \{ bb="-0.5,-0.5,0.5,0.5" "Altered Gravity"
+{[}exposure,pos="-0.451,-0.281"{]} "Astronaut Selection"
+{[}pos="-0.031,-0.457"{]} "Bone Fracture (Risk)"
+{[}latent,pos="-0.395,-0.367"{]} "Bone Remodeling"
+{[}pos="-0.296,-0.302"{]} "CO2 (Risk)" {[}latent,pos="-0.384,-0.182"{]}
+"Crew Capability" {[}pos="0.214,-0.369"{]} "Crew Health and Performance
+System" {[}pos="-0.174,0.363"{]} "Detect Long Term Health Outcomes"
+{[}pos="0.402,0.131"{]} "Detect MRM/Stone" {[}pos="-0.048,0.017"{]}
+"Distance from Earth" {[}exposure,pos="-0.434,0.381"{]} "Flight
+Recertification" {[}outcome,pos="0.384,0.387"{]} "Food and Nutrition
+(Risk)" {[}latent,pos="-0.405,-0.447"{]} "HSIA (Risk)"
+{[}latent,pos="-0.308,0.403"{]} "Hostile Closed Environment"
+{[}exposure,pos="-0.411,-0.040"{]} "Individual Factors"
+{[}pos="-0.031,-0.282"{]} "Individual Readiness"
+{[}pos="0.232,-0.256"{]} "K+ Citrate" {[}pos="-0.122,0.124"{]} "Long
+Term Health Outcomes" {[}outcome,pos="0.407,-0.012"{]} "Loss of Crew
+Life" {[}outcome,pos="0.416,-0.162"{]} "Loss of Mission Objectives"
+{[}outcome,pos="0.381,-0.442"{]} "Loss of Mission"
+{[}outcome,pos="0.452,-0.470"{]} "Medical Illness"
+{[}pos="0.207,-0.138"{]} "Medical Monitoring Capability"
+{[}pos="0.027,0.360"{]} "Medical Prevention Capability"
+{[}pos="-0.146,0.271"{]} "Medical Treatment Capability"
+{[}pos="0.251,0.305"{]} "Microhost (Risk)"
+{[}latent,pos="-0.175,-0.453"{]} "Mineralized Renal Material"
+{[}pos="-0.179,-0.106"{]} "Percutaneous Nephrostomy"
+{[}pos="0.125,0.169"{]} "Pharm (Risk)" {[}latent,pos="0.187,0.401"{]}
+"Resistive Exercise" {[}pos="-0.222,-0.352"{]} "Task Performance"
+{[}outcome,pos="0.292,-0.416"{]} "Ultrasound Manipulation"
+{[}pos="0.086,-0.019"{]} "Urinary Retention (Risk)"
+{[}latent,pos="0.109,-0.307"{]} "Urine Chemistry"
+{[}pos="-0.298,-0.142"{]} "Urine Concentration"
+{[}pos="-0.283,-0.008"{]} "Urine Flow" {[}pos="0.110,-0.142"{]} "Vehicle
+Design" {[}pos="-0.316,0.294"{]} "Water Intake" {[}pos="-0.274,0.173"{]}
+Bisphosphonates {[}pos="-0.138,-0.267"{]} Evacuation
+{[}outcome,pos="0.346,-0.310"{]} Humidity {[}pos="-0.405,0.212"{]}
+Hydration {[}pos="-0.347,0.090"{]} Medications {[}pos="0.268,0.005"{]}
+Microbiome {[}pos="-0.119,-0.365"{]} Nephrolithiasis
+{[}pos="-0.085,-0.137"{]} Nutrients {[}pos="-0.298,-0.435"{]}
+Surveillance {[}pos="0.337,0.237"{]} Tamsulosin {[}pos="0.200,0.086"{]}
+Thiazides {[}pos="-0.067,0.133"{]} Ultrasound {[}pos="0.031,0.121"{]}
+Ureterolithiasis {[}pos="0.020,-0.138"{]} "Altered Gravity"
+-\textgreater{} "Bone Remodeling" "Astronaut Selection" -\textgreater{}
+"Individual Factors" "Bone Fracture (Risk)" -\textgreater{} "Bone
+Remodeling" "Bone Remodeling" -\textgreater{} "Urine Chemistry" "CO2
+(Risk)" -\textgreater{} "Urine Chemistry" "Crew Capability"
+-\textgreater{} "Task Performance" "Crew Health and Performance System"
+-\textgreater{} "Medical Monitoring Capability" "Crew Health and
+Performance System" -\textgreater{} "Medical Prevention Capability"
+"Crew Health and Performance System" -\textgreater{} "Medical Treatment
+Capability" "Crew Health and Performance System" -\textgreater{}
+"Resistive Exercise" "Detect MRM/Stone" -\textgreater{} "Ultrasound
+Manipulation" "Distance from Earth" -\textgreater{} "Vehicle Design"
+"Food and Nutrition (Risk)" -\textgreater{} Nutrients "HSIA (Risk)"
+-\textgreater{} "Crew Health and Performance System" "HSIA (Risk)"
+-\textgreater{} "Vehicle Design" "Hostile Closed Environment"
+-\textgreater{} Hydration "Individual Factors" -\textgreater{}
+Nephrolithiasis "Individual Readiness" -\textgreater{} "Crew Capability"
+"K+ Citrate" -\textgreater{} "Urine Chemistry" "Long Term Health
+Outcomes" -\textgreater{} "Detect Long Term Health Outcomes" "Loss of
+Mission Objectives" -\textgreater{} "Loss of Mission" "Medical Illness"
+-\textgreater{} "Individual Readiness" "Medical Illness" -\textgreater{}
+"Long Term Health Outcomes" "Medical Illness" -\textgreater{} "Loss of
+Crew Life" "Medical Illness" -\textgreater{} Evacuation "Medical
+Monitoring Capability" -\textgreater{} Ultrasound "Medical Prevention
+Capability" -\textgreater{} "Bone Remodeling" "Medical Prevention
+Capability" -\textgreater{} "K+ Citrate" "Medical Prevention Capability"
+-\textgreater{} "Urine Chemistry" "Medical Prevention Capability"
+-\textgreater{} "Water Intake" "Medical Prevention Capability"
+-\textgreater{} Bisphosphonates "Medical Prevention Capability"
+-\textgreater{} Thiazides "Medical Treatment Capability" -\textgreater{}
+"Percutaneous Nephrostomy" "Medical Treatment Capability"
+-\textgreater{} "Ultrasound Manipulation" "Medical Treatment Capability"
+-\textgreater{} "Water Intake" "Medical Treatment Capability"
+-\textgreater{} Medications "Medical Treatment Capability"
+-\textgreater{} Tamsulosin "Microhost (Risk)" -\textgreater{} Microbiome
+"Mineralized Renal Material" -\textgreater{} "Detect MRM/Stone"
+"Mineralized Renal Material" -\textgreater{} Nephrolithiasis
+"Percutaneous Nephrostomy" -\textgreater{} "Medical Illness" "Pharm
+(Risk)" -\textgreater{} "Medical Prevention Capability" "Pharm (Risk)"
+-\textgreater{} "Medical Treatment Capability" "Resistive Exercise"
+-\textgreater{} "Bone Remodeling" "Task Performance" -\textgreater{}
+"Loss of Mission Objectives" "Ultrasound Manipulation" -\textgreater{}
+Ureterolithiasis "Urinary Retention (Risk)" -\textgreater{} "Urine Flow"
+"Urine Chemistry" -\textgreater{} "Mineralized Renal Material" "Urine
+Concentration" -\textgreater{} "Urine Chemistry" "Urine Flow"
+-\textgreater{} "Medical Illness" "Vehicle Design" -\textgreater{} "Crew
+Health and Performance System" "Vehicle Design" -\textgreater{} Humidity
+"Water Intake" -\textgreater{} "Urine Flow" "Water Intake"
+-\textgreater{} Hydration Bisphosphonates -\textgreater{} "Bone
+Remodeling" Evacuation -\textgreater{} "Loss of Crew Life" Evacuation
+-\textgreater{} "Loss of Mission Objectives" Humidity -\textgreater{}
+Hydration Hydration -\textgreater{} "Urine Concentration" Medications
+-\textgreater{} "Individual Readiness" Medications -\textgreater{} "Long
+Term Health Outcomes" Medications -\textgreater{} "Loss of Crew Life"
+Medications -\textgreater{} "Medical Illness" Medications
+-\textgreater{} Evacuation Microbiome -\textgreater{} "Urine Chemistry"
+Nephrolithiasis -\textgreater{} "Detect MRM/Stone" Nephrolithiasis
+-\textgreater{} "Flight Recertification" Nephrolithiasis -\textgreater{}
+Ureterolithiasis Nutrients -\textgreater{} "Bone Remodeling"
+Surveillance -\textgreater{} "Detect Long Term Health Outcomes"
+Tamsulosin -\textgreater{} "Urine Flow" Thiazides -\textgreater{} "Urine
+Chemistry" Ultrasound -\textgreater{} "Detect MRM/Stone" Ultrasound
+-\textgreater{} "Percutaneous Nephrostomy" Ureterolithiasis
+-\textgreater{} "Urine Flow" \}

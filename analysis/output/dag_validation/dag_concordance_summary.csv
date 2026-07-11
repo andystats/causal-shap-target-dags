@@ -1,0 +1,8 @@
+"comparison","node_count","directed_pair_count","reference_edge_count","candidate_edge_count","true_positive","true_negative","false_positive","false_negative","observed_agreement","cohen_kappa","precision","recall","f1","structural_hamming_distance","exact_match"
+"NASA source code vs canonical CSV round-trip",51,2550,75,75,75,2475,0,0,1,1,1,1,1,0,TRUE
+"NASA source vs validated clean DAG",51,2550,75,75,75,2475,0,0,1,1,1,1,1,0,TRUE
+"NASA source vs validated NASA-like source layer",51,2550,75,75,75,2475,0,0,1,1,1,1,1,0,TRUE
+"NASA source vs actual source-aligned clean simcausal DAG",51,2550,75,75,75,2475,0,0,1,1,1,1,1,0,TRUE
+"Validated NASA-like spec vs actual source-aligned simcausal DAG",59,3422,85,85,85,3337,0,0,1,1,1,1,1,0,TRUE
+"NASA source projection vs clean simcausal model",30,870,32,39,29,828,10,3,0.985057471264368,0.809191213685596,0.743589743589744,0.90625,0.816901408450704,13,FALSE
+"NASA source projection vs NASA-like simcausal model",30,870,32,40,29,827,11,3,0.983908045977012,0.797270306258323,0.725,0.90625,0.805555555555555,14,FALSE

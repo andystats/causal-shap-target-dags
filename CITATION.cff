@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this research software, please cite the repository and the method papers listed in the documentation."
+title: "Causal SHAP Target DAGs"
+type: software
+authors:
+  - family-names: Wilson
+    given-names: Andy
+repository-code: "https://github.com/andystats/causal-shap-target-dags"
+url: "https://github.com/andystats/causal-shap-target-dags"
+license: MIT
+version: 0.1.0
+date-released: 2026-07-11

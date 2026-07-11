@@ -1,0 +1,69 @@
+from,to,sign,versions,source_basis
+baseline_fitness,selected_astronaut,positive,v2,email selection augmentation
+individual_susceptibility,selected_astronaut,negative,v2,email selection augmentation
+age_z,selected_astronaut,negative,v2,email selection augmentation
+hostile_closed_environment,urinary_retention,positive,both,first-pass extension
+hostile_closed_environment,dietary_risk,positive,both,first-pass extension
+altered_gravity,bone_remodeling,positive,both,Figure 11.6 and NASA narrative
+age_z,bone_remodeling,positive,both,individual-factor abstraction
+individual_susceptibility,bone_remodeling,positive,both,individual-factor abstraction
+resistive_exercise,bone_remodeling,negative,both,Figure 11.6 and NASA narrative
+bisphosphonate,bone_remodeling,negative,both,Figure 11.6 and NASA narrative
+baseline_fitness,hydration,positive,both,first-pass individual-factor extension
+hostile_closed_environment,hydration,negative,both,Figure 11.6 and NASA narrative
+adequate_water_intake,hydration,positive,both,Figure 11.6 and NASA narrative
+hydration,urine_concentration,negative,both,Figure 11.6 and NASA narrative
+hostile_closed_environment,urine_concentration,positive,both,first-pass extension
+bone_remodeling,urine_chemistry_risk,positive,both,Figure 11.6 and NASA narrative
+urine_concentration,urine_chemistry_risk,positive,both,Figure 11.6 and NASA narrative
+dietary_risk,urine_chemistry_risk,positive,both,Figure 11.6 and NASA narrative
+microbiome_risk,urine_chemistry_risk,positive,both,Figure 11.6 and NASA narrative
+co2_exposure,urine_chemistry_risk,positive,both,Figure 11.6 and NASA narrative
+individual_susceptibility,urine_chemistry_risk,positive,both,individual-factor abstraction
+potassium_citrate,urine_chemistry_risk,negative,both,Figure 11.6 and NASA narrative
+thiazide,urine_chemistry_risk,negative,both,Figure 11.6 and NASA narrative
+urine_chemistry_risk,mineralized_renal_material,positive,both,Figure 11.6 and NASA narrative
+individual_susceptibility,mineralized_renal_material,positive,both,individual-factor abstraction
+mineralized_renal_material,nephrolithiasis,positive,both,Figure 11.6 and NASA narrative
+individual_susceptibility,nephrolithiasis,positive,both,Figure 11.6 and NASA narrative
+nephrolithiasis,ureterolithiasis,positive,both,Figure 11.6 and NASA narrative
+ureterolithiasis,impaired_urine_flow,positive,both,Figure 11.6 and NASA narrative
+urinary_retention,impaired_urine_flow,positive,both,Figure 11.6 and NASA narrative
+ureterolithiasis,renal_colic,positive,both,Chapter 11 expanded block
+impaired_urine_flow,renal_colic,positive,both,Chapter 11 expanded block
+impaired_urine_flow,hydronephrosis,positive,both,Chapter 11 expanded block
+impaired_urine_flow,infection,positive,both,Chapter 11 expanded block
+ureterolithiasis,infection,positive,both,Chapter 11 expanded block
+infection,sepsis,positive,both,Chapter 11 expanded block
+hydronephrosis,renal_failure,positive,both,Chapter 11 expanded block
+sepsis,renal_failure,positive,both,Chapter 11 expanded block
+renal_colic,medical_illness,positive,both,deterministic summary
+hydronephrosis,medical_illness,positive,both,deterministic summary
+infection,medical_illness,positive,both,deterministic summary
+sepsis,medical_illness,positive,both,deterministic summary
+renal_failure,medical_illness,positive,both,deterministic summary
+medical_illness,individual_readiness_loss,positive,both,Figure 11.6 and NASA narrative
+renal_colic,individual_readiness_loss,positive,both,Figure 11.6 and NASA narrative
+renal_failure,individual_readiness_loss,positive,both,first-pass expansion
+medical_illness,evacuation,positive,both,Figure 11.6 and NASA narrative
+sepsis,evacuation,positive,both,Figure 11.6 and NASA narrative
+renal_failure,evacuation,positive,both,Figure 11.6 and NASA narrative
+individual_readiness_loss,crew_capability_loss,positive,both,Figure 11.6 and NASA narrative
+medical_illness,crew_capability_loss,positive,both,first-pass expansion
+crew_capability_loss,task_performance_loss,positive,both,Figure 11.6 and NASA narrative
+evacuation,task_performance_loss,positive,both,Figure 11.6 and NASA narrative
+task_performance_loss,loss_mission_objectives,positive,both,Figure 11.6 and NASA narrative
+evacuation,loss_mission_objectives,positive,both,Figure 11.6 and NASA narrative
+loss_mission_objectives,loss_mission,positive,both,Figure 11.6 and NASA narrative
+sepsis,loss_crew_life,positive,both,Figure 11.6 and NASA narrative
+renal_failure,loss_crew_life,positive,both,Figure 11.6 and NASA narrative
+evacuation,loss_crew_life,positive,both,Figure 11.6 and NASA narrative
+medical_illness,long_term_health_outcome,positive,both,Figure 11.6 and NASA narrative
+renal_failure,long_term_health_outcome,positive,both,Figure 11.6 and NASA narrative
+medical_illness,observe_bone_remodeling,positive,v2,email measurement-sparsity augmentation
+medical_illness,observe_hydration,positive,v2,email measurement-sparsity augmentation
+medical_illness,observe_urine_concentration,positive,v2,email measurement-sparsity augmentation
+nephrolithiasis,observe_urine_chemistry,positive,v2,email measurement-sparsity augmentation
+medical_illness,observe_urine_chemistry,positive,v2,email measurement-sparsity augmentation
+nephrolithiasis,observe_mineralized_material,positive,v2,email measurement-sparsity augmentation
+medical_illness,observe_mineralized_material,positive,v2,email measurement-sparsity augmentation
