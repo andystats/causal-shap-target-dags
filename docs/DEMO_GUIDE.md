@@ -3,6 +3,43 @@
 The companion app is designed for a reproducible seven-to-nine-minute paper
 walkthrough. It uses checked-in assets rather than live attribution calls.
 
+## Guided story versus Lab overview
+
+| Experience | Purpose | Interaction |
+| --- | --- | --- |
+| Guided story | Reader/video mode that controls narrative order and prevents later results from appearing early. | Six explicit steps with Previous/Next navigation. |
+| Lab overview | Audit and orientation mode that exposes the scientific estimands, current evidence status, and app architecture together. | Switch datasets to compare the NASA primary analysis with the labeled teaching stress test. |
+
+Lab overview is not a live model-fitting environment. Both experiences read the
+same versioned, precomputed bundles; the difference is sequencing versus
+simultaneous inspection.
+
+## Scientific concept schematic
+
+```mermaid
+flowchart LR
+  A["Known DAG + structural equations"] --> B["Synthetic data + frozen intervention truth"]
+  B --> C["One fixed learner"]
+  C --> D1["Ordinary SHAP"]
+  C --> D2["DAG-ordering-only SHAP"]
+  C --> D3["Structural intervention-propagating SHAP"]
+  D1 --> E["Recovery metrics + uncertainty"]
+  D2 --> E
+  D3 --> E
+  E --> F["Feasibility, cost, and intervention design"]
+```
+
+## Tool/demo schematic
+
+```mermaid
+flowchart LR
+  A["Versioned local bundles"] --> B["Python Shiny presentation layer"]
+  B --> C["Guided story"]
+  B --> D["Lab overview"]
+  C --> E["Paper companion + recorded walkthrough"]
+  D --> E
+```
+
 ## Story arc
 
 1. **Mission and estimand:** prediction importance is not automatically an
