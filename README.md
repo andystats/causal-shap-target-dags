@@ -48,6 +48,8 @@ property of the current weak-signal simulation.
   guardrails.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — publication-critical next steps.
 - [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md) — app walkthrough and video assets.
+- [`docs/ACIC_LINEAGE.md`](docs/ACIC_LINEAGE.md) — what carries forward from the
+  ACIC 2026 poster and what the NASA Target DAGs study adds.
 
 ## Run the app
 

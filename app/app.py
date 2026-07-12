@@ -236,6 +236,51 @@ def acic_content(step: int) -> str:
     )
 
 
+def lab_overview(bundle_id: str) -> str:
+    bundle = REPOSITORY.get(bundle_id)
+    is_primary = bundle.kind == "source_aligned_primary"
+    eyebrow_class = "eyebrow" if is_primary else "eyebrow stress"
+    eyebrow = "LAB OVERVIEW · SOURCE-ALIGNED ANALYSIS" if is_primary else "LAB OVERVIEW · DESIGNED STRESS TEST"
+    result = (
+        "Matched ordinary and ordering-only SHAP are effectively tied; the small structural prototype is promising but not yet publication-scale."
+        if is_primary
+        else "The teaching bundle makes proxy over-credit visible; its fast estimate is intuition, not primary evidence."
+    )
+    next_gate = (
+        "Scale structural propagation, add paired uncertainty and seed replication, then run the longer-path endpoint and NASA-like regime."
+        if is_primary
+        else "Carry the mechanism into the source-aligned NASA analysis and require it to survive a fair matched-background control."
+    )
+    return (
+        f'<div class="{eyebrow_class}">{eyebrow}</div>'
+        '<h2>One workspace, two views of the same frozen evidence</h2>'
+        '<p class="lede"><strong>Guided story</strong> controls the reveal for a reader or recording. '
+        '<strong>Lab overview</strong> exposes the estimands, evidence flow, and tool architecture at once.</p>'
+        '<section class="lab-section"><h3>Scientific concept</h3>'
+        '<div class="lab-flow">'
+        '<div><strong>Known DAG + equations</strong><span>Declare topology and structural mechanisms.</span></div><b>→</b>'
+        '<div><strong>Synthetic data + frozen truth</strong><span>Generate records and total intervention effects independently of SHAP.</span></div><b>→</b>'
+        '<div><strong>One fixed learner</strong><span>Hold the prediction model, records, and background contract constant.</span></div><b>→</b>'
+        '<div><strong>Three attribution questions</strong><span>Prediction, DAG ordering, and structural intervention propagation.</span></div><b>→</b>'
+        '<div><strong>Recovery + decisions</strong><span>Rank recovery, PBI/POA, uncertainty, then feasibility and cost.</span></div>'
+        '</div></section>'
+        '<section class="lab-section"><h3>Method contract</h3>'
+        '<div class="method-grid">'
+        '<div><em>PREDICTIVE</em><strong>Ordinary SHAP</strong><span>Which observed features help this fitted model predict?</span></div>'
+        '<div><em>ORDERING-ONLY CONTROL</em><strong>DAG-asymmetric SHAP</strong><span>What changes if feature arrival order must respect the DAG?</span></div>'
+        '<div class="active"><em>STRUCTURAL PROTOTYPE</em><strong>Intervention-propagating SHAP</strong><span>What changes after do(X=x) propagates through descendants?</span></div>'
+        '</div>'
+        f'<div class="callout"><strong>Current read:</strong> {result}</div></section>'
+        '<section class="lab-section"><h3>Deterministic tool/demo</h3>'
+        '<div class="tool-flow">'
+        '<div><strong>Versioned local bundles</strong><span>Data, DAG, model, truth, manifests, metrics, and figures</span></div><b>→</b>'
+        '<div class="split"><strong>Python Shiny presentation</strong><span>Guided story for narration</span><span>Lab overview for audit and comparison</span></div><b>→</b>'
+        '<div><strong>Paper + video</strong><span>Every displayed number traces to a checked artifact.</span></div>'
+        '</div>'
+        f'<div class="warning"><strong>Next gate:</strong> {next_gate}</div></section>'
+    )
+
+
 APP_CSS = """
 <style>
 body { background:#f8fafc!important; color:#111827!important; font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important; }
@@ -265,7 +310,22 @@ h2 { margin:.35rem 0 .65rem; font-size:1.55rem; }
 .flow div { border:1px solid #cbd5e1; border-radius:8px; padding:14px; background:#fff; }
 .flow div.active { border-color:#2563eb; background:#eff6ff; }
 .flow span { display:block; color:#64748b; font-size:.85rem; margin-top:5px; }
-@media (max-width:850px) { .layout{grid-template-columns:1fr}.controls{position:static}.flow{grid-template-columns:1fr}.flow>b{transform:rotate(90deg);text-align:center} }
+.lab-section { margin-top:24px; padding-top:18px; border-top:1px solid #e2e8f0; }
+.lab-section h3 { margin:0 0 12px; font-size:1.05rem; }
+.lab-flow { display:grid; grid-template-columns:repeat(5,minmax(120px,1fr)); gap:8px; align-items:stretch; overflow-x:auto; }
+.lab-flow div { grid-column:span 1; min-width:0; border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#f8fafc; }
+.lab-flow b { display:none; }
+.tool-flow b { text-align:center; color:#64748b; }
+.lab-flow span,.method-grid span,.tool-flow span { display:block; color:#64748b; font-size:.78rem; margin-top:5px; }
+.method-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.method-grid div { border:1px solid #cbd5e1; border-radius:8px; padding:12px; background:#fff; }
+.method-grid div.active { border-color:#2563eb; background:#eff6ff; }
+.method-grid em { display:block; color:#64748b; font-size:.68rem; font-style:normal; font-weight:750; letter-spacing:.06em; margin-bottom:5px; }
+.tool-flow { display:grid; grid-template-columns:1fr auto 1.2fr auto 1fr; gap:10px; align-items:center; }
+.tool-flow div { border:1px solid #cbd5e1; border-radius:8px; padding:12px; background:#f8fafc; }
+.tool-flow .split span { border-top:1px solid #e2e8f0; padding-top:5px; }
+.nav-note { margin-top:12px; padding:9px 10px; border-radius:7px; background:#f1f5f9; color:#475569; font-size:.78rem; }
+@media (max-width:850px) { .layout{grid-template-columns:1fr}.controls{position:static}.flow,.lab-flow,.method-grid,.tool-flow{grid-template-columns:1fr}.flow>b,.lab-flow>b,.tool-flow>b{transform:rotate(90deg);text-align:center} }
 </style>
 """
 
@@ -283,7 +343,7 @@ app_ui = ui.page_fluid(
                 ui.div(
                     ui.input_select("bundle", "Dataset", choices=REPOSITORY.choices(), selected="nasa_renal_clean_v3"),
                     ui.input_radio_buttons("mode", "Experience", choices={"guided":"Guided story","lab":"Lab overview"}, selected="guided"),
-                    ui.div(ui.input_action_button("previous", "Previous"), ui.input_action_button("next", "Next", class_="btn-primary"), class_="nav"),
+                    ui.output_ui("navigation"),
                     ui.output_ui("step_status"),
                     ui.output_ui("bundle_status"),
                     class_="panel controls",
@@ -317,9 +377,20 @@ def server(input, output, session):
 
     @output
     @render.ui
+    def navigation():
+        if input.mode() == "lab":
+            return ui.HTML('<div class="nav-note">Switch datasets to compare the primary analysis with the labeled teaching stress test.</div>')
+        return ui.div(
+            ui.input_action_button("previous", "Previous"),
+            ui.input_action_button("next", "Next", class_="btn-primary"),
+            class_="nav",
+        )
+
+    @output
+    @render.ui
     def step_status():
         if input.mode() == "lab":
-            return ui.HTML('<div class="step">Lab overview shows the final guided step. Switch to Guided story for the full sequence.</div>')
+            return ui.HTML('<div class="step"><strong>Lab overview</strong><br>Concept, method contract, and deterministic tool architecture. Switch to Guided story for the six-step reveal.</div>')
         return ui.HTML(f'<div class="step">Step {step.get()} of {GUIDED_STEPS}</div>')
 
     @output
@@ -335,8 +406,9 @@ def server(input, output, session):
     @output
     @render.ui
     def content():
-        selected_step = GUIDED_STEPS if input.mode() == "lab" else step.get()
-        html = nasa_content(selected_step) if input.bundle() == "nasa_renal_clean_v3" else acic_content(selected_step)
+        if input.mode() == "lab":
+            return ui.HTML(lab_overview(input.bundle()))
+        html = nasa_content(step.get()) if input.bundle() == "nasa_renal_clean_v3" else acic_content(step.get())
         return ui.HTML(html)
 
 
