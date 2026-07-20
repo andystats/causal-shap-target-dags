@@ -1,7 +1,12 @@
-script_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-script_path <- normalizePath(sub("^--file=", "", script_arg[[1]]), winslash = "/")
-analysis_dir <- dirname(script_path)
-project_dir <- normalizePath(file.path(analysis_dir, ".."), winslash = "/")
+local({                                   # locate + source paths.R from anywhere at/below the repo
+  dir <- getwd()
+  while (!file.exists(file.path(dir, "analysis", "R", "paths.R"))) {
+    parent <- dirname(dir)
+    if (identical(parent, dir)) stop("Run from inside the repository.")
+    dir <- parent
+  }
+  source(file.path(dir, "analysis", "R", "paths.R"))
+})
 
 suppressPackageStartupMessages({
   library(ggplot2)

@@ -22,11 +22,11 @@ jobs:
       - name: Compile and test
         working-directory: app
         run: |
-          python -m compileall -q causal_shap stages scripts tests app.py
+          python -m compileall -q causal_shap stages tests app.py
           python -m unittest discover -s tests -v
       - name: Validate bundles and frozen output
         working-directory: app
-        run: python scripts/29_validate_bundles.py
+        run: python -m causal_shap.build validate
       - name: Assert bundle manifest resolves
         working-directory: app
         run: python -c "from pathlib import Path; from causal_shap.bundles import BundleRepository; errors=BundleRepository(Path('.'), Path('bundles/manifest.json')).validate(); assert not errors, errors"

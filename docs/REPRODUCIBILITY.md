@@ -28,26 +28,22 @@ python -m unittest discover -s tests -v
 python -m shiny run --port 8010 app.py
 ```
 The app reads checked-in bundles; rungs 1 and 4 add live, torch-free computation
-(causal-learn discovery and a moment-matched MVN validation generator). To rebuild
-the ladder bundles and site figures, run the numbered pipeline in order (from a
-root editable install, `pip install -e ".[discovery]"`, plus
-`requirements-build.txt` for the torch/CVAE step):
+(causal-learn discovery and a moment-matched MVN validation generator). The whole
+Python pipeline is one CLI — `python -m causal_shap.build <stage>` — after a root
+editable install (`pip install -e ".[discovery]"`, plus `app/requirements-build.txt`
+for the torch/CVAE step):
 
 ```bash
-cd app
-python scripts/build_acic_bundle.py       # legacy pedagogic bundle
-python scripts/build_structural_results.py # legacy NASA structural prototype
-python scripts/20_build_teaching_data.py   # teaching DAGs
-python scripts/21_build_discovery.py       # PC/GES/LiNGAM vs truth
-python scripts/22_build_complexity.py      # PSCI v0 reports
-python scripts/23_build_causal_shap.py     # structural attribution (teaching)
-python scripts/24_build_validation.py      # CVAE (torch) + MVN validation suite
-python scripts/25_build_figures.py         # homunculus + distortion + ladder
-python scripts/26_build_glossary.py        # glossary.yml -> app JSON + site include
-python scripts/29_validate_bundles.py      # release gate + frozen-output hashes
+python -m causal_shap.build all             # teaching-data → discovery → complexity
+                                            # → causal-shap → validation → figures
+                                            # → glossary → validate (the whole flow)
+python -m causal_shap.build validate        # just the release gate + frozen-output hashes
+python -m causal_shap.build discovery       # or any single stage
+python -m causal_shap.build acic            # the pre-frozen pedagogic bundle (run individually)
+python -m causal_shap.build nasa-structural # the pre-frozen NASA structural prototype
 ```
 
-Non-torch artifacts are bit-for-bit reproducible across runs. `29_validate_bundles.py`
+Non-torch artifacts are bit-for-bit reproducible across runs. The `validate` stage
 hashes `analysis/output/` against a committed baseline and fails on any change.
 
 ## Companion site (Quarto)
@@ -63,22 +59,20 @@ Python runs at render time. Deploy is handled by `.github/workflows/publish-site
 
 ## R environment
 
-The current outputs were generated under R 4.5.2.
+The current outputs were generated under R 4.5.2. The whole pipeline runs from one
+command:
 
-```powershell
-Rscript analysis\install_dependencies.R
-cd analysis
-Rscript .\01_generate_clean.R
-Rscript .\02_generate_nasa_like.R
-Rscript .\03_validate_and_plot_dags.R
-Rscript .\04_generate_source_aligned_clean.R
-Rscript .\05_generate_source_aligned_nasa_like.R
-Rscript .\06_compute_interventional_truth.R
-Rscript .\07_run_shap_comparison.R
-Rscript .\08_bootstrap_shap_comparison.R
-Rscript .\09_diagnose_predictive_signal.R
-Rscript .\validate_outputs.R
+```bash
+Rscript analysis/install_dependencies.R
+Rscript analysis/run_all.R     # generate all datasets → DAG validation → truth
+                               # → SHAP comparison → bootstrap → diagnostics → gate
 ```
+
+Individual stages are still runnable on their own, and — unlike the old numbered
+scripts — now run interactively too (`source("analysis/generate.R")`,
+`Rscript analysis/06_compute_interventional_truth.R`, etc.); every entry point
+self-locates the repo via `analysis/R/paths.R`. The four dataset generators are
+consolidated into `analysis/generate.R` (`generate_dataset(variant)`).
 
 All seeds and evaluation/background manifests are checked into the outputs. A
 complete run is substantially slower than opening the deterministic app.
@@ -91,5 +85,5 @@ At minimum, a release should pass:
 Rscript analysis\validate_outputs.R
 cd app
 python -m unittest discover -s tests -v
-python -m py_compile app.py causal_shap\*.py scripts\*.py tests\*.py
+python -m compileall -q causal_shap stages tests app.py
 ```

@@ -18,8 +18,10 @@ Python layer — a hash gate enforces it.
 
 ## The R analysis (frozen science)
 
-Run the numbered scripts `analysis/01…09_*.R` in order, then the release gate
-`analysis/validate_outputs.R`. This produces the NASA renal-stone simulation, the
+Run `Rscript analysis/run_all.R` — one command for the whole R pipeline (the four
+dataset generators are consolidated into `analysis/generate.R`, and every stage
+self-locates the repo so it runs both via `Rscript` and interactively). This
+produces the NASA renal-stone simulation, the
 frozen interventional truth (50,000 common-random-number sims), the XGBoost
 learner, and the three attribution families — including the deliberate null
 result (ordinary ≈ DAG-ordering SHAP) and the structural prototype (τ = 0.794).
@@ -27,19 +29,15 @@ result (ordinary ≈ DAG-ordering SHAP) and the structural prototype (τ = 0.794
 ## The Python pipeline (teaching + site)
 
 ```bash
-cd app
-python scripts/20_build_teaching_data.py   # simulate toy + ladder DAGs
-python scripts/21_build_discovery.py       # PC / GES / LiNGAM vs truth
-python scripts/22_build_complexity.py      # PSCI v0 reports
-python scripts/23_build_causal_shap.py     # structural attribution (teaching)
-python scripts/24_build_validation.py      # CVAE + MVN validation suite
-python scripts/25_build_figures.py         # homunculus + distortion + ladder
-python scripts/26_build_glossary.py        # glossary.yml -> app JSON
-python scripts/29_validate_bundles.py      # release gate + frozen-output hashes
+python -m causal_shap.build all         # the whole flow, in order:
+                                        #   teaching-data → discovery → complexity
+                                        #   → causal-shap → validation → figures
+                                        #   → glossary → validate
+python -m causal_shap.build discovery   # …or any single stage
 ```
 
 ::: {.pullquote}
-`29_validate_bundles.py` hashes every file under `analysis/output/` against a
+The `validate` stage hashes every file under `analysis/output/` against a
 committed baseline and fails if anything changed or was added. Frozen science,
 additive engineering.
 :::

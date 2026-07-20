@@ -83,7 +83,7 @@
       "kind": "pedagogic_stress_test",
       "target": "AcuteRisk",
       "description": "Designed many-mediator DAG where five proxies are predictive with zero effect.",
-      "provenance": "Frozen pedagogic bundle (app/scripts/build_acic_bundle.py).",
+      "provenance": "Frozen pedagogic bundle (python -m causal_shap.build acic).",
       "paths": {
         "data": "bundles/acic_proxy_stress_test/data.csv",
         "edges": "bundles/acic_proxy_stress_test/edges.csv",

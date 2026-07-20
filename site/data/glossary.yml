@@ -1,6 +1,6 @@
 # Canonical glossary. The single source for both the site glossary page and the
 # app's term popovers (app/assets/glossary.json is generated from this file by
-# app/scripts/26_build_glossary.py). Terms adapted from the author's Instats
+# `python -m causal_shap.build glossary`). Terms adapted from the author's Instats
 # workshop (Module 3).
 terms:
   - term: DAG

@@ -67,8 +67,8 @@ shiny run app.py            # open http://127.0.0.1:8000
 Rebuild the teaching pipeline and site figures:
 
 ```bash
-pip install -e ".[discovery]"                       # from repo root
-cd app && python scripts/20_build_teaching_data.py  # then 21…29 in order
+pip install -e ".[discovery]"              # from repo root
+python -m causal_shap.build all            # teaching data → discovery → … → validate
 ```
 
 ## Validate
@@ -77,7 +77,7 @@ cd app && python scripts/20_build_teaching_data.py  # then 21…29 in order
 Rscript analysis/validate_outputs.R          # frozen R science
 cd app
 python -m unittest discover -s tests -v      # library + app tests
-python scripts/29_validate_bundles.py        # bundles + frozen-output hash gate
+python -m causal_shap.build validate         # bundles + frozen-output hash gate
 ```
 
 See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) and the site's

@@ -1,13 +1,12 @@
-"""Shared dataset registry for the numbered build scripts.
+"""Shared dataset registry for the build stages.
 
 Each entry knows how to produce its observational data, its ground-truth graph,
-its outcome, and where its bundle lives, so scripts 20-29 iterate uniformly
+its outcome, and where its bundle lives, so the build stages iterate uniformly
 instead of duplicating per-dataset wiring.
 """
 
 from __future__ import annotations
 
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -15,19 +14,17 @@ from typing import Callable
 import networkx as nx
 import pandas as pd
 
-APP_DIR = Path(__file__).resolve().parents[1]
-PROJECT_DIR = APP_DIR.parent
-if str(APP_DIR) not in sys.path:
-    sys.path.insert(0, str(APP_DIR))
-
-from causal_shap.graphs import load_edges_csv  # noqa: E402
-from causal_shap.seeds import SEED_TEACHING_LADDER, SEED_TEACHING_TOY  # noqa: E402
-from causal_shap.teaching_dags import (  # noqa: E402
+from .graphs import load_edges_csv
+from .seeds import SEED_TEACHING_LADDER, SEED_TEACHING_TOY
+from .teaching_dags import (
     TeachingDAG,
     layered_ladder,
     simulate_dataframe,
     toy_chain_fork_collider,
 )
+
+APP_DIR = Path(__file__).resolve().parents[1]
+PROJECT_DIR = APP_DIR.parent
 
 BUNDLES_DIR = APP_DIR / "bundles"
 TEACHING_ROWS = 6000
@@ -78,7 +75,7 @@ def _acic_dataset() -> Dataset:
         return load_edges_csv(bundle_dir / "edges.csv")
 
     def load_true_effects() -> dict[str, float]:
-        from causal_shap.pedagogic import TRUE_TOTAL_EFFECTS
+        from .pedagogic import TRUE_TOTAL_EFFECTS
 
         return dict(TRUE_TOTAL_EFFECTS)
 

@@ -9,14 +9,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sys
 from pathlib import Path
 
-APP_DIR = Path(__file__).resolve().parents[1]
-PROJECT_DIR = APP_DIR.parent
-sys.path.insert(0, str(APP_DIR))
-
-from causal_shap.bundles import BundleRepository  # noqa: E402
+from ..bundles import BundleRepository
+from .common import APP_DIR, PROJECT_DIR, print_status
 
 ANALYSIS_OUTPUT = PROJECT_DIR / "analysis" / "output"
 BASELINE_PATH = APP_DIR / "bundles" / "analysis_output_baseline_hashes.json"
@@ -54,7 +50,7 @@ def _check_frozen_output(errors: list[str]) -> None:
             errors.append(f"analysis/output: file changed: {name}")
 
 
-def main() -> None:
+def validate_bundles() -> None:
     errors: list[str] = []
     _check_frozen_output(errors)
 
@@ -67,10 +63,6 @@ def main() -> None:
                 errors.append(f"{bundle_id}: missing stage artifact {artifact}")
 
     if errors:
-        print(json.dumps({"status": "FAIL", "errors": errors}, indent=2))
+        print_status({"status": "FAIL", "errors": errors})
         raise SystemExit(1)
-    print(json.dumps({"status": "OK", "checked": sorted(EXPECTED_STAGE_ARTIFACTS)}, indent=2))
-
-
-if __name__ == "__main__":
-    main()
+    print_status({"status": "OK", "checked": sorted(EXPECTED_STAGE_ARTIFACTS)})

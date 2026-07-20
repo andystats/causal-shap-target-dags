@@ -76,20 +76,20 @@ The exploratory v1/v2 models predated discovery of NASA's machine-readable DAG c
 
 ## Run
 
-From this directory:
+The whole pipeline runs from one command (from anywhere in the repo):
 
-```powershell
-Rscript .\01_generate_clean.R
-Rscript .\02_generate_nasa_like.R
-Rscript .\03_validate_and_plot_dags.R
-Rscript .\04_generate_source_aligned_clean.R
-Rscript .\05_generate_source_aligned_nasa_like.R
-Rscript .\06_compute_interventional_truth.R
-Rscript .\07_run_shap_comparison.R
-Rscript .\08_bootstrap_shap_comparison.R
-Rscript .\09_diagnose_predictive_signal.R
-Rscript .\validate_outputs.R
+```bash
+Rscript analysis/run_all.R
 ```
+
+Stages, in order: `generate.R` (all four datasets) → `03_validate_and_plot_dags.R`
+→ `06_compute_interventional_truth.R` → `07_run_shap_comparison.R` →
+`08_bootstrap_shap_comparison.R` → `09_diagnose_predictive_signal.R` →
+`validate_outputs.R`. Each is also runnable on its own — via `Rscript` **or**
+interactively (`source("analysis/generate.R"); generate_dataset("source_aligned_clean")`)
+— because every entry point self-locates the repo through `R/paths.R` instead of
+the old `--file=` header. The four numbered generators (`01/02/04/05`) are
+consolidated into `generate.R`.
 
 The scripts require `simcausal`, `igraph`, `xgboost`, `dagitty`, `ggdag`, and
 `ggplot2` (run under R 4.5.2 in this project).
