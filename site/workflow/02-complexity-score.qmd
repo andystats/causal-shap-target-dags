@@ -1,0 +1,53 @@
+---
+title: "Rung 2 · Complexity score"
+---
+
+[Setup.]{.lead-in} A candidate graph (known or discovered) and, ideally, the
+cross-algorithm disagreement from [rung 1](01-causal-discovery.qmd).
+
+[Move.]{.lead-in} Score how much causal care the problem demands, so you know
+whether ordinary attribution is safe or whether you must climb to structural
+attribution and validation.
+
+::: {.provisional}
+**PSCI v0 is provisional.** The score shown here — a Provisional Structural
+Complexity Index — is a transparent placeholder that combines graph size,
+density, depth, CPDAG ambiguity, cross-algorithm disagreement, and adjustment
+burden. The authors' final score plugs into the same registry seam before
+publication.
+:::
+
+## What the score reads
+
+Each subscore is in [0, 1] with a one-line rationale; they combine to a 0–100
+total and a low / moderate / high band.
+
+| Subscore | Reads |
+|---|---|
+| size | how many nodes |
+| density | how many edges relative to a complete skeleton |
+| depth | mean hop-distance from causes to the outcome |
+| ambiguity | fraction of edges left undirected in the CPDAG |
+| disagreement | 1 − mean pairwise skeleton-F1 across algorithms |
+| adjustment burden | mean minimal adjustment-set size |
+
+When you score a single live-discovered graph, the disagreement subscore is
+unavailable and the total renormalizes over the rest — the app labels this
+degraded mode explicitly.
+
+## Reading the datasets
+
+| Dataset | PSCI | Band |
+|---|---|---|
+| Toy chain/fork/collider | ~22 | low |
+| Layered ladder | ~22 | low |
+| ACIC proxy stress test | ~36 | moderate |
+| NASA renal-stone | ~31 | low |
+
+A small graph can still be complex: the toy DAG scores near the larger ladder
+because it is dense for its size. Complexity is not just node count.
+
+[Caveat.]{.lead-in} A provisional score is a conversation-starter, not a gate.
+Read the subscores, not just the total.
+
+Next: [attribute with the structure in hand →](03-causal-shap.qmd)

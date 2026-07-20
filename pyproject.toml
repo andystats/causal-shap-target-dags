@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "causal-shap-target-dags"
+version = "0.1.0"
+description = "Causal SHAP for target DAGs: attribution engines, teaching simulations, and companion-app utilities."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.13"
+# Base runtime dependencies mirror app/requirements.txt (minus the discovery extra).
+dependencies = [
+    "shiny>=1.4,<2",
+    "pandas>=2.2,<3",
+    "numpy>=2.0,<3",
+    "networkx>=3.3,<4",
+    "scipy>=1.14,<2",
+    "scikit-learn>=1.6,<2",
+    "matplotlib>=3.9,<4",
+    "shap>=0.48,<0.53",
+    "xgboost>=3.0,<4",
+]
+
+[project.optional-dependencies]
+# Live causal-discovery path shipped with the deployed app (pinned: 0.x API).
+discovery = ["causal-learn==0.1.4.8"]
+# Local build scripts only — never shipped to shinyapps.io or imported by the app.
+heavy = ["torch>=2.4,<3", "gcastle>=1.0.3"]
+# Quarto site execution environment (renders happen on the author's machine).
+site = ["jupyter>=1.1,<2", "pyyaml>=6.0,<7"]
+
+[tool.setuptools.packages.find]
+# Flat-layout auto-discovery would fail at the repo root; discovery is explicit.
+where = ["app"]
+include = ["causal_shap*", "stages*"]

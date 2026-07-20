@@ -1,0 +1,43 @@
+{
+  "score_name": "PSCI",
+  "score_version": "0",
+  "provisional": true,
+  "total": 30.915441176470583,
+  "band": "low",
+  "subscores": {
+    "size": {
+      "value": 1.0,
+      "rationale": "51 nodes",
+      "available": true
+    },
+    "density": {
+      "value": 0.058823529411764705,
+      "rationale": "75 skeleton edges",
+      "available": true
+    },
+    "depth": {
+      "value": 0.59,
+      "rationale": "mean 3.5 hops to nephrolithiasis",
+      "available": true
+    },
+    "ambiguity": {
+      "value": 0.0,
+      "rationale": "0% of edges undirected",
+      "available": true
+    },
+    "disagreement": {
+      "value": 0.0,
+      "rationale": "n/a (single-graph scoring)",
+      "available": false
+    },
+    "adjustment_burden": {
+      "value": 0.0,
+      "rationale": "mean adjustment set of 0.0 variables",
+      "available": true
+    }
+  },
+  "recommendations": [
+    "Structure is simple; ordinary and structural attributions likely agree.",
+    "A single discovery run plus a quick DAG sketch is enough."
+  ]
+}

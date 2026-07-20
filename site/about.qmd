@@ -1,0 +1,52 @@
+---
+title: "About"
+---
+
+This is the companion site for a research project on **Causal SHAP for target
+DAGs** — an open, reproducible study of which attribution value function recovers
+useful upstream intervention targets, and which merely rewards features near the
+outcome.
+
+## Authors
+
+Andy Wilson. See the repository
+[CITATION.cff](https://github.com/andystats/causal-shap-target-dags/blob/main/CITATION.cff)
+for the canonical citation.
+
+## Data provenance
+
+Every dataset on this site is **synthetic**.
+
+- **NASA renal-stone (flagship).** The DAG topology is source-exact, parsed from
+  the public NASA DAGitty source (SA-07566), and validated against it (Cohen's κ =
+  1.0). All coefficients are simulation parameters, **not** NASA estimates.
+- **Teaching DAGs (toy, ladder).** Hand-built linear-Gaussian structural models
+  designed so that a proxy is predictive yet has zero total effect.
+- **ACIC proxy stress test.** A designed many-mediator DAG where five proxies are
+  predictive with zero effect by construction.
+
+## Method background
+
+- Heskes, Sijben, Bucur, Claassen (2020). *Causal Shapley Values.* NeurIPS.
+- Frye, Rowat, Feige (2020). *Asymmetric Shapley Values.* NeurIPS.
+- Janzing, Minorics, Blöbaum (2020). *Feature Relevance Quantification in
+  Explainable AI: A Causal Problem.* AISTATS.
+- Parikh, Varjão, Xu, Tchetgen Tchetgen (2022). *Validating Causal Inference
+  Methods* (Credence). ICML.
+- Instats workshop *Modern Analysis of Real-World Data* (Wilson, Gregg, Morrison),
+  from which the DAG vocabulary, discovery playground, and Credence-style
+  validation are adapted.
+
+The simulation-validation layer is implemented from the author's own workshop code
+in the spirit of Credence; no code from the Credence repository is redistributed.
+
+## Provisional components
+
+The complexity score (**PSCI v0**) is an explicitly provisional placeholder. It
+plugs into a small registry seam so the authors' final score can replace it
+without touching the rest of the workflow.
+
+## License
+
+Code is released under the MIT License. This site's prose and figures accompany the
+paper; please cite the repository if you build on them.

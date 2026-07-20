@@ -1,22 +1,80 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "bundles": [
+    {
+      "id": "toy_chain_fork_collider",
+      "label": "Toy chain / fork / collider",
+      "kind": "teaching",
+      "target": "Y",
+      "description": "Five-node blackboard DAG where the collider ClinicVisit is predictive but has zero total effect.",
+      "provenance": "Simulated teaching DAG (causal_shap.teaching_dags).",
+      "paths": {
+        "data": "bundles/toy_chain_fork_collider/data.csv",
+        "edges": "bundles/toy_chain_fork_collider/edges.csv",
+        "dag": "bundles/toy_chain_fork_collider/dag.png",
+        "true_effects": "bundles/toy_chain_fork_collider/true_effects.json"
+      },
+      "stages": {
+        "discovery": {"result": "bundles/toy_chain_fork_collider/stages/discovery.json"},
+        "complexity": {"report": "bundles/toy_chain_fork_collider/stages/complexity.json"},
+        "causal_shap": {
+          "attribution": "bundles/toy_chain_fork_collider/stages/attribution.csv",
+          "homunculus": "bundles/toy_chain_fork_collider/stages/toy_chain_fork_collider_homunculus.png",
+          "distortion": "bundles/toy_chain_fork_collider/stages/toy_chain_fork_collider_distortion.png"
+        }
+      }
+    },
+    {
+      "id": "layered_ladder",
+      "label": "Layered ladder (3 tiers)",
+      "kind": "teaching",
+      "target": "Y",
+      "description": "Nine-node, three-tier DAG with two outcome-adjacent zero-effect proxies.",
+      "provenance": "Simulated teaching DAG (causal_shap.teaching_dags).",
+      "paths": {
+        "data": "bundles/layered_ladder/data.csv",
+        "edges": "bundles/layered_ladder/edges.csv",
+        "dag": "bundles/layered_ladder/dag.png",
+        "true_effects": "bundles/layered_ladder/true_effects.json"
+      },
+      "stages": {
+        "discovery": {"result": "bundles/layered_ladder/stages/discovery.json"},
+        "complexity": {"report": "bundles/layered_ladder/stages/complexity.json"},
+        "causal_shap": {
+          "attribution": "bundles/layered_ladder/stages/attribution.csv",
+          "homunculus": "bundles/layered_ladder/stages/layered_ladder_homunculus.png",
+          "distortion": "bundles/layered_ladder/stages/layered_ladder_distortion.png"
+        }
+      }
+    },
     {
       "id": "nasa_renal_clean_v3",
       "label": "NASA renal-stone clean v3",
       "kind": "source_aligned_primary",
       "target": "Nephrolithiasis",
+      "description": "Source-exact NASA renal-stone DAG; the flagship analysis told straight.",
+      "provenance": "Frozen R analysis (analysis/output), staged under app/ for a self-contained deploy.",
       "paths": {
-        "data": "analysis/output/source_aligned_clean/renal_stone_source_aligned_clean_v3.csv",
-        "dag": "analysis/output/dag_validation/nasa_source_dag.png",
-        "ancestor_map": "analysis/output/shap_nephrolithiasis_clean_v3/ancestor_importance_maps.png",
-        "distance_plot": "analysis/output/shap_nephrolithiasis_clean_v3/distance_concentration_curves.png",
-        "importance_plot": "analysis/output/shap_nephrolithiasis_clean_v3/feature_importance_comparison.png",
-        "auc_plot": "analysis/output/shap_nephrolithiasis_clean_v3/predictive_signal_diagnostics.png",
-        "model_metrics": "analysis/output/shap_nephrolithiasis_clean_v3/model_metrics.csv",
-        "attribution_metrics": "analysis/output/shap_nephrolithiasis_clean_v3/attribution_summary_metrics.csv",
-        "structural_summary": "analysis/output/shap_nephrolithiasis_clean_v3/structural_causal_shap_summary.json",
-        "structural_importance": "analysis/output/shap_nephrolithiasis_clean_v3/structural_causal_shap_importance.csv"
+        "data": "bundles/nasa_renal_clean_v3/renal_stone_source_aligned_clean_v3.csv",
+        "dag": "bundles/nasa_renal_clean_v3/nasa_source_dag.png",
+        "ancestor_map": "bundles/nasa_renal_clean_v3/ancestor_importance_maps.png",
+        "distance_plot": "bundles/nasa_renal_clean_v3/distance_concentration_curves.png",
+        "importance_plot": "bundles/nasa_renal_clean_v3/feature_importance_comparison.png",
+        "auc_plot": "bundles/nasa_renal_clean_v3/predictive_signal_diagnostics.png",
+        "model_metrics": "bundles/nasa_renal_clean_v3/model_metrics.csv",
+        "attribution_metrics": "bundles/nasa_renal_clean_v3/attribution_summary_metrics.csv",
+        "structural_summary": "bundles/nasa_renal_clean_v3/structural_causal_shap_summary.json",
+        "structural_importance": "bundles/nasa_renal_clean_v3/structural_causal_shap_importance.csv",
+        "importance_comparison": "bundles/nasa_renal_clean_v3/importance_comparison.csv"
+      },
+      "stages": {
+        "complexity": {"report": "bundles/nasa_renal_clean_v3/stages/complexity.json"},
+        "causal_shap": {"distortion": "bundles/nasa_renal_clean_v3/stages/nasa_distortion.png"},
+        "validation": {
+          "scorecard": "bundles/nasa_renal_clean_v3/stages/validation_scorecard.csv",
+          "estimands": "bundles/nasa_renal_clean_v3/stages/validation_estimands.csv",
+          "cvae_weights": "bundles/nasa_renal_clean_v3/stages/cvae_decoder.pt"
+        }
       }
     },
     {
@@ -24,11 +82,19 @@
       "label": "Pedagogic mediator/proxy stress test",
       "kind": "pedagogic_stress_test",
       "target": "AcuteRisk",
+      "description": "Designed many-mediator DAG where five proxies are predictive with zero effect.",
+      "provenance": "Frozen pedagogic bundle (app/scripts/build_acic_bundle.py).",
       "paths": {
-        "data": "app/bundles/acic_proxy_stress_test/data.csv",
-        "dag": "app/bundles/acic_proxy_stress_test/dag.png",
-        "importance": "app/bundles/acic_proxy_stress_test/importance.csv",
-        "metrics": "app/bundles/acic_proxy_stress_test/metrics.json"
+        "data": "bundles/acic_proxy_stress_test/data.csv",
+        "edges": "bundles/acic_proxy_stress_test/edges.csv",
+        "dag": "bundles/acic_proxy_stress_test/dag.png",
+        "importance": "bundles/acic_proxy_stress_test/importance.csv",
+        "metrics": "bundles/acic_proxy_stress_test/metrics.json"
+      },
+      "stages": {
+        "discovery": {"result": "bundles/acic_proxy_stress_test/stages/discovery.json"},
+        "complexity": {"report": "bundles/acic_proxy_stress_test/stages/complexity.json"},
+        "causal_shap": {"homunculus": "bundles/acic_proxy_stress_test/stages/acic_proxy_stress_test_homunculus.png"}
       }
     }
   ]

@@ -15,6 +15,11 @@ import numpy as np
 import pandas as pd
 
 
+def sigmoid(value: np.ndarray) -> np.ndarray:
+    """Numerically stable logistic, clipped to avoid overflow."""
+    return 1.0 / (1.0 + np.exp(-np.clip(value, -35.0, 35.0)))
+
+
 @dataclass(frozen=True)
 class NodeSpec:
     name: str
@@ -75,10 +80,7 @@ class LinearLogisticSCM:
         self.graph = graph
         self.order = tuple(nx.topological_sort(graph))
 
-    @staticmethod
-    def _sigmoid(value: np.ndarray) -> np.ndarray:
-        value = np.clip(value, -35.0, 35.0)
-        return 1.0 / (1.0 + np.exp(-value))
+    _sigmoid = staticmethod(sigmoid)
 
     def recover_exogenous(self, data: pd.DataFrame, seed: int) -> ExogenousDraws:
         """Abduct exogenous draws consistent with observed structural data."""

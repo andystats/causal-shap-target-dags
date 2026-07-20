@@ -1,0 +1,54 @@
+---
+title: "Cheatsheet · Discovery algorithms"
+subtitle: "Learning structure from data"
+---
+
+::: {.cheatsheet}
+
+## The families
+
+| Algorithm | Family | Idea | Watch out |
+|---|---|---|---|
+| **PC** | constraint | conditional-independence tests → skeleton → orient v-structures | leaves edges undirected; test errors propagate |
+| **FCI** | constraint | like PC but allows latent confounders | slower; outputs a PAG |
+| **GES** | score | greedily maximize BIC over equivalence classes | robust to single test errors |
+| **LiNGAM** | functional | linear + non-Gaussian ⇒ a unique DAG | strong distributional assumption |
+| **NOTEARS** | continuous | differentiable acyclicity constraint | scalable; more spurious edges |
+
+## Output: a CPDAG, not a DAG
+
+Constraint- and score-based methods return an **equivalence class**. Some edges
+stay undirected because the data cannot orient them. Report the class, not a
+single graph.
+
+## Constraints (domain knowledge)
+
+[Forbidden edges.]{.lead-in} Exclude impossible relations. &nbsp;
+[Required edges.]{.lead-in} Force known relations. &nbsp;
+[Temporal tiers.]{.lead-in} Causes must precede effects.
+
+## Scoring a recovered graph
+
+| Metric | Question |
+|---|---|
+| Precision | of discovered edges, how many are correct? |
+| Recall | of true edges, how many were found? |
+| F1 (directed) | harmonic mean, direction matters |
+| F1 (skeleton) | same, ignoring direction |
+
+**Edge classification:** correct · reversed · spurious · missed.
+
+::: {.pullquote}
+Algorithms disagree — on one benchmark PC and GES agree on only ~20% of edges.
+That disagreement feeds the [complexity score](../workflow/02-complexity-score.qmd).
+:::
+
+## Python, today
+
+`causal-learn` (PC / GES / LiNGAM, pure-Python-friendly) and `gcastle` (NOTEARS +
+gradient methods) are pip-installable. This project ships PC and GES **live**;
+LiNGAM and NOTEARS appear as precomputed appendix columns.
+
+:::
+
+*Print for a handout.* Run these live in the [app](../app.qmd).

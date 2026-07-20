@@ -1,5 +1,22 @@
 # Roadmap
 
+## Companion toolkit (in place)
+
+The public companion is built around a six-rung workflow ladder — vanilla SHAP →
+causal discovery → complexity score → structural Causal SHAP → simulation
+validation → iteration:
+
+- `app/causal_shap/` now includes teaching DAGs, causal discovery (PC/GES live via
+  causal-learn; LiNGAM/NOTEARS as precomputed appendix), a pluggable complexity
+  score (PSCI v0), a Credence-style layered-parameter validation subpackage, and
+  the homunculus/ladder figures.
+- The Shiny app is rebuilt as the ladder, with live discovery and validation.
+- A Quarto site (`site/`) carries the narrative, cheatsheets, and glossary.
+
+Remaining toolkit tasks: swap in the authors' final complexity score at the
+registry seam; complete the shinyapps.io deploy (upload was blocked by transient
+S3 errors); optionally extend validation to multiple treatments and mediation.
+
 ## Publication-critical next steps
 
 - Scale structural Causal SHAP to the locked clean-v3 evaluation and background

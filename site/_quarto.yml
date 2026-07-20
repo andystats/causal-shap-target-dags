@@ -1,0 +1,68 @@
+project:
+  type: website
+  output-dir: _site
+
+# Execution happens only on the author's machine; the committed _freeze cache is
+# always used, so CI/Pages never run Python. Render the whole project (never a
+# single file, which would bypass freeze).
+execute:
+  freeze: true
+
+website:
+  title: "Causal SHAP for Target DAGs"
+  description: "A companion site: when feature importance points to the wrong lever."
+  page-navigation: true
+  navbar:
+    background: light
+    left:
+      - text: "Home"
+        href: index.qmd
+      - text: "Workflow"
+        menu:
+          - text: "The ladder"
+            href: workflow/index.qmd
+          - text: "0 · Vanilla SHAP"
+            href: workflow/00-vanilla-shap.qmd
+          - text: "1 · Causal discovery"
+            href: workflow/01-causal-discovery.qmd
+          - text: "2 · Complexity score"
+            href: workflow/02-complexity-score.qmd
+          - text: "3 · Causal SHAP"
+            href: workflow/03-causal-shap.qmd
+          - text: "4 · Validation"
+            href: workflow/04-validation.qmd
+          - text: "5 · Iteration"
+            href: workflow/05-iteration.qmd
+      - text: "Cheatsheets"
+        menu:
+          - text: "DAG vocabulary"
+            href: cheatsheets/dag-vocabulary.qmd
+          - text: "Discovery algorithms"
+            href: cheatsheets/discovery-algorithms.qmd
+          - text: "SHAP variants & equations"
+            href: cheatsheets/shap-variants.qmd
+          - text: "Estimands & validation"
+            href: cheatsheets/estimands-validation.qmd
+      - text: "Glossary"
+        href: glossary.qmd
+      - text: "Interactive app"
+        href: app.qmd
+      - text: "Reproduce"
+        href: reproducibility.qmd
+    right:
+      - text: "About"
+        href: about.qmd
+      - icon: github
+        href: https://github.com/andystats/causal-shap-target-dags
+
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    code-overflow: wrap
+    fig-cap-location: bottom
+    smooth-scroll: true

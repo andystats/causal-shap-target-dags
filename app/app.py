@@ -1,356 +1,346 @@
+"""Causal SHAP tutorial app — a six-rung ladder companion to the paper.
+
+The ladder is the product: each rung is a nav panel with a guided story read
+from precomputed bundles, and rungs 1 and 4 add a live, torch-free explore path
+(causal-learn discovery and an MVN validation generator).
+"""
+
 from __future__ import annotations
 
-import base64
-import io
 from functools import lru_cache
 from pathlib import Path
 
 import matplotlib
 import pandas as pd
-from matplotlib import pyplot as plt
-from shiny import App, reactive, render, ui
+from scipy.stats import kendalltau
+from shiny import App, render, ui
 
 from causal_shap.bundles import BundleRepository, read_json
+from causal_shap.discovery import compare_graphs, run_ges, run_pc
+from causal_shap.graphs import load_edges_csv
+from causal_shap.seeds import SEED_VALIDATION_SCENARIOS
+from causal_shap.validation import (
+    ConfounderSpec,
+    MVNGenerator,
+    SimulationSpec,
+    constant_tau,
+    fit_baseline,
+    fit_generator,
+    reference_covariates,
+    simulate,
+)
+from stages.common import callout, csv_data, image_html, metric_cards, table_html, term
 
+VALIDATION_FEATURES = ["age", "comorbidity", "hydration"]
 
 matplotlib.use("Agg")
 
 APP_DIR = Path(__file__).resolve().parent
-PROJECT_DIR = APP_DIR.parent
-REPOSITORY = BundleRepository(PROJECT_DIR, APP_DIR / "bundles" / "manifest.json")
-GUIDED_STEPS = 6
+REPOSITORY = BundleRepository(APP_DIR, APP_DIR / "bundles" / "manifest.json")
+BUNDLE_ERRORS = REPOSITORY.validate()  # the bundle set is fixed for the process; check once
+LADDER_SVG = APP_DIR / "assets" / "ladder.svg"
+
+DATASET_LABELS = {
+    "toy_chain_fork_collider": "Toy: chain / fork / collider",
+    "layered_ladder": "Ladder: 3 tiers",
+    "acic_proxy_stress_test": "ACIC proxy stress test",
+    "nasa_renal_clean_v3": "NASA renal-stone (flagship)",
+}
+LIVE_DISCOVERY = {"toy_chain_fork_collider", "layered_ladder", "acic_proxy_stress_test"}
+RUNG_TITLES = [
+    "Vanilla SHAP",
+    "Causal discovery",
+    "Complexity score",
+    "Causal SHAP",
+    "Validation",
+    "Iteration",
+]
 
 
-@lru_cache(maxsize=64)
-def image_uri(path_text: str) -> str:
-    path = Path(path_text)
-    mime = "image/png" if path.suffix.lower() == ".png" else "image/jpeg"
-    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
-    return f"data:{mime};base64,{encoded}"
-
-
-@lru_cache(maxsize=16)
-def csv_data(path_text: str) -> pd.DataFrame:
-    return pd.read_csv(path_text)
-
-
-def image_html(path: Path, alt: str) -> str:
-    return f'<img class="figure" src="{image_uri(str(path))}" alt="{alt}">'
-
-
-def metric_cards(items: list[tuple[str, str, str | None]]) -> str:
-    cards = []
-    for label, value, detail in items:
-        detail_html = f'<div class="metric-detail">{detail}</div>' if detail else ""
-        cards.append(
-            f'<div class="metric"><div class="metric-label">{label}</div>'
-            f'<div class="metric-value">{value}</div>{detail_html}</div>'
-        )
-    return f'<div class="metrics">{"".join(cards)}</div>'
-
-
-def importance_plot_uri(data: pd.DataFrame, methods: tuple[str, ...], top_n: int = 10) -> str:
-    subset = data[data["method"].isin(methods)].copy()
-    top_features: list[str] = []
-    for method in methods:
-        rows = subset[subset["method"] == method].nlargest(top_n, "normalized_importance")
-        top_features.extend(rows["variable"].tolist())
-    top_features = list(dict.fromkeys(top_features))
-    subset = subset[subset["variable"].isin(top_features)]
-    pivot = subset.pivot(index="variable", columns="method", values="normalized_importance").fillna(0)
-    order = pivot.max(axis=1).sort_values().index
-    pivot = pivot.loc[order]
-
-    colors = ["#111827", "#6b7280", "#d97706", "#2563eb", "#059669"]
-    fig, ax = plt.subplots(figsize=(10, max(5, 0.42 * len(pivot))), facecolor="white")
-    pivot.plot.barh(ax=ax, color=colors[: len(methods)], width=0.78)
-    ax.set_xlabel("Normalized global importance")
-    ax.set_ylabel("")
-    ax.xaxis.set_major_formatter(lambda value, position: f"{100 * value:.0f}%")
-    ax.spines[["top", "right"]].set_visible(False)
-    ax.legend(loc="lower right", fontsize=8, frameon=False)
-    fig.tight_layout()
-    buffer = io.BytesIO()
-    fig.savefig(buffer, format="png", dpi=150, bbox_inches="tight", facecolor="white")
-    plt.close(fig)
-    return f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('ascii')}"
-
-
-def nasa_content(step: int) -> str:
-    bundle = REPOSITORY.get("nasa_renal_clean_v3")
-    data = csv_data(str(bundle.paths["data"]))
-    model_metrics = csv_data(str(bundle.paths["model_metrics"])).iloc[0]
-    attribution = csv_data(str(bundle.paths["attribution_metrics"]))
-    structural = read_json(bundle.paths["structural_summary"])
-
-    if step == 1:
-        prevalence = data["nephrolithiasis"].mean()
-        return (
-            '<div class="eyebrow">SOURCE-ALIGNED PRIMARY ANALYSIS</div>'
-            '<h2>Mission: find useful levers for renal-stone risk</h2>'
-            '<p class="lede">Start with prediction, then reveal what the known NASA DAG changes—and what it does not.</p>'
-            + metric_cards(
-                [
-                    ("Rows", f"{len(data):,}", "clean v3"),
-                    ("Outcome rate", f"{100 * prevalence:.1f}%", "Nephrolithiasis"),
-                    ("Eligible ancestors", "28", "1–6 directed hops"),
-                    ("Graph", "51 / 75", "nodes / edges"),
-                ]
-            )
-            + '<div class="callout">The graph topology is source-exact. Coefficients remain provisional simulation choices.</div>'
-        )
-    if step == 2:
-        return (
-            '<div class="eyebrow">STEP 2 · PREDICT</div>'
-            '<h2>The first learner was XGBoost—and the ceiling is genuinely low</h2>'
-            + metric_cards(
-                [
-                    ("XGBoost AUC", f'{model_metrics["auc"]:.3f}', "all 28 ancestors"),
-                    ("Oracle AUC", "0.701", "true structural risk score"),
-                    ("Brier score", f'{model_metrics["brier_score"]:.3f}', None),
-                ]
-            )
-            + image_html(bundle.paths["auc_plot"], "AUC comparison of the oracle structural score and fitted learners")
-        )
-    if step == 3:
-        return (
-            '<div class="eyebrow">STEP 3 · REVEAL THE DAG</div>'
-            '<h2>Prediction sees features; the Living DAG reveals positions</h2>'
-            '<p class="lede">The target has 28 ancestors. Direct parents sit one hop away; prevention and exposure nodes can lie much farther upstream.</p>'
-            + image_html(bundle.paths["dag"], "NASA renal-stone directed acyclic graph")
-        )
-    if step == 4:
-        rows = attribution.set_index("method")
-        return (
-            '<div class="eyebrow">STEP 4 · COMPARE FAIRLY</div>'
-            '<h2>Ordering alone does not earn the causal claim</h2>'
-            + metric_cards(
-                [
-                    ("TreeSHAP PBI", f'{rows.loc["Ordinary TreeSHAP", "pbi"]:.3f}', None),
-                    ("Matched ordinary PBI", f'{rows.loc["Ordinary interventional SHAP", "pbi"]:.3f}', None),
-                    ("DAG-asymmetric PBI", f'{rows.loc["DAG-constrained asymmetric SHAP", "pbi"]:.3f}', None),
-                ]
-            )
-            + image_html(bundle.paths["distance_plot"], "Distance-concentration curves for truth and three attribution methods")
-            + '<div class="callout">With the background distribution matched, DAG ordering and ordinary permutations are essentially indistinguishable.</div>'
-        )
-    if step == 5:
-        original = csv_data(str(PROJECT_DIR / "analysis" / "output" / "shap_nephrolithiasis_clean_v3" / "importance_comparison.csv"))
-        structural_importance = csv_data(str(bundle.paths["structural_importance"]))
-        combined = pd.concat([original, structural_importance], ignore_index=True, sort=False)
-        uri = importance_plot_uri(
-            combined,
-            (
-                "Interventional truth",
-                "Ordinary TreeSHAP",
-                "DAG-constrained asymmetric SHAP",
-                "Structural intervention-propagating SHAP prototype",
-            ),
-            top_n=7,
-        )
-        return (
-            '<div class="eyebrow">STEP 5 · PROPAGATE INTERVENTIONS</div>'
-            '<h2>The structural prototype recovers the distributed truth</h2>'
-            + metric_cards(
-                [
-                    ("Kendall τ", f'{structural["kendall_tau_vs_truth"]:.3f}', "prototype vs truth"),
-                    ("Top-5 recovery", f'{100 * structural["top5_recovery"]:.0f}% ', "all five targets"),
-                    ("PBI", f'{structural["pbi"]:.3f}', "near zero; slightly upstream"),
-                    ("≤2-hop mass", f'{100 * structural["proximal_mass_distance_le_2"]:.1f}% ', "truth: 42.1%"),
-                ]
-            )
-            + f'<img class="figure" src="{uri}" alt="Feature importance comparison including the structural Causal SHAP prototype">'
-            + '<div class="warning">Prototype: 32 evaluation records × 32 backgrounds × 32 permutations. Scale and bootstrap before manuscript claims.</div>'
-        )
-    return (
-        '<div class="eyebrow">STEP 6 · THE DECISION QUESTION</div>'
-        '<h2>From feature order to intervention propagation</h2>'
-        '<div class="flow"><div><strong>Ordinary SHAP</strong><span>Which observed features help the model predict?</span></div>'
-        '<b>→</b><div><strong>DAG ordering</strong><span>In what sequence may information enter?</span></div>'
-        '<b>→</b><div class="active"><strong>Structural Causal SHAP</strong><span>What changes downstream under do(X=x)?</span></div></div>'
-        '<p class="lede">Next scientific gate: scale the structural estimator, repeat seeds and bootstraps, then move to Loss of Mission Objectives and NASA-like v4.</p>'
-    )
-
-
-def acic_content(step: int) -> str:
-    bundle = REPOSITORY.get("acic_proxy_stress_test")
-    importance = csv_data(str(bundle.paths["importance"]))
-    metrics = read_json(bundle.paths["metrics"])
-    standard_uri = importance_plot_uri(importance, ("Ordinary SHAP",), top_n=12)
-    comparison_uri = importance_plot_uri(
-        importance,
-        ("Interventional truth", "Ordinary SHAP", "DAG-aware SHAP demo"),
-        top_n=8,
-    )
-
-    if step == 1:
-        return (
-            '<div class="eyebrow stress">DESIGNED PEDAGOGIC STRESS TEST</div>'
-            '<h2>Make the wrong-lever problem impossible to miss</h2>'
-            '<p class="lede">Downstream proxies are intentionally predictive while having zero intervention effect by construction.</p>'
-            + metric_cards(
-                [
-                    ("Rows", f'{metrics["rows"]:,}', None),
-                    ("Features", str(metrics["features"]), None),
-                    ("Held-out R²", f'{metrics["held_out_r2"]:.3f}', "strong predictive signal"),
-                ]
-            )
-            + '<div class="warning">This dataset teaches the mechanism. It is not the primary NASA result.</div>'
-        )
-    if step == 2:
-        return (
-            '<div class="eyebrow stress">STEP 2 · ORDINARY SHAP</div>'
-            '<h2>The predictive ranking rewards late mediators and proxies</h2>'
-            f'<img class="figure" src="{standard_uri}" alt="Ordinary SHAP ranking in the ACIC proxy stress test">'
-        )
-    if step == 3:
-        return (
-            '<div class="eyebrow stress">STEP 3 · REVEAL THE KNOWN DAG</div>'
-            '<h2>The graph separates predictive proximity from intervention leverage</h2>'
-            + image_html(bundle.paths["dag"], "Pedagogic many-mediator and proxy DAG")
-        )
-    if step == 4:
-        return (
-            '<div class="eyebrow stress">STEP 4 · RERUN WITH CAUSAL KNOWLEDGE</div>'
-            '<h2>Importance moves toward upstream causes</h2>'
-            f'<img class="figure" src="{comparison_uri}" alt="Truth, ordinary SHAP, and DAG-aware SHAP comparison">'
-        )
-    if step == 5:
-        return (
-            '<div class="eyebrow stress">STEP 5 · SCORE THE REVEAL</div>'
-            '<h2>The stress test creates a clear teaching contrast</h2>'
-            + metric_cards(
-                [
-                    ("τ vs truth: ordinary", f'{metrics["tau_vs_truth_standard"]:.3f}', None),
-                    ("τ vs truth: DAG-aware", f'{metrics["tau_vs_truth_causal"]:.3f}', None),
-                    ("Proxy inflation", f'{metrics["proxy_inflation"]:.2f}×', None),
-                    ("Upstream boost", f'{metrics["root_cause_boost"]:.2f}×', None),
-                ]
-            )
-            + '<div class="warning">Fast precomputed demo estimate: 8 instances, 4 backgrounds, 8 permutations. Use it for intuition, not inference.</div>'
-        )
-    return (
-        '<div class="eyebrow stress">STEP 6 · CARRY THE QUESTION FORWARD</div>'
-        '<h2>Now test whether the lesson survives a source-aligned system</h2>'
-        '<p class="lede">The app deliberately moves next to the NASA case, where the ordering-only advantage disappears and structural propagation has to earn the result.</p>'
-    )
-
-
-def lab_overview(bundle_id: str) -> str:
+# ---------------------------------------------------------------------------
+# Guided content per rung
+# ---------------------------------------------------------------------------
+def _attribution(bundle_id: str) -> pd.DataFrame | None:
     bundle = REPOSITORY.get(bundle_id)
-    is_primary = bundle.kind == "source_aligned_primary"
-    eyebrow_class = "eyebrow" if is_primary else "eyebrow stress"
-    eyebrow = "LAB OVERVIEW · SOURCE-ALIGNED ANALYSIS" if is_primary else "LAB OVERVIEW · DESIGNED STRESS TEST"
-    result = (
-        "Matched ordinary and ordering-only SHAP are effectively tied; the small structural prototype is promising but not yet publication-scale."
-        if is_primary
-        else "The teaching bundle makes proxy over-credit visible; its fast estimate is intuition, not primary evidence."
-    )
-    next_gate = (
-        "Scale structural propagation, add paired uncertainty and seed replication, then run the longer-path endpoint and NASA-like regime."
-        if is_primary
-        else "Carry the mechanism into the source-aligned NASA analysis and require it to survive a fair matched-background control."
-    )
+    if "causal_shap" in bundle.stages and "attribution" in bundle.stages["causal_shap"]:
+        return csv_data(str(bundle.stages["causal_shap"]["attribution"]))
+    if bundle_id == "acic_proxy_stress_test":
+        return csv_data(str(bundle.paths["importance"]))
+    return None
+
+
+def rung_vanilla(bundle_id: str) -> str:
+    bundle = REPOSITORY.get(bundle_id)
+    homunculus = bundle.stages.get("causal_shap", {}).get("homunculus")
+    body = [
+        '<div class="eyebrow">RUNG 0 · VANILLA SHAP</div>',
+        "<h2>The homunculus: attribution swells toward the outcome</h2>",
+        f'<p class="lede">Ordinary SHAP rewards whatever predicts well. When a {term("proxy")} sits next to '
+        f"the outcome, it gets credit it does not causally deserve — the graph bloats like a homunculus.</p>",
+    ]
+    attribution = _attribution(bundle_id)
+    if attribution is not None and "Interventional truth" in set(attribution["method"]):
+        body.append(_attribution_contrast(attribution))
+    if homunculus:
+        body.append(image_html(Path(homunculus), "Attribution homunculus: truth vs ordinary vs structural"))
+    if bundle_id == "nasa_renal_clean_v3":
+        body.append(
+            callout(
+                "On the flagship NASA problem the failure is honest, not theatrical: ordinary and DAG-ordering "
+                "SHAP are statistically tied. The dramatic proxy inflation lives in the teaching datasets above.",
+                "warning",
+            )
+        )
+    else:
+        body.append(
+            callout(
+                f'The {term("collider", "collider/proxy")} carries large ordinary-SHAP mass but zero total effect. '
+                "That gap is the whole motivation for the rungs below."
+            )
+        )
+    return "".join(body)
+
+
+def _attribution_contrast(attribution: pd.DataFrame) -> str:
+    pivot = attribution.pivot(index="variable", columns="method", values="normalized_importance")
+    truth = pivot["Interventional truth"]
+    cards: list[tuple[str, str, str | None]] = []
+    for method in pivot.columns:
+        if method == "Interventional truth":
+            continue
+        tau = kendalltau(pivot[method].rank(), truth.rank()).statistic
+        cards.append(("τ vs truth", f"{tau:+.2f}", method))
+    return metric_cards(cards)
+
+
+def rung_discovery(bundle_id: str) -> str:
+    bundle = REPOSITORY.get(bundle_id)
+    if "discovery" not in bundle.stages:
+        return (
+            '<div class="eyebrow">RUNG 1 · CAUSAL DISCOVERY</div>'
+            "<h2>Discovery is a teaching move here</h2>"
+            + callout(
+                "The NASA graph is source-exact and taken as given, so discovery is demonstrated on the "
+                "teaching datasets. Switch datasets to run PC and GES against a known truth.",
+                "warning",
+            )
+        )
+    record = read_json(bundle.stages["discovery"]["result"])
+    rows = []
+    for name, result in record["algorithms"].items():
+        rows.append(
+            {
+                "algorithm": name,
+                "precision": result["precision"],
+                "recall": result["recall"],
+                "skeleton F1": result["skeleton_f1"],
+                "spurious": result["n_spurious"],
+                "missed": result["n_missed"],
+            }
+        )
+    table = pd.DataFrame(rows)
     return (
-        f'<div class="{eyebrow_class}">{eyebrow}</div>'
-        '<h2>One workspace, two views of the same frozen evidence</h2>'
-        '<p class="lede"><strong>Guided story</strong> controls the reveal for a reader or recording. '
-        '<strong>Lab overview</strong> exposes the estimands, evidence flow, and tool architecture at once.</p>'
-        '<section class="lab-section"><h3>Scientific concept</h3>'
-        '<div class="lab-flow">'
-        '<div><strong>Known DAG + equations</strong><span>Declare topology and structural mechanisms.</span></div><b>→</b>'
-        '<div><strong>Synthetic data + frozen truth</strong><span>Generate records and total intervention effects independently of SHAP.</span></div><b>→</b>'
-        '<div><strong>One fixed learner</strong><span>Hold the prediction model, records, and background contract constant.</span></div><b>→</b>'
-        '<div><strong>Three attribution questions</strong><span>Prediction, DAG ordering, and structural intervention propagation.</span></div><b>→</b>'
-        '<div><strong>Recovery + decisions</strong><span>Rank recovery, PBI/POA, uncertainty, then feasibility and cost.</span></div>'
-        '</div></section>'
-        '<section class="lab-section"><h3>Method contract</h3>'
-        '<div class="method-grid">'
-        '<div><em>PREDICTIVE</em><strong>Ordinary SHAP</strong><span>Which observed features help this fitted model predict?</span></div>'
-        '<div><em>ORDERING-ONLY CONTROL</em><strong>DAG-asymmetric SHAP</strong><span>What changes if feature arrival order must respect the DAG?</span></div>'
-        '<div class="active"><em>STRUCTURAL PROTOTYPE</em><strong>Intervention-propagating SHAP</strong><span>What changes after do(X=x) propagates through descendants?</span></div>'
-        '</div>'
-        f'<div class="callout"><strong>Current read:</strong> {result}</div></section>'
-        '<section class="lab-section"><h3>Deterministic tool/demo</h3>'
-        '<div class="tool-flow">'
-        '<div><strong>Versioned local bundles</strong><span>Data, DAG, model, truth, manifests, metrics, and figures</span></div><b>→</b>'
-        '<div class="split"><strong>Python Shiny presentation</strong><span>Guided story for narration</span><span>Lab overview for audit and comparison</span></div><b>→</b>'
-        '<div><strong>Paper + video</strong><span>Every displayed number traces to a checked artifact.</span></div>'
-        '</div>'
-        f'<div class="warning"><strong>Next gate:</strong> {next_gate}</div></section>'
+        '<div class="eyebrow">RUNG 1 · CAUSAL DISCOVERY</div>'
+        '<h2>Learn structure — but treat it as a hypothesis</h2>'
+        f'<p class="lede">Algorithms recover a {term("CPDAG")}, not the truth. They disagree with each other, '
+        "which is exactly why the next rung scores how much to trust them.</p>"
+        + metric_cards([("Cross-algorithm disagreement", f"{record['cross_algorithm_disagreement']:.2f}", "1 − mean skeleton F1")])
+        + table_html(table)
+        + callout('"Causal discovery is a tool, not an oracle." Use the Explore tab to run it live.')
     )
 
 
+def rung_complexity(bundle_id: str) -> str:
+    bundle = REPOSITORY.get(bundle_id)
+    report = read_json(bundle.stages["complexity"]["report"])
+    subscore_rows = pd.DataFrame(
+        [
+            {"subscore": name, "value": f"{sub['value']:.2f}", "reading": sub["rationale"]}
+            for name, sub in report["subscores"].items()
+        ]
+    )
+    band_kind = {"low": "callout", "moderate": "callout", "high": "warning"}[report["band"]]
+    return (
+        '<div class="eyebrow">RUNG 2 · COMPLEXITY SCORE</div>'
+        '<h2>PSCI v0: how much causal care does this problem need?</h2>'
+        + callout("PSCI v0 is provisional — a transparent placeholder for the authors' final score.", "warning")
+        + metric_cards(
+            [
+                ("PSCI total", f"{report['total']:.0f}", "0–100"),
+                ("Band", report["band"].title(), report["score_name"] + " v" + report["score_version"]),
+            ]
+        )
+        + table_html(subscore_rows)
+        + callout(report["recommendations"][0], band_kind)
+    )
+
+
+def rung_causal_shap(bundle_id: str) -> str:
+    attribution = _attribution(bundle_id)
+    body = [
+        '<div class="eyebrow">RUNG 3 · CAUSAL SHAP</div>',
+        "<h2>Propagate the intervention through the DAG</h2>",
+        '<p class="lede">Structural Causal SHAP asks what changes downstream under do(X=x). Credit flows to '
+        "upstream causes; the proxy deflates.</p>",
+    ]
+    if bundle_id == "nasa_renal_clean_v3":
+        summary = read_json(REPOSITORY.get(bundle_id).paths["structural_summary"])
+        body.append(
+            metric_cards(
+                [
+                    ("Kendall τ", f"{summary['kendall_tau_vs_truth']:.3f}", "structural vs truth"),
+                    ("Top-5 recovery", f"{100 * summary['top5_recovery']:.0f}%", "all five targets"),
+                    ("PBI", f"{summary['pbi']:.3f}", "near zero"),
+                ]
+            )
+        )
+        body.append(image_html(REPOSITORY.get(bundle_id).stages["causal_shap"]["distortion"], "NASA distortion profile"))
+    elif attribution is not None:
+        pivot = attribution.pivot(index="variable", columns="method", values="normalized_importance")
+        body.append(table_html(pivot.reset_index().rename(columns={"index": "variable"}), index=False))
+    body.append(callout("Structural attribution corrects the direction, though it is a prototype, not a proof."))
+    return "".join(body)
+
+
+def rung_validation(bundle_id: str) -> str:
+    bundle = REPOSITORY.get("nasa_renal_clean_v3")
+    scorecard = csv_data(str(bundle.stages["validation"]["scorecard"]))
+    estimands = csv_data(str(bundle.stages["validation"]["estimands"]))
+    layered = estimands[estimands["scenario"] == "layered_confounding"][["estimand", "value", "mc_std_error"]]
+    return (
+        '<div class="eyebrow">RUNG 4 · SIMULATION VALIDATION</div>'
+        "<h2>Credence-style: run the ladder where every answer is known</h2>"
+        f'<p class="lede">Layer several parameters at once — heterogeneous τ(X), multiple confounders, measurement '
+        f"bias — then watch a naive {term('estimand', 'estimate')} drift from the known truth.</p>"
+        + table_html(scorecard.rename(columns={"true_ate": "true ATE", "naive_ate": "naive ATE", "naive_drift": "naive drift"}))
+        + "<h3>Several estimands, one dataset (layered confounding)</h3>"
+        + table_html(layered)
+        + callout("Truth stays fixed near the true ATE; only the naive estimate drifts as confounding and bias stack up.")
+    )
+
+
+def rung_iteration(bundle_id: str) -> str:
+    return (
+        '<div class="eyebrow">RUNG 5 · THOUGHTFUL ITERATION</div>'
+        "<h2>Climb down when the score says so</h2>"
+        '<p class="lede">The ladder is a loop. A high complexity score or wide discovery disagreement sends you '
+        "back to refine the DAG, add domain constraints, and re-validate before trusting any attribution.</p>"
+        '<div class="flow">'
+        "<div><strong>Discover</strong><span>Learn structure, note disagreement</span></div><b>→</b>"
+        "<div><strong>Score</strong><span>PSCI flags fragility</span></div><b>→</b>"
+        "<div class=\"active\"><strong>Attribute + validate</strong><span>Structural SHAP, known-truth checks</span></div>"
+        "</div>"
+        + callout(
+            'The nine-step Causal Roadmap makes each assumption explicit. "A wrong DAG is better than no DAG, '
+            'because at least we can critique and refine it."'
+        )
+    )
+
+
+RUNG_RENDERERS = [rung_vanilla, rung_discovery, rung_complexity, rung_causal_shap, rung_validation, rung_iteration]
+
+
+# ---------------------------------------------------------------------------
+# CSS
+# ---------------------------------------------------------------------------
 APP_CSS = """
 <style>
-body { background:#f8fafc!important; color:#111827!important; font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important; }
-.page { max-width:1120px; margin:0 auto; padding:24px 18px 48px; }
-.hero { margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid #cbd5e1; }
-.hero h1 { margin:0; font-size:2rem; }
-.hero p { color:#475569; max-width:850px; margin:8px 0 0; }
-.layout { display:grid; grid-template-columns:275px minmax(0,1fr); gap:16px; align-items:start; }
-.panel { background:#fff; border:1px solid #cbd5e1; border-radius:10px; padding:16px; min-width:0; overflow:hidden; }
+body { background:#f8fafc!important; color:#0f172a!important; font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important; }
+.page { max-width:1180px; margin:0 auto; padding:22px 18px 56px; }
+.hero { display:grid; grid-template-columns:1fr 320px; gap:24px; align-items:center; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid #cbd5e1; }
+.hero h1 { margin:0; font-size:2.05rem; letter-spacing:-0.02em; }
+.hero p { color:#475569; margin:8px 0 0; max-width:640px; }
+.hero .ladder-art { width:100%; }
+.layout { display:grid; grid-template-columns:230px minmax(0,1fr); gap:20px; align-items:start; }
 .controls { position:sticky; top:12px; }
-.nav { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
-.step { color:#64748b; font-size:.85rem; margin-top:12px; }
-.eyebrow { color:#1d4ed8; font-weight:750; letter-spacing:.08em; font-size:.76rem; }
-.eyebrow.stress { color:#b45309; }
-h2 { margin:.35rem 0 .65rem; font-size:1.55rem; }
-.lede { color:#475569; font-size:1.02rem; max-width:850px; }
-.metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:10px; margin:14px 0; }
-.metric { border:1px solid #e2e8f0; border-radius:8px; padding:11px; background:#fff; }
-.metric-label { color:#64748b; font-size:.76rem; }
-.metric-value { font-size:1.35rem; font-weight:780; }
-.metric-detail { color:#64748b; font-size:.75rem; }
-.figure { width:100%; height:auto; display:block; background:#fff; border-radius:8px; }
-.callout,.warning { padding:11px 13px; border-radius:8px; margin-top:12px; }
+.panel { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:20px; min-width:0; }
+.eyebrow { color:#1d4ed8; font-weight:750; letter-spacing:.09em; font-size:.74rem; }
+h2 { margin:.35rem 0 .6rem; font-size:1.5rem; letter-spacing:-0.01em; }
+h3 { margin:1.2rem 0 .5rem; font-size:1.08rem; }
+.lede { color:#475569; font-size:1.02rem; max-width:760px; }
+.metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:16px 0; }
+.metric { border:1px solid #e2e8f0; border-radius:9px; padding:12px; }
+.metric-label { color:#64748b; font-size:.75rem; }
+.metric-value { font-size:1.4rem; font-weight:770; letter-spacing:-0.01em; }
+.metric-detail { color:#64748b; font-size:.74rem; }
+.figure { width:100%; height:auto; display:block; border-radius:9px; margin:14px 0; }
+.callout,.warning { padding:12px 14px; border-radius:9px; margin-top:14px; font-size:.94rem; }
 .callout { background:#eff6ff; border:1px solid #bfdbfe; color:#1e3a8a; }
 .warning { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
-.flow { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:10px; align-items:center; margin:24px 0; }
-.flow div { border:1px solid #cbd5e1; border-radius:8px; padding:14px; background:#fff; }
+.term { border-bottom:1px dotted #2563eb; cursor:help; }
+.table-wrap { overflow-x:auto; margin:12px 0; }
+.data-table { width:100%; border-collapse:collapse; font-size:.9rem; }
+.data-table th { text-align:left; color:#64748b; font-weight:650; border-bottom:2px solid #e2e8f0; padding:7px 10px; }
+.data-table td { border-bottom:1px solid #f1f5f9; padding:7px 10px; }
+.flow { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:10px; align-items:center; margin:20px 0; }
+.flow div { border:1px solid #cbd5e1; border-radius:9px; padding:13px; }
 .flow div.active { border-color:#2563eb; background:#eff6ff; }
-.flow span { display:block; color:#64748b; font-size:.85rem; margin-top:5px; }
-.lab-section { margin-top:24px; padding-top:18px; border-top:1px solid #e2e8f0; }
-.lab-section h3 { margin:0 0 12px; font-size:1.05rem; }
-.lab-flow { display:grid; grid-template-columns:repeat(5,minmax(120px,1fr)); gap:8px; align-items:stretch; overflow-x:auto; }
-.lab-flow div { grid-column:span 1; min-width:0; border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#f8fafc; }
-.lab-flow b { display:none; }
-.tool-flow b { text-align:center; color:#64748b; }
-.lab-flow span,.method-grid span,.tool-flow span { display:block; color:#64748b; font-size:.78rem; margin-top:5px; }
-.method-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
-.method-grid div { border:1px solid #cbd5e1; border-radius:8px; padding:12px; background:#fff; }
-.method-grid div.active { border-color:#2563eb; background:#eff6ff; }
-.method-grid em { display:block; color:#64748b; font-size:.68rem; font-style:normal; font-weight:750; letter-spacing:.06em; margin-bottom:5px; }
-.tool-flow { display:grid; grid-template-columns:1fr auto 1.2fr auto 1fr; gap:10px; align-items:center; }
-.tool-flow div { border:1px solid #cbd5e1; border-radius:8px; padding:12px; background:#f8fafc; }
-.tool-flow .split span { border-top:1px solid #e2e8f0; padding-top:5px; }
-.nav-note { margin-top:12px; padding:9px 10px; border-radius:7px; background:#f1f5f9; color:#475569; font-size:.78rem; }
-@media (max-width:850px) { .layout{grid-template-columns:1fr}.controls{position:static}.flow,.lab-flow,.method-grid,.tool-flow{grid-template-columns:1fr}.flow>b,.lab-flow>b,.tool-flow>b{transform:rotate(90deg);text-align:center} }
+.flow span { display:block; color:#64748b; font-size:.82rem; margin-top:4px; }
+.explore { margin-top:18px; padding-top:16px; border-top:1px dashed #cbd5e1; }
+.provenance { color:#64748b; font-size:.8rem; margin-top:10px; }
+.footer { margin-top:26px; padding-top:16px; border-top:1px solid #cbd5e1; color:#64748b; font-size:.85rem; text-align:center; }
+.footer a { color:#1d4ed8; }
+@media (max-width:900px){ .hero{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.controls{position:static}.flow{grid-template-columns:1fr}.flow>b{transform:rotate(90deg);text-align:center} }
 </style>
 """
+
+
+def _rung_panel(index: int, title: str) -> ui.NavPanel:
+    controls: list = [ui.output_ui(f"rung_{index}")]
+    if index == 1:
+        controls += [
+            ui.div(
+                ui.h3("Explore: run discovery live"),
+                ui.input_slider("pc_alpha", "PC significance α", min=0.01, max=0.2, value=0.05, step=0.01),
+                ui.input_select("disc_algo", "Algorithm", {"PC": "PC", "GES": "GES"}, selected="PC"),
+                ui.output_ui("discovery_live"),
+                class_="explore",
+            )
+        ]
+    if index == 4:
+        controls += [
+            ui.div(
+                ui.h3("Explore: layer parameters live"),
+                ui.input_slider("tau_value", "Baseline effect τ", min=0.0, max=3.0, value=1.0, step=0.25),
+                ui.input_slider("conf_strength", "Latent confounding strength", min=0.0, max=2.5, value=0.0, step=0.25),
+                ui.output_ui("validation_live"),
+                class_="explore",
+            )
+        ]
+    return ui.nav_panel(f"{index} · {title}", *controls, value=f"rung{index}")
 
 
 app_ui = ui.page_fluid(
     ui.HTML(APP_CSS),
     ui.div(
         ui.div(
-            ui.h1("Causal SHAP for Living DAGs"),
-            ui.p("A deterministic paper companion: start with prediction, reveal causal structure, test a fair control, then propagate interventions."),
+            ui.div(
+                ui.h1("Causal SHAP for target DAGs"),
+                ui.p("A tutorial ladder: watch ordinary SHAP fail, then climb through discovery, a complexity score, structural attribution, and simulation validation."),
+            ),
+            ui.HTML(f'<div class="ladder-art">{LADDER_SVG.read_text(encoding="utf-8") if LADDER_SVG.exists() else ""}</div>'),
             class_="hero",
         ),
         ui.div(
             ui.div(
-                ui.div(
-                    ui.input_select("bundle", "Dataset", choices=REPOSITORY.choices(), selected="nasa_renal_clean_v3"),
-                    ui.input_radio_buttons("mode", "Experience", choices={"guided":"Guided story","lab":"Lab overview"}, selected="guided"),
-                    ui.output_ui("navigation"),
-                    ui.output_ui("step_status"),
-                    ui.output_ui("bundle_status"),
-                    class_="panel controls",
-                ),
-                ui.div(ui.output_ui("content"), class_="panel"),
-                class_="layout",
+                ui.input_select("dataset", "Dataset", choices=DATASET_LABELS, selected="toy_chain_fork_collider"),
+                ui.output_ui("dataset_note"),
+                class_="panel controls",
             ),
+            ui.div(
+                ui.navset_pill_list(
+                    *[_rung_panel(index, title) for index, title in enumerate(RUNG_TITLES)],
+                    widths=(3, 9),
+                ),
+                class_="panel",
+            ),
+            class_="layout",
+        ),
+        ui.HTML(
+            '<div class="footer">Companion site — '
+            '<a href="https://andystats.github.io/causal-shap-target-dags/">the ladder, cheatsheets &amp; glossary</a>'
+            ' · <a href="https://github.com/andystats/causal-shap-target-dags">source on GitHub</a>. '
+            "All datasets are synthetic; the complexity score is provisional.</div>"
         ),
         class_="page",
     ),
@@ -358,58 +348,76 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-    step = reactive.Value(1)
+    def make_rung(index: int):
+        @render.ui
+        def _renderer():
+            return ui.HTML(RUNG_RENDERERS[index](input.dataset()))
 
-    @reactive.effect
-    @reactive.event(input.bundle)
-    def _reset_bundle_step():
-        step.set(1)
+        return _renderer
 
-    @reactive.effect
-    @reactive.event(input.previous)
-    def _previous():
-        step.set(max(1, step.get() - 1))
-
-    @reactive.effect
-    @reactive.event(input.next)
-    def _next():
-        step.set(min(GUIDED_STEPS, step.get() + 1))
+    for index in range(len(RUNG_TITLES)):
+        output(id=f"rung_{index}")(make_rung(index))
 
     @output
     @render.ui
-    def navigation():
-        if input.mode() == "lab":
-            return ui.HTML('<div class="nav-note">Switch datasets to compare the primary analysis with the labeled teaching stress test.</div>')
-        return ui.div(
-            ui.input_action_button("previous", "Previous"),
-            ui.input_action_button("next", "Next", class_="btn-primary"),
-            class_="nav",
+    def dataset_note():
+        if BUNDLE_ERRORS:
+            return ui.HTML(callout(f"Bundle validation failed: {BUNDLE_ERRORS[0]}", "warning"))
+        bundle = REPOSITORY.get(input.dataset())
+        return ui.HTML(f'<div class="provenance"><strong>{bundle.label}</strong><br>{bundle.description}<br>{bundle.provenance}</div>')
+
+    @output
+    @render.ui
+    def discovery_live():
+        dataset_id = input.dataset()
+        if dataset_id not in LIVE_DISCOVERY:
+            return ui.HTML(callout("Live discovery runs on the teaching and ACIC datasets; NASA is taken as given.", "warning"))
+        bundle = REPOSITORY.get(dataset_id)
+        data = csv_data(str(bundle.paths["data"]))
+        graph = load_edges_csv(str(bundle.paths["edges"]))
+        frame = data[[c for c in data.columns if c in set(graph.nodes())]]
+        result = run_pc(frame, alpha=input.pc_alpha()) if input.disc_algo() == "PC" else run_ges(frame)
+        comparison = compare_graphs(sorted(result.directed_edges), sorted(graph.edges()))
+        return ui.HTML(
+            metric_cards(
+                [
+                    ("Skeleton F1", f"{comparison.skeleton_f1:.2f}", "vs known truth"),
+                    ("Directed F1", f"{comparison.f1:.2f}", None),
+                    ("Spurious / missed", f"{len(comparison.spurious)} / {len(comparison.missed)}", "edges"),
+                ]
+            )
         )
 
     @output
     @render.ui
-    def step_status():
-        if input.mode() == "lab":
-            return ui.HTML('<div class="step"><strong>Lab overview</strong><br>Concept, method contract, and deterministic tool architecture. Switch to Guided story for the six-step reveal.</div>')
-        return ui.HTML(f'<div class="step">Step {step.get()} of {GUIDED_STEPS}</div>')
+    def validation_live():
+        baseline, generator = _validation_baseline_and_generator()
+        confounders = ()
+        if input.conf_strength() > 0:
+            confounders = (ConfounderSpec("frailty", outcome_strength=input.conf_strength(), treatment_strength=input.conf_strength()),)
+        spec = SimulationSpec(baseline=baseline, tau=constant_tau(input.tau_value()), confounders=confounders)
+        dataset = simulate(spec, generator, n=3000, seed=SEED_VALIDATION_SCENARIOS, subgroup_col="age")
+        true_ate = dataset.estimands.set_index("estimand").loc["ATE", "value"]
+        table = dataset.estimands[["estimand", "value", "mc_std_error"]]
+        return ui.HTML(
+            metric_cards(
+                [
+                    ("True ATE", f"{true_ate:.2f}", "known"),
+                    ("Naive estimate", f"{dataset.naive_ate:.2f}", "difference in means"),
+                    ("Naive drift", f"{dataset.naive_ate - true_ate:+.2f}", "bias"),
+                ]
+            )
+            + table_html(table)
+        )
 
-    @output
-    @render.ui
-    def bundle_status():
-        errors = REPOSITORY.validate()
-        if errors:
-            return ui.HTML(f'<div class="warning">Bundle validation failed: {errors[0]}</div>')
-        bundle = REPOSITORY.get(input.bundle())
-        label = "Primary source-aligned analysis" if bundle.kind == "source_aligned_primary" else "Designed pedagogic stress test"
-        return ui.HTML(f'<div class="step"><strong>{label}</strong><br>Target: {bundle.target}<br>All displayed results are local and precomputed.</div>')
 
-    @output
-    @render.ui
-    def content():
-        if input.mode() == "lab":
-            return ui.HTML(lab_overview(input.bundle()))
-        html = nasa_content(step.get()) if input.bundle() == "nasa_renal_clean_v3" else acic_content(step.get())
-        return ui.HTML(html)
+@lru_cache(maxsize=1)
+def _validation_baseline_and_generator():
+    """Fit the baseline and generator once; neither depends on the live sliders."""
+    real = reference_covariates(SEED_VALIDATION_SCENARIOS)
+    baseline = fit_baseline(real, "Y", VALIDATION_FEATURES)
+    generator = fit_generator(MVNGenerator(), real, VALIDATION_FEATURES, "Z")
+    return baseline, generator
 
 
 app = App(app_ui, server)

@@ -1,0 +1,7 @@
+from,to
+Diet,Hydration
+Diet,ClinicVisit
+Climate,Hydration
+Climate,Y
+Hydration,Y
+Y,ClinicVisit

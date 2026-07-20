@@ -1,0 +1,53 @@
+---
+title: "Cheatsheet · SHAP variants & equations"
+subtitle: "From prediction to intervention"
+---
+
+::: {.cheatsheet}
+
+## The Shapley value
+
+For a value function $v$ over feature coalitions, feature $i$'s attribution is
+the average marginal contribution over all orderings:
+$$ \phi_i = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|!\,(|N|-|S|-1)!}{|N|!}\,\big[v(S \cup \{i\}) - v(S)\big]. $$
+The variants differ only in **how $v(S)$ is defined**.
+
+## Four value functions
+
+| Variant | $v(S)$ uses | Answers |
+|---|---|---|
+| **Conditional** | $\mathbb{E}[f(X)\mid X_S = x_S]$ | what the model predicts given observed S |
+| **Interventional** | $\mathbb{E}[f(X_S = x_S, X_{\bar S})]$ | drop features by marginalizing (Janzing 2020) |
+| **Asymmetric** | interventional, coalitions **respecting a causal order** | credit distal causes first (Frye 2020) |
+| **Structural / causal** | $\mathbb{E}[f(X)\mid do(X_S = x_S)]$ | what changes downstream under intervention (Heskes 2020) |
+
+## The structural recipe (this project)
+
+1. **Abduct** exogenous noise from a background row.
+2. **Intervene:** apply $do(X_S = x_S)$.
+3. **Propagate** through descendants in the SCM.
+4. **Score** the model; average marginal contributions over DAG-consistent orders.
+
+The Shapley **efficiency** axiom holds exactly: attributions sum to
+$f(x) - \mathbb{E}[f]$ (verified to ~1e-15 in the build).
+
+## Diagnosing the homunculus
+
+[PBI — Proximity Bias Index.]{.lead-in} How much attribution mass sits near the
+outcome. High PBI = homunculus. Structural Causal SHAP drives PBI toward zero.
+
+::: {.pullquote}
+Ordinary SHAP is not "wrong" — it faithfully answers a prediction question.
+Structural Causal SHAP answers an intervention question. Pick the value function
+that matches your decision.
+:::
+
+## Python, today
+
+Interventional SHAP is native (`shap`, `feature_perturbation="interventional"`).
+True causal/asymmetric Shapley lives in R `shapr`; the structural engine here is
+implemented directly in `causal_shap.structural_value`.
+
+:::
+
+*Print for a handout.* See [rung 3](../workflow/03-causal-shap.qmd).

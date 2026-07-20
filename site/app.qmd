@@ -1,0 +1,36 @@
+---
+title: "Interactive app"
+toc: false
+---
+
+The tutorial app lets you climb every rung of the ladder on four datasets, and run
+[causal discovery](workflow/01-causal-discovery.qmd) and
+[simulation validation](workflow/04-validation.qmd) **live** — no torch, no server
+round-trips to a model, just the frozen bundles plus in-browser computation.
+
+::: {.callout-tip}
+Deep links: append `?stage=1` (discovery) or `?stage=4` (validation) to jump
+straight to a rung.
+:::
+
+<iframe
+  src="https://andystats.shinyapps.io/causal-shap-ladder/"
+  title="Causal SHAP tutorial app"
+  style="width:100%; height:820px; border:1px solid #cbd5e1; border-radius:12px;"
+  loading="lazy">
+</iframe>
+
+If the frame does not load, open the app directly:
+[andystats.shinyapps.io/causal-shap-ladder](https://andystats.shinyapps.io/causal-shap-ladder/).
+
+## Run it locally
+
+```bash
+cd app
+pip install -r requirements.txt
+shiny run app.py
+```
+
+The deployed app ships **no torch and no gcastle** — discovery uses `causal-learn`
+and validation uses a moment-matched multivariate-normal generator, both fast
+enough to run in the browser session.

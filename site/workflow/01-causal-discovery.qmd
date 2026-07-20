@@ -1,0 +1,42 @@
+---
+title: "Rung 1 · Causal discovery"
+---
+
+[Setup.]{.lead-in} Observational data and a willingness to treat any learned
+graph as a *hypothesis*.
+
+[Move.]{.lead-in} Run one or more discovery algorithms (PC, GES, LiNGAM,
+NOTEARS) and compare the recovered structure to what domain knowledge allows.
+
+## Discovery is a tool, not an oracle
+
+Algorithms recover a [CPDAG](../glossary.qmd) — an equivalence class — not the
+truth. Crucially, **they disagree with each other**. On the toy DAG:
+
+| Algorithm | Skeleton F1 vs truth | Note |
+|---|---|---|
+| PC | 0.50 | constraint-based; misses edges it cannot orient |
+| GES | 1.00 | score-based; recovers the skeleton here |
+| DirectLiNGAM | 0.80 | exploits non-Gaussianity |
+
+That disagreement is not a nuisance — it is *signal*. It feeds directly into the
+[complexity score](02-complexity-score.qmd).
+
+## Constraints make discovery honest
+
+Pure data-driven discovery produces impossible edges (e.g. `Outcome → Age`). The
+fix is to encode domain knowledge as **forbidden** and **required** edges and
+**temporal tiers**, so expert priors become first-class citizens. The
+[interactive app](../app.qmd) lets you toggle these live and watch the recovered
+graph change.
+
+::: {.pullquote}
+"The causes are not in the data." — Judea Pearl. And: "You cannot discover what
+you did not measure." No algorithm recovers a confounder you never recorded.
+:::
+
+[Caveat.]{.lead-in} Discovery cannot detect unmeasured confounding, cannot prove
+causation, and cannot replace domain expertise. Use it to *generate* structure to
+critique, then move on.
+
+Next: [score how much this all matters →](02-complexity-score.qmd)

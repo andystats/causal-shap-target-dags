@@ -1,0 +1,13 @@
+{
+  "outcome": "Y",
+  "true_total_effects": {
+    "Genetics": 0.94,
+    "Diet": 0.98,
+    "Environment": 0.8200000000000001,
+    "Metabolism": 1.0,
+    "Inflammation": 0.8,
+    "Perfusion": 0.6,
+    "LabProxy": 0,
+    "MonitorProxy": 0
+  }
+}

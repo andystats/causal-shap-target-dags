@@ -1,0 +1,60 @@
+/*-- scss:defaults --*/
+// Editorial cheatsheet identity: blue serif headers over a clean sans body,
+// transposed from the Instats Module 4 quick-reference sheet.
+$primary: #2563eb;
+$body-color: #0f172a;
+$body-bg: #ffffff;
+$link-color: #1d4ed8;
+$headings-color: #1d4ed8;
+
+$font-family-sans-serif: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+$headings-font-family: "Source Serif 4", Georgia, "Iowan Old Style", serif;
+$font-size-root: 17px;
+$h1-font-size: 2.4rem;
+$h2-font-size: 1.6rem;
+
+/*-- scss:rules --*/
+.quarto-title-block h1.title { letter-spacing: -0.02em; }
+
+h2, h3 { color: $headings-color; font-style: normal; }
+
+// Bold lead-ins ("Core idea:", "Risk:") that let the eye scan for keywords.
+.lead-in { font-weight: 700; color: #0f172a; }
+.risk { font-weight: 700; color: #b91c1c; }
+.good { font-weight: 700; color: #047857; }
+
+// Pull-quotes as recurring callout sidebars.
+.pullquote {
+  border-left: 4px solid $primary;
+  background: #eff6ff;
+  padding: 12px 18px;
+  margin: 22px 0;
+  font-style: italic;
+  color: #1e3a8a;
+}
+
+.provisional {
+  border-left: 4px solid #d97706;
+  background: #fffbeb;
+  padding: 12px 18px;
+  margin: 18px 0;
+  color: #92400e;
+}
+
+// One clean comparison table per cheatsheet.
+table.reference { width: 100%; border-collapse: collapse; margin: 18px 0; }
+table.reference th { text-align: left; border-bottom: 2px solid #cbd5e1; padding: 8px 12px; color: #334155; }
+table.reference td { border-bottom: 1px solid #e2e8f0; padding: 8px 12px; }
+
+.ladder-hero { max-width: 520px; margin: 8px auto 28px; display: block; }
+
+.glossary-group h3 { border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+dl.glossary dt { font-weight: 700; margin-top: 12px; }
+dl.glossary dd { color: #334155; margin-left: 0; }
+
+// Cheatsheet print: two columns, faithful to a 2-page handout.
+@media print {
+  .cheatsheet { column-count: 2; column-gap: 26px; }
+  .cheatsheet h2 { column-span: all; }
+  nav, .sidebar, footer { display: none !important; }
+}

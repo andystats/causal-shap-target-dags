@@ -1,95 +1,106 @@
-# Causal SHAP Target DAGs
+# Causal SHAP for Target DAGs
 
 [![Python tests](https://github.com/andystats/causal-shap-target-dags/actions/workflows/python-tests.yml/badge.svg)](https://github.com/andystats/causal-shap-target-dags/actions/workflows/python-tests.yml)
 
-An open research implementation for comparing predictive SHAP, DAG-constrained
-asymmetric SHAP, and intervention-propagating structural attribution against
-known causal truth in synthetic human-system-risk models.
+When feature importance points to the wrong lever. This project shows — entirely
+with simulated data from known DAGs — that ordinary SHAP rebuilds a distorted
+picture of causal structure (a homunculus with over-developed nodes near the
+outcome), then climbs a workflow ladder that fixes it.
 
-The worked example uses NASA's public SA-07566 renal-stone DAG. The scientific
-question is deliberately narrower than “does causal SHAP win?”:
+```
+Rung 0  Vanilla SHAP        →  the homunculus: proximity bias
+Rung 1  Causal discovery    →  learn structure (a tool, not an oracle)
+Rung 2  Complexity score    →  how much causal care does this need?
+Rung 3  Causal SHAP         →  propagate do(X=x) through descendants
+Rung 4  Validation          →  Credence-style, layered known truth
+Rung 5  Iteration           →  refine the DAG; report uncertainty
+```
 
-> When a structural model and intervention truth are known, which attribution
-> value function recovers useful upstream intervention targets—and which merely
-> rewards features near the outcome?
+- **Companion site:** the ladder, cheatsheets, glossary, and reproducibility guide
+  (Quarto → GitHub Pages, source in [`site/`](site/)).
+- **Interactive app:** climb every rung on four datasets; run discovery and
+  validation live ([`app/app.py`](app/app.py)).
 
-## Current finding
+## The result in one figure
 
-DAG ordering alone does not provide a reliable advantage over a matched ordinary
-interventional-SHAP estimator. A small structural intervention-propagating
-prototype is much closer to the frozen total-effect truth, but it remains
-provisional until scaled and bootstrapped.
+On the teaching DAGs, ordinary SHAP's importance ranking is *negatively*
+correlated with the causal truth — the collider/proxy wins the most credit
+despite zero total effect — and structural Causal SHAP flips it positive.
 
-| Method | Kendall tau vs truth | Top-5 recovery | PBI |
+| Dataset | Ordinary SHAP (Kendall τ vs truth) | Structural Causal SHAP |
+| --- | ---: | ---: |
+| Toy chain/fork/collider | −0.33 | +0.33 |
+| Layered ladder | −0.33 | +0.26 |
+
+On the source-exact **NASA** flagship the story is told straight: ordinary and
+DAG-*ordering* SHAP are statistically tied (a deliberate null), and only the
+structural prototype closes the gap to the frozen interventional truth.
+
+| NASA method | Kendall τ vs truth | Top-5 recovery | PBI |
 | --- | ---: | ---: | ---: |
 | Exact TreeSHAP | 0.522 | 0.60 | 1.082 |
-| Matched ordinary SHAP | 0.506 | 0.60 | 1.051 |
 | DAG-asymmetric SHAP | 0.528 | 0.60 | 1.051 |
-| Structural prototype | 0.794 | 1.00 | -0.113 |
-
-The first learner was XGBoost. Its held-out AUC is 0.684, while the true
-structural probability has AUC 0.701; the modest discrimination is largely a
-property of the current weak-signal simulation.
+| Structural prototype | 0.794 | 1.00 | −0.113 |
 
 ## Repository map
 
-- [`analysis/`](analysis/) — R structural simulation, frozen intervention truth,
-  SHAP estimators, paired bootstrap, diagnostics, figures, and validation.
-- [`app/`](app/) — deterministic Python Shiny app, self-contained bundles,
-  structural value function, builders, and tests.
-- [`docs/METHODS.md`](docs/METHODS.md) — estimands, simulation, learner, attribution
-  methods, and evaluation metrics.
-- [`docs/RESULTS.md`](docs/RESULTS.md) — current numerical results and their status.
-- [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) — exact setup, rebuild, and
-  validation commands.
-- [`docs/DATA_PROVENANCE.md`](docs/DATA_PROVENANCE.md) — public DAG sources and
-  synthetic-data boundaries.
-- [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — scientific and implementation
-  guardrails.
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — publication-critical next steps.
-- [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md) — app walkthrough and video assets.
-- [`docs/ACIC_LINEAGE.md`](docs/ACIC_LINEAGE.md) — what carries forward from the
-  ACIC 2026 poster and what the NASA Target DAGs study adds.
+- [`app/causal_shap/`](app/causal_shap/) — the tested library: teaching DAGs,
+  discovery (`discovery.py`), complexity score (`complexity.py`), structural
+  attribution (`structural_value.py`), Credence-style validation
+  (`validation/`), and figures (`viz/`).
+- [`app/`](app/) — the six-rung tutorial Shiny app and self-contained bundles.
+- [`app/scripts/`](app/scripts/) — the numbered build pipeline (`20`–`29`).
+- [`site/`](site/) — the Quarto companion website.
+- [`analysis/`](analysis/) — the frozen R science (kept byte-for-byte stable).
+- [`docs/`](docs/) — methods, results, reproducibility, limitations, roadmap.
 
-## Run the app
+## Quickstart
 
-```powershell
+Run the interactive app (no torch, no server-side model):
+
+```bash
 cd app
-py -3.13 -m pip install -r requirements.txt
-py -3.13 -m shiny run --port 8010 app.py
+pip install -r requirements.txt
+shiny run app.py            # open http://127.0.0.1:8000
 ```
 
-Then open <http://127.0.0.1:8010>. Guided mode reads checked-in result bundles
-and performs no live attribution computation.
+Rebuild the teaching pipeline and site figures:
+
+```bash
+pip install -e ".[discovery]"                       # from repo root
+cd app && python scripts/20_build_teaching_data.py  # then 21…29 in order
+```
 
 ## Validate
 
-```powershell
-Rscript analysis\validate_outputs.R
+```bash
+Rscript analysis/validate_outputs.R          # frozen R science
 cd app
-py -3.13 -m unittest discover -s tests -v
+python -m unittest discover -s tests -v      # library + app tests
+python scripts/29_validate_bundles.py        # bundles + frozen-output hash gate
 ```
 
-See [the full reproducibility guide](docs/REPRODUCIBILITY.md) before regenerating
-all simulations and attribution outputs.
+See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) and the site's
+[Reproduce](site/reproducibility.qmd) page for the full two-language pipeline.
 
 ## Scientific status
 
-This is research software under active development. All included datasets are
-synthetic. The graph topology is source-aligned, but model coefficients are
-simulation parameters rather than NASA estimates. The structural result is an
-explicitly labeled prototype, and the pedagogic proxy example is not NASA
-evidence.
+Research software under active development. **All datasets are synthetic.** Graph
+topologies are source-aligned; coefficients are simulation parameters, not NASA
+estimates. The structural NASA result is an explicitly labeled prototype, the
+pedagogic proxy example is not evidence, and the **complexity score (PSCI v0) is
+provisional** — it plugs into a registry seam for the authors' final score.
 
 ## Method background
 
 - Heskes et al. [Causal Shapley Values](https://proceedings.neurips.cc/paper_files/paper/2020/hash/32e54441e6382a7fbacbbbaf3c450059-Abstract.html), NeurIPS 2020.
-- Frye, Rowat, and Feige. [Asymmetric Shapley Values](https://papers.nips.cc/paper/2020/file/0d770c496aa3da6d2c3f2bd19e7b9d6b-Paper.pdf), 2020.
+- Frye, Rowat, Feige. [Asymmetric Shapley Values](https://papers.nips.cc/paper/2020/file/0d770c496aa3da6d2c3f2bd19e7b9d6b-Paper.pdf), NeurIPS 2020.
+- Janzing, Minorics, Blöbaum. [Feature Relevance Quantification in Explainable AI](https://proceedings.mlr.press/v108/janzing20a), AISTATS 2020.
+- Parikh et al. [Validating Causal Inference Methods (Credence)](https://proceedings.mlr.press/v162/parikh22a.html), ICML 2022.
 
-The method family is established; the causal-specific Python package ecosystem
-is not standardized. This repository therefore keeps its structural value
-function explicit, inspectable, and tested while relying on mature packages for
-ordinary SHAP, graphs, learners, and numerical work.
+The simulation-validation layer is implemented from the author's own Instats
+workshop code in the spirit of Credence; no Credence-repository code is
+redistributed.
 
 ## License
 

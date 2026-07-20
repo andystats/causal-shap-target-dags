@@ -1,0 +1,113 @@
+# Canonical glossary. The single source for both the site glossary page and the
+# app's term popovers (app/assets/glossary.json is generated from this file by
+# app/scripts/26_build_glossary.py). Terms adapted from the author's Instats
+# workshop (Module 3).
+terms:
+  - term: DAG
+    group: Structure
+    definition: >-
+      Directed Acyclic Graph. Directed: arrows go from cause to effect. Acyclic:
+      no feedback loops.
+  - term: node
+    group: Structure
+    definition: A variable in the graph (exposure, outcome, or covariate).
+  - term: edge
+    group: Structure
+    definition: An arrow representing a direct causal influence between two nodes.
+  - term: exposure
+    group: Structure
+    definition: The treatment or intervention whose effect is of interest.
+  - term: outcome
+    group: Structure
+    definition: The endpoint being explained or predicted.
+  - term: confounder
+    group: Structure
+    definition: A common cause of both exposure and outcome; adjust for it.
+  - term: mediator
+    group: Structure
+    definition: A node on the causal path from exposure to outcome; adjust with care.
+  - term: collider
+    group: Structure
+    definition: >-
+      A node caused by two or more variables. Conditioning on it opens a spurious
+      path and induces selection bias.
+  - term: proxy
+    group: Structure
+    definition: >-
+      A variable predictive of the outcome but with no total causal effect on it,
+      typically a descendant or co-descendant of the outcome.
+  - term: chain
+    group: Structure
+    definition: "X -> Y -> Z; information flows through Y, and conditioning on Y blocks it."
+  - term: fork
+    group: Structure
+    definition: "X <- Y -> Z; Y is a common cause, and conditioning on Y blocks the path."
+  - term: backdoor path
+    group: Identification
+    definition: A non-causal path from exposure to outcome that must be blocked.
+  - term: adjustment set
+    group: Identification
+    definition: A set of variables that blocks every backdoor path.
+  - term: Markov condition
+    group: Discovery
+    definition: Each variable is independent of its non-descendants given its parents.
+  - term: faithfulness
+    group: Discovery
+    definition: Statistical dependencies reflect causal structure with no coincidental cancellations.
+  - term: causal sufficiency
+    group: Discovery
+    definition: The assumption that there are no unmeasured common causes.
+  - term: CPDAG
+    group: Discovery
+    definition: >-
+      Completed Partially Directed Acyclic Graph — the output of PC; an equivalence
+      class of DAGs where some edges stay undirected.
+  - term: PC
+    group: Discovery
+    definition: A constraint-based discovery algorithm using conditional-independence tests.
+  - term: GES
+    group: Discovery
+    definition: A score-based discovery algorithm that greedily maximizes a BIC score.
+  - term: LiNGAM
+    group: Discovery
+    definition: A functional-causal-model method assuming linear, non-Gaussian mechanisms.
+  - term: NOTEARS
+    group: Discovery
+    definition: A continuous-optimization discovery method with a differentiable acyclicity constraint.
+  - term: skeleton F1
+    group: Discovery
+    definition: F1 between two graphs' undirected edge sets (direction ignored).
+  - term: SHAP
+    group: Attribution
+    definition: Shapley Additive exPlanations — feature attributions from cooperative game theory.
+  - term: interventional SHAP
+    group: Attribution
+    definition: SHAP whose value function drops features by intervention (marginal), not conditioning.
+  - term: asymmetric Shapley values
+    group: Attribution
+    definition: Shapley values restricted to coalitions consistent with a causal ordering.
+  - term: structural Causal SHAP
+    group: Attribution
+    definition: >-
+      Attribution whose value function is E[f(X) | do(X_S = x_S)] under a known
+      structural model, propagating interventions through descendants.
+  - term: PBI
+    group: Attribution
+    definition: >-
+      Proximity Bias Index — how much attribution mass concentrates on nodes near
+      the outcome.
+  - term: estimand
+    group: Estimation
+    definition: The causal quantity you intend to estimate, defined before any model.
+  - term: ATE
+    group: Estimation
+    definition: Average Treatment Effect across the whole population.
+  - term: ATT
+    group: Estimation
+    definition: Average Treatment effect on the Treated.
+  - term: ATC
+    group: Estimation
+    definition: Average Treatment effect on the Controls.
+  - term: CATE
+    group: Estimation
+    definition: Conditional Average Treatment Effect within a covariate-defined subgroup.

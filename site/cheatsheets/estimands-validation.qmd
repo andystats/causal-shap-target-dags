@@ -1,0 +1,53 @@
+---
+title: "Cheatsheet · Estimands & validation"
+subtitle: "Defining and checking causal quantities"
+---
+
+::: {.cheatsheet}
+
+## Potential outcomes
+
+For a binary treatment Z, each unit has $Y(0)$ and $Y(1)$; the individual effect
+is $Y(1) - Y(0)$. We only ever observe one — the fundamental problem of causal
+inference. Simulation solves it by *setting* both.
+
+## The estimand zoo
+
+| Estimand | Definition |
+|---|---|
+| **ATE** | $\mathbb{E}[Y(1) - Y(0)]$ |
+| **ATT** | $\mathbb{E}[Y(1) - Y(0)\mid Z = 1]$ |
+| **ATC** | $\mathbb{E}[Y(1) - Y(0)\mid Z = 0]$ |
+| **CATE(x)** | $\mathbb{E}[Y(1) - Y(0)\mid X = x]$ |
+
+Under effect heterogeneity, ATT ≠ ATC ≠ ATE. Define the estimand **before** the
+model.
+
+## The naive trap
+
+The difference in means
+$\hat\tau_{\text{naive}} = \bar Y_{Z=1} - \bar Y_{Z=0}$
+equals the ATE only when treatment is unconfounded. Add a confounder and it
+drifts — by a lot.
+
+## Credence-style validation
+
+[Realism first.]{.lead-in} Learn a covariate generator p(X | Z) from real data. &nbsp;
+[Then inject truth.]{.lead-in} Set $Y(0) = h(X) + \sum_j \gamma_j U_j + \varepsilon$,
+$Y(1) = Y(0) + \tau(X)$, with $\Pr(Z=1\mid U) = \text{logit}^{-1}(\kappa + \sum_j \rho_j U_j)$. &nbsp;
+[Add bias last.]{.lead-in} An explicit g(X, Z) perturbs the *observed* outcome only.
+
+::: {.pullquote}
+Separate realism from truth: the covariate distribution comes from data, the
+causal effects come from you. That is what makes a fair benchmark.
+:::
+
+## Layering several parameters
+
+Credence is not limited to a single ATE — τ(x) and g(x, z) are already covariate
+functions. Add more confounders, estimands, or a mediator and each is **one more
+additive penalty**. This project layers them via a `SimulationSpec`.
+
+:::
+
+*Print for a handout.* Run scenarios live in the [app](../app.qmd).

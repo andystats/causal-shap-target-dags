@@ -27,14 +27,39 @@ python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
 python -m shiny run --port 8010 app.py
 ```
-Guided mode reads checked-in bundles and performs no attribution recomputation.
-To rebuild them:
+The app reads checked-in bundles; rungs 1 and 4 add live, torch-free computation
+(causal-learn discovery and a moment-matched MVN validation generator). To rebuild
+the ladder bundles and site figures, run the numbered pipeline in order (from a
+root editable install, `pip install -e ".[discovery]"`, plus
+`requirements-build.txt` for the torch/CVAE step):
 
-```powershell
+```bash
 cd app
-python scripts\build_acic_bundle.py
-python scripts\build_structural_results.py
+python scripts/build_acic_bundle.py       # legacy pedagogic bundle
+python scripts/build_structural_results.py # legacy NASA structural prototype
+python scripts/20_build_teaching_data.py   # teaching DAGs
+python scripts/21_build_discovery.py       # PC/GES/LiNGAM vs truth
+python scripts/22_build_complexity.py      # PSCI v0 reports
+python scripts/23_build_causal_shap.py     # structural attribution (teaching)
+python scripts/24_build_validation.py      # CVAE (torch) + MVN validation suite
+python scripts/25_build_figures.py         # homunculus + distortion + ladder
+python scripts/26_build_glossary.py        # glossary.yml -> app JSON + site include
+python scripts/29_validate_bundles.py      # release gate + frozen-output hashes
 ```
+
+Non-torch artifacts are bit-for-bit reproducible across runs. `29_validate_bundles.py`
+hashes `analysis/output/` against a committed baseline and fails on any change.
+
+## Companion site (Quarto)
+
+```bash
+quarto render site       # renders with zero code execution; output in site/_site
+```
+
+The site embeds pre-built figures and includes the generated glossary, so no
+Python runs at render time. Deploy is handled by `.github/workflows/publish-site.yml`
+(GitHub Pages). The interactive app deploys manually with
+`rsconnect deploy shiny app/ --name <account> --title causal-shap-ladder`.
 
 ## R environment
 

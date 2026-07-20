@@ -1,0 +1,9 @@
+{
+  "outcome": "Y",
+  "true_total_effects": {
+    "Diet": 0.8,
+    "Climate": 1.1,
+    "Hydration": 1.0,
+    "ClinicVisit": 0
+  }
+}

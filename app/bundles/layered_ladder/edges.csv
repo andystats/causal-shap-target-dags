@@ -1,0 +1,12 @@
+from,to
+Genetics,Metabolism
+Genetics,Perfusion
+Diet,Metabolism
+Diet,Inflammation
+Environment,Inflammation
+Environment,Perfusion
+Metabolism,Y
+Inflammation,Y
+Perfusion,Y
+Y,LabProxy
+Y,MonitorProxy

@@ -1,0 +1,54 @@
+---
+title: "When feature importance points to the wrong lever"
+subtitle: "A reproducible companion to the Causal SHAP paper"
+toc: false
+---
+
+Machine-learning explanations are supposed to tell you *what to change*. But the
+most popular one — SHAP — answers a different question: **what helps the model
+predict?** On a causal graph those two questions come apart. Features next to the
+outcome win credit they did not earn, while the upstream causes you could
+actually intervene on fade into the background.
+
+We show this with pretend DAGs: simulate data from a known causal structure,
+then hide the structure and watch ordinary SHAP rebuild a distorted picture — a
+homunculus with over-developed nodes near the outcome.
+
+![Truth vs ordinary SHAP vs structural Causal SHAP on the toy DAG. Node area is attribution share; blue means under-credited, amber over-credited. Ordinary SHAP inflates the collider `ClinicVisit` — which has **zero** total effect — into the largest node.](assets/figures/toy_chain_fork_collider_homunculus.png)
+
+::: {.pullquote}
+On the teaching data, ordinary SHAP's importance ranking is *negatively*
+correlated with the causal truth (Kendall τ ≈ −0.33). Structural Causal SHAP
+flips it positive.
+:::
+
+## The workflow ladder
+
+This site is organized as a ladder. Each rung is a move you make when a prediction
+model is not enough and you need to reason about interventions.
+
+![](assets/figures/ladder.svg){.ladder-hero}
+
+| Rung | Move | What it buys you |
+|---|---|---|
+| **0** | [Vanilla SHAP](workflow/00-vanilla-shap.qmd) | See the failure: proximity bias toward the outcome. |
+| **1** | [Causal discovery](workflow/01-causal-discovery.qmd) | Propose structure from data — a hypothesis, not an oracle. |
+| **2** | [Complexity score](workflow/02-complexity-score.qmd) | Judge how much causal care the problem demands. |
+| **3** | [Causal SHAP](workflow/03-causal-shap.qmd) | Propagate `do(X = x)` and credit upstream causes. |
+| **4** | [Validation](workflow/04-validation.qmd) | Stress-test estimators where every answer is known. |
+| **5** | [Iteration](workflow/05-iteration.qmd) | Refine the DAG and re-validate; report uncertainty. |
+
+## Explore it
+
+- **[Run the interactive app](app.qmd)** — climb every rung on four datasets, and
+  run discovery and validation live.
+- **[Cheatsheets](cheatsheets/dag-vocabulary.qmd)** — printable quick references for
+  DAG vocabulary, discovery algorithms, SHAP variants, and estimands.
+- **[Reproduce everything](reproducibility.qmd)** — the two-language pipeline, seeds,
+  and a frozen-output gate.
+
+::: {.callout-note}
+Every dataset here is **synthetic**. Graph topologies for the flagship NASA
+renal-stone example are source-exact, but all coefficients are simulation
+choices. See [About](about.qmd) for provenance.
+:::

@@ -16,7 +16,12 @@ references/*
 !references/renal-stone-dag-code-SA-07566.txt
 
 # Generated/runtime noise
+.venv/
+*.egg-info/
 **/__pycache__/
+# Quarto site render output (the _freeze cache IS committed; _site is not)
+site/_site/
+site/.quarto/
 *.py[cod]
 .pytest_cache/
 .Rhistory

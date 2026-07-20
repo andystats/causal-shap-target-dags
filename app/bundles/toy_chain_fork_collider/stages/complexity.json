@@ -1,0 +1,43 @@
+{
+  "score_name": "PSCI",
+  "score_version": "0",
+  "provisional": true,
+  "total": 21.9756085284705,
+  "band": "low",
+  "subscores": {
+    "size": {
+      "value": 0.41140808993222105,
+      "rationale": "5 nodes",
+      "available": true
+    },
+    "density": {
+      "value": 0.6,
+      "rationale": "6 skeleton edges",
+      "available": true
+    },
+    "depth": {
+      "value": 0.20833333333333334,
+      "rationale": "mean 1.2 hops to Y",
+      "available": true
+    },
+    "ambiguity": {
+      "value": 0.0,
+      "rationale": "0% of edges undirected",
+      "available": true
+    },
+    "disagreement": {
+      "value": 0.13397435897435894,
+      "rationale": "13% cross-algorithm disagreement",
+      "available": true
+    },
+    "adjustment_burden": {
+      "value": 0.06666666666666667,
+      "rationale": "mean adjustment set of 0.3 variables",
+      "available": true
+    }
+  },
+  "recommendations": [
+    "Structure is simple; ordinary and structural attributions likely agree.",
+    "A single discovery run plus a quick DAG sketch is enough."
+  ]
+}

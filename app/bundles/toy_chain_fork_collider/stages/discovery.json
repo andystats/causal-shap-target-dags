@@ -1,0 +1,136 @@
+{
+  "bundle": "toy_chain_fork_collider",
+  "seed": 20260729,
+  "n_rows": 6000,
+  "algorithms": {
+    "PC": {
+      "algorithm": "pc",
+      "directed_edges": [
+        [
+          "Diet",
+          "ClinicVisit"
+        ],
+        [
+          "Y",
+          "ClinicVisit"
+        ]
+      ],
+      "undirected_edges": [
+        [
+          "Climate",
+          "Diet"
+        ],
+        [
+          "Climate",
+          "Hydration"
+        ],
+        [
+          "Climate",
+          "Y"
+        ],
+        [
+          "Diet",
+          "Hydration"
+        ],
+        [
+          "Hydration",
+          "Y"
+        ]
+      ],
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "f1": 0.5,
+      "skeleton_f1": 0.5,
+      "n_reversed": 0,
+      "n_spurious": 0,
+      "n_missed": 4
+    },
+    "GES": {
+      "algorithm": "ges",
+      "directed_edges": [
+        [
+          "Climate",
+          "Hydration"
+        ],
+        [
+          "Climate",
+          "Y"
+        ],
+        [
+          "Diet",
+          "ClinicVisit"
+        ],
+        [
+          "Diet",
+          "Hydration"
+        ],
+        [
+          "Hydration",
+          "Y"
+        ],
+        [
+          "Y",
+          "ClinicVisit"
+        ]
+      ],
+      "undirected_edges": [],
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "skeleton_f1": 1.0,
+      "n_reversed": 0,
+      "n_spurious": 0,
+      "n_missed": 0
+    },
+    "DirectLiNGAM": {
+      "algorithm": "direct_lingam",
+      "directed_edges": [
+        [
+          "Climate",
+          "ClinicVisit"
+        ],
+        [
+          "Climate",
+          "Diet"
+        ],
+        [
+          "Climate",
+          "Hydration"
+        ],
+        [
+          "Climate",
+          "Y"
+        ],
+        [
+          "ClinicVisit",
+          "Diet"
+        ],
+        [
+          "Diet",
+          "Hydration"
+        ],
+        [
+          "Y",
+          "ClinicVisit"
+        ],
+        [
+          "Y",
+          "Diet"
+        ],
+        [
+          "Y",
+          "Hydration"
+        ]
+      ],
+      "undirected_edges": [],
+      "precision": 0.4444444444444444,
+      "recall": 0.6666666666666666,
+      "f1": 0.5333333333333333,
+      "skeleton_f1": 0.8,
+      "n_reversed": 2,
+      "n_spurious": 3,
+      "n_missed": 0
+    }
+  },
+  "cross_algorithm_disagreement": 0.13397435897435894
+}
