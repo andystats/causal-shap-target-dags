@@ -2,15 +2,15 @@ project:
   type: website
   output-dir: _site
 
-# Execution happens only on the author's machine; the committed _freeze cache is
-# always used, so CI/Pages never run Python. Render the whole project (never a
-# single file, which would bypass freeze).
+# The current pages use prose and pre-built assets, so renders execute no analysis
+# code. Freeze remains enabled as a safeguard for any future executable chunks.
 execute:
   freeze: true
 
 website:
   title: "Causal SHAP for Target DAGs"
   description: "A companion site: when feature importance points to the wrong lever."
+  site-url: https://andystats.github.io/causal-shap-target-dags/
   page-navigation: true
   navbar:
     background: light

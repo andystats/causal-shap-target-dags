@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: quarto-dev/quarto-actions/setup@v2
-      - name: Render (uses committed _freeze; no code execution)
+      - name: Render static site (no analysis execution)
         run: quarto render site
 
   # Render and deploy from main.

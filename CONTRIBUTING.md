@@ -13,6 +13,9 @@ Before opening a pull request:
 4. Run the Python tests and `Rscript analysis/validate_outputs.R`.
 5. Do not commit private correspondence, unpublished collaborator material,
    credentials, or third-party PDFs.
+6. Attribute commits to the humans responsible for the work. Do not add
+   automated-assistant identities to commit authorship or `Co-authored-by`
+   trailers.
 
 Scientific claims should identify the estimand, intervention semantics,
 background population, learner, evaluation records, Monte Carlo configuration,

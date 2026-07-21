@@ -11,13 +11,14 @@ validation → iteration:
   score (PSCI v0), a Credence-style layered-parameter validation subpackage, and
   the homunculus/ladder figures.
 - The Shiny app is rebuilt as the ladder, with live discovery and validation.
-- A Quarto site (`site/`) carries the narrative, cheatsheets, and glossary.
+- A Quarto site (`site/`) carries the narrative, cheatsheets, and glossary and
+  is published through GitHub Pages.
 
 Remaining toolkit tasks: swap in the authors' final complexity score at the
-registry seam; enable GitHub Pages for the static site; optionally extend
-validation to multiple treatments and mediation. The interactive app runs locally
-by design (not hosted) — a hosted instance can't pin the result environment, and
-the browser sandbox can't load the scientific stack.
+registry seam and optionally extend validation to multiple treatments and
+mediation. The interactive app runs locally by design (not hosted) — a hosted
+instance can't pin the result environment, and the browser sandbox can't load
+the scientific stack.
 
 ## Publication-critical next steps
 

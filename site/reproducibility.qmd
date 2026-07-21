@@ -12,11 +12,11 @@ Python layer — a hash gate enforces it.
 | Tool | Version | Install |
 |---|---|---|
 | R | 4.5.2 | `Rscript analysis/install_dependencies.R` |
-| Python | 3.13 | `pip install -e ".[discovery]"` |
-| Build extras | torch, gcastle | `pip install -r app/requirements-build.txt` |
+| Python | 3.13 | `pip install -e ".[discovery,site]"` |
+| Optional heavy paths | torch, gcastle | `pip install -e ".[heavy]"` |
 | Site | Quarto ≥ 1.4 | `quarto render site` |
 
-## The R analysis (frozen science)
+## The R analysis (frozen outputs)
 
 Run `Rscript analysis/run_all.R` — one command for the whole R pipeline (the four
 dataset generators are consolidated into `analysis/generate.R`, and every stage
@@ -49,9 +49,9 @@ tolerance checks and committed decoder weights rather than bit-identity.
 ## The site
 
 ```bash
-quarto render site          # executes cheap chunks once, writes _freeze/
+quarto render site          # renders prose and pre-built assets into site/_site
 ```
 
-With `freeze: true`, code executes only on your machine; the committed `_freeze/`
-cache means CI and GitHub Pages **never run Python**. Render once locally after
-changing any executable chunk, then commit `_freeze/`.
+The current site has no executable analysis chunks, so local and GitHub Pages
+renders run neither Python nor R. `freeze: true` is already enabled as a safeguard
+if executable content is introduced later.

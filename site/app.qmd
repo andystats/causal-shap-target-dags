@@ -24,10 +24,12 @@ in a browser (WebAssembly) sandbox — so running from the repo is the only plac
 ## Run it
 
 ```bash
-git clone https://github.com/andystats/causal-shap-target-dags
-cd causal-shap-target-dags/app
-pip install -r requirements.txt
-shiny run app.py            # then open http://localhost:8000
+git clone https://github.com/andystats/causal-shap-target-dags.git
+cd causal-shap-target-dags
+python3.13 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[discovery]"
+cd app && shiny run app.py  # then open http://localhost:8000
 ```
 
 Jump straight to a rung with a query string: `…/?stage=1` (discovery),
@@ -35,5 +37,5 @@ Jump straight to a rung with a query string: `…/?stage=1` (discovery),
 
 The app is **torch-free by default** — discovery uses `causal-learn` and live
 validation uses a moment-matched multivariate-normal generator, both fast. The
-heavier paths (CVAE training, NOTEARS) live in the build scripts
+heavier paths (CVAE training, NOTEARS) live in the build CLI
 (`python -m causal_shap.build …`), which regenerate the frozen bundles the app reads.

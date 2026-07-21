@@ -22,6 +22,19 @@ correlated with the causal truth (Kendall τ ≈ −0.33). Structural Causal SHA
 flips it positive.
 :::
 
+## What the evidence actually says
+
+| Evidence tier | Result | Interpretation |
+|---|---|---|
+| **Teaching DAGs** | Zero-effect proxies can dominate ordinary SHAP. | A controlled demonstration of proximity bias, not substantive NASA evidence. |
+| **NASA flagship** | Ordinary and DAG-ordering SHAP are statistically tied. | Ordering features by a DAG is not enough to recover causal importance. |
+| **Structural prototype** | Kendall τ rises to 0.794 and top-five recovery to 1.00. | Encouraging intervention propagation, pending scale-up and paired uncertainty. |
+
+The project therefore does not claim that every method called “Causal SHAP”
+wins. Its narrower claim is that the **coalition value function** must model how
+an intervention propagates through descendants; ordering alone leaves the
+predictive question largely unchanged.
+
 ## The workflow ladder
 
 This site is organized as a ladder. Each rung is a move you make when a prediction

@@ -12,6 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check contributor metadata
+        shell: bash
+        run: |
+          if git log --format='%B' | grep -Eiq '^Co-authored-by:.*(Claude|Anthropic)'; then
+            echo 'Automated assistants must not be listed as commit co-authors.' >&2
+            exit 1
+          fi
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
