@@ -19,7 +19,6 @@ import numpy as np
 import pandas as pd
 import shap
 import xgboost as xgb
-import yaml
 from matplotlib import pyplot as plt
 from scipy.stats import kendalltau, spearmanr
 from sklearn.ensemble import GradientBoostingRegressor
@@ -501,6 +500,8 @@ def glossary() -> None:
                 blocks.append(f"<dt>{entry['term']}</dt><dd>{definition}</dd>")
             blocks.append("</dl>\n:::")
         return "\n".join(blocks) + "\n"
+
+    import yaml  # build-only dep; lazy so non-glossary stages (and CI) don't need PyYAML
 
     terms = yaml.safe_load(GLOSSARY_YML.read_text(encoding="utf-8"))["terms"]
 
