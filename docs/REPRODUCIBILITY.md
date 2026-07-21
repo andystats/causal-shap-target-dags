@@ -6,6 +6,7 @@
   bootstrap, diagnostics, checked CSV outputs, and figures.
 - `app/`: Python Shiny companion app, self-contained deterministic bundles,
   structural engine, builders, and unit tests.
+- `site/`: Quarto source for the public GitHub Pages companion.
 - `references/renal-stone-dag-code-SA-07566.txt`: public machine-readable NASA
   DAG input required by the simulator.
 - `docs/`: public methods, results, provenance, limitations, demo guide, and
@@ -19,19 +20,20 @@ the repository.
 Python 3.13 was used for the current build.
 
 ```powershell
-cd app
+cd causal-shap-target-dags
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m unittest discover -s tests -v
+python -m pip install -e ".[discovery,site]"
+python -m unittest discover -s app/tests -v
+cd app
 python -m shiny run --port 8010 app.py
 ```
 The app reads checked-in bundles; rungs 1 and 4 add live, torch-free computation
 (causal-learn discovery and a moment-matched MVN validation generator). The whole
-Python pipeline is one CLI — `python -m causal_shap.build <stage>` — after a root
-editable install (`pip install -e ".[discovery]"`, plus `app/requirements-build.txt`
-for the torch/CVAE step):
+Python pipeline is one CLI — `python -m causal_shap.build <stage>`. Add the
+`heavy` extra to the install command for the optional torch/CVAE and NOTEARS
+paths:
 
 ```bash
 python -m causal_shap.build all             # teaching-data → discovery → complexity
@@ -48,14 +50,19 @@ hashes `analysis/output/` against a committed baseline and fails on any change.
 
 ## Companion site (Quarto)
 
+The public site is
+[andystats.github.io/causal-shap-target-dags](https://andystats.github.io/causal-shap-target-dags/).
+
 ```bash
 quarto render site       # renders with zero code execution; output in site/_site
 ```
 
-The site embeds pre-built figures and includes the generated glossary, so no
-Python runs at render time. Deploy is handled by `.github/workflows/publish-site.yml`
-(GitHub Pages). The interactive app is **not hosted** — it runs locally from the
-repo (`cd app && pip install -r requirements.txt && shiny run app.py`). This is a
+The current pages contain prose, pre-built figures, and a generated glossary, so
+no Python or R runs at render time. `freeze: true` protects that boundary if an
+executable chunk is added later. Deploy is handled by
+`.github/workflows/publish-site.yml` (GitHub Pages). The interactive app is **not
+hosted** — install from the repository root, then run it locally
+(`pip install -e ".[discovery]" && cd app && shiny run app.py`). This is a
 reproducibility choice: a hosted instance can't pin the environment behind the
 published results, and the full workflow depends on packages that don't run in a
 browser sandbox.
@@ -85,8 +92,8 @@ complete run is substantially slower than opening the deterministic app.
 At minimum, a release should pass:
 
 ```powershell
-Rscript analysis\validate_outputs.R
-cd app
-python -m unittest discover -s tests -v
-python -m compileall -q causal_shap stages tests app.py
+Rscript analysis/validate_outputs.R
+python -m unittest discover -s app/tests -v
+python -m compileall -q app/causal_shap app/stages app/tests app/app.py
+python -m causal_shap.build validate
 ```
