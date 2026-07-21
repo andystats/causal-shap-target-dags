@@ -14,8 +14,10 @@ validation → iteration:
 - A Quarto site (`site/`) carries the narrative, cheatsheets, and glossary.
 
 Remaining toolkit tasks: swap in the authors' final complexity score at the
-registry seam; complete the shinyapps.io deploy (upload was blocked by transient
-S3 errors); optionally extend validation to multiple treatments and mediation.
+registry seam; enable GitHub Pages for the static site; optionally extend
+validation to multiple treatments and mediation. The interactive app runs locally
+by design (not hosted) — a hosted instance can't pin the result environment, and
+the browser sandbox can't load the scientific stack.
 
 ## Publication-critical next steps
 

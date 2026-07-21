@@ -1,36 +1,39 @@
 ---
-title: "Interactive app"
+title: "The interactive app"
 toc: false
 ---
 
-The tutorial app lets you climb every rung of the ladder on four datasets, and run
-[causal discovery](workflow/01-causal-discovery.qmd) and
-[simulation validation](workflow/04-validation.qmd) **live** — no torch, no server
-round-trips to a model, just the frozen bundles plus in-browser computation.
+The tutorial app lets you climb every rung of the ladder across four datasets —
+with **live** [causal discovery](workflow/01-causal-discovery.qmd) and
+[simulation validation](workflow/04-validation.qmd), not just precomputed views.
+It runs locally from the repository.
 
-::: {.callout-tip}
-Deep links: append `?stage=1` (discovery) or `?stage=4` (validation) to jump
-straight to a rung.
+::: {.callout-note}
+## Why local, not a hosted app
+
+The interactive lab ships as pinned, runnable source rather than a hosted service —
+a deliberate reproducibility choice, not a limitation. A public app instance can't
+guarantee the compute environment behind published results: dependencies drift,
+free tiers sleep, hosts get retired. A pinned repository reproduces the exact
+numbers indefinitely. The full workflow also depends on scientific Python packages
+(`torch` for the CVAE generator, `causal-learn`, `xgboost`, `shap`) that don't run
+in a browser (WebAssembly) sandbox — so running from the repo is the only place the
+*complete* workflow actually runs.
 :::
 
-<iframe
-  src="https://andystats.shinyapps.io/causal-shap-ladder/"
-  title="Causal SHAP tutorial app"
-  style="width:100%; height:820px; border:1px solid #cbd5e1; border-radius:12px;"
-  loading="lazy">
-</iframe>
-
-If the frame does not load, open the app directly:
-[andystats.shinyapps.io/causal-shap-ladder](https://andystats.shinyapps.io/causal-shap-ladder/).
-
-## Run it locally
+## Run it
 
 ```bash
-cd app
+git clone https://github.com/andystats/causal-shap-target-dags
+cd causal-shap-target-dags/app
 pip install -r requirements.txt
-shiny run app.py
+shiny run app.py            # then open http://localhost:8000
 ```
 
-The deployed app ships **no torch and no gcastle** — discovery uses `causal-learn`
-and validation uses a moment-matched multivariate-normal generator, both fast
-enough to run in the browser session.
+Jump straight to a rung with a query string: `…/?stage=1` (discovery),
+`?stage=4` (validation), and so on.
+
+The app is **torch-free by default** — discovery uses `causal-learn` and live
+validation uses a moment-matched multivariate-normal generator, both fast. The
+heavier paths (CVAE training, NOTEARS) live in the build scripts
+(`python -m causal_shap.build …`), which regenerate the frozen bundles the app reads.

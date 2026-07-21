@@ -54,8 +54,11 @@ quarto render site       # renders with zero code execution; output in site/_sit
 
 The site embeds pre-built figures and includes the generated glossary, so no
 Python runs at render time. Deploy is handled by `.github/workflows/publish-site.yml`
-(GitHub Pages). The interactive app deploys manually with
-`rsconnect deploy shiny app/ --name <account> --title causal-shap-ladder`.
+(GitHub Pages). The interactive app is **not hosted** — it runs locally from the
+repo (`cd app && pip install -r requirements.txt && shiny run app.py`). This is a
+reproducibility choice: a hosted instance can't pin the environment behind the
+published results, and the full workflow depends on packages that don't run in a
+browser sandbox.
 
 ## R environment
 

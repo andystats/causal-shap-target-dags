@@ -1,6 +1,6 @@
-# Build-only dependencies for local artifact generation (scripts/24, NOTEARS).
-# These are NEVER deployed to shinyapps.io — the app imports neither torch nor
-# gcastle at runtime. Install alongside the base app requirements:
+# Build-only dependencies for local artifact generation (the CVAE validation and
+# NOTEARS build stages). The app imports neither torch nor gcastle at runtime, so
+# these never need to be installed to run it. Install alongside the base app requirements:
 #   pip install -r requirements.txt -r requirements-build.txt
 torch>=2.4,<3
 gcastle>=1.0.3

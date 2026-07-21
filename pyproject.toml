@@ -23,9 +23,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Live causal-discovery path shipped with the deployed app (pinned: 0.x API).
+# The app's live causal-discovery path (pinned: 0.x API).
 discovery = ["causal-learn==0.1.4.8"]
-# Local build scripts only — never shipped to shinyapps.io or imported by the app.
+# Local build scripts only — never imported by the app at runtime.
 heavy = ["torch>=2.4,<3", "gcastle>=1.0.3"]
 # Quarto site execution environment (renders happen on the author's machine).
 site = ["jupyter>=1.1,<2", "pyyaml>=6.0,<7"]
