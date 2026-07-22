@@ -7,6 +7,11 @@ DAGs** — an open, reproducible study of which attribution value function recov
 useful upstream intervention targets, and which merely rewards features near the
 outcome.
 
+The project extends the author's earlier ACIC Causal SHAP work. It does not claim
+to invent causal Shapley values; its contribution is a known-truth target-recovery
+demonstration that separates causal ordering from intervention propagation. See
+[Research lineage](research-lineage.qmd).
+
 ## Authors
 
 Andy Wilson. See the repository
@@ -31,6 +36,8 @@ Every dataset on this site is **synthetic**.
 - Frye, Rowat, Feige (2020). *Asymmetric Shapley Values.* NeurIPS.
 - Janzing, Minorics, Blöbaum (2020). *Feature Relevance Quantification in
   Explainable AI: A Causal Problem.* AISTATS.
+- Karimi, Schölkopf, Valera (2021). *Algorithmic Recourse: from Counterfactual
+  Explanations to Interventions.* FAccT.
 - Parikh, Varjão, Xu, Tchetgen Tchetgen (2022). *Validating Causal Inference
   Methods* (Credence). ICML.
 - Instats workshop *Modern Analysis of Real-World Data* (Wilson, Gregg, Morrison),
