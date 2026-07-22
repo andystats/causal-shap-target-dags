@@ -8,33 +8,29 @@ execute:
   freeze: true
 
 website:
-  title: "Causal SHAP for Target DAGs"
-  description: "A companion site: when feature importance points to the wrong lever."
+  title: "Target DAGs"
+  description: "Why predictive attribution points to the last node—and how intervention propagation moves action upstream."
   site-url: https://andystats.github.io/causal-shap-target-dags/
   page-navigation: true
   navbar:
     background: light
     left:
-      - text: "Home"
+      - text: "The demonstration"
         href: index.qmd
-      - text: "Workflow"
+      - text: "Why it happens"
+        href: why-it-happens.qmd
+      - text: "Evidence"
+        href: evidence.qmd
+      - text: "Research lineage"
+        href: research-lineage.qmd
+      - text: "Reproduce"
+        href: reproducibility.qmd
+      - text: "Lab notebook"
         menu:
-          - text: "The ladder"
+          - text: "Six-rung workflow"
             href: workflow/index.qmd
-          - text: "0 · Vanilla SHAP"
-            href: workflow/00-vanilla-shap.qmd
-          - text: "1 · Causal discovery"
-            href: workflow/01-causal-discovery.qmd
-          - text: "2 · Complexity score"
-            href: workflow/02-complexity-score.qmd
-          - text: "3 · Causal SHAP"
-            href: workflow/03-causal-shap.qmd
-          - text: "4 · Validation"
-            href: workflow/04-validation.qmd
-          - text: "5 · Iteration"
-            href: workflow/05-iteration.qmd
-      - text: "Cheatsheets"
-        menu:
+          - text: "Interactive app"
+            href: app.qmd
           - text: "DAG vocabulary"
             href: cheatsheets/dag-vocabulary.qmd
           - text: "Discovery algorithms"
@@ -43,12 +39,8 @@ website:
             href: cheatsheets/shap-variants.qmd
           - text: "Estimands & validation"
             href: cheatsheets/estimands-validation.qmd
-      - text: "Glossary"
-        href: glossary.qmd
-      - text: "Interactive app"
-        href: app.qmd
-      - text: "Reproduce"
-        href: reproducibility.qmd
+          - text: "Glossary"
+            href: glossary.qmd
     right:
       - text: "About"
         href: about.qmd
@@ -66,3 +58,7 @@ format:
     code-overflow: wrap
     fig-cap-location: bottom
     smooth-scroll: true
+    grid:
+      body-width: 860px
+      sidebar-width: 260px
+      margin-width: 260px
