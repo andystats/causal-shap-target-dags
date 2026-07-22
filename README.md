@@ -3,28 +3,27 @@
 [![Python tests](https://github.com/andystats/causal-shap-target-dags/actions/workflows/python-tests.yml/badge.svg)](https://github.com/andystats/causal-shap-target-dags/actions/workflows/python-tests.yml)
 [![Companion site](https://img.shields.io/badge/GitHub%20Pages-open%20site-2563eb)](https://andystats.github.io/causal-shap-target-dags/)
 
-**Research question:** when a predictive model ranks features, does that ranking
-also identify useful upstream intervention targets? This project tests the
-question entirely with simulated data from known DAGs, where the total-effect
-truth is available before any attribution method is evaluated.
+**SHAP explains the model's ears. Target DAGs look for the system's levers.**
 
-The short answer is deliberately nuanced: ordinary SHAP can reward proximity to
+The research question is whether a predictive attribution ranking also
+identifies useful upstream intervention targets. On a causal DAG, a mediator can
+screen off its ancestors for prediction while still transmitting their
+intervention effects. Ordinary SHAP can therefore concentrate importance on the
+last measured nodes—even a downstream proxy with zero total effect.
+
+This repository tests that mismatch entirely with synthetic data from known
+DAGs. The result is deliberately nuanced: ordinary SHAP can reward proximity to
 the outcome; constraining feature order to a DAG does not fix that on its own;
-an intervention-propagating structural value function is promising, but is still
-a prototype that needs larger runs and uncertainty estimates.
+an intervention-propagating structural value function is promising, but still
+needs larger runs and uncertainty estimates.
 
-```
-Rung 0  Vanilla SHAP        →  the homunculus: proximity bias
-Rung 1  Causal discovery    →  learn structure (a tool, not an oracle)
-Rung 2  Complexity score    →  how much causal care does this need?
-Rung 3  Causal SHAP         →  propagate do(X=x) through descendants
-Rung 4  Validation          →  Credence-style, layered known truth
-Rung 5  Iteration           →  refine the DAG; report uncertainty
-```
-
-- **[Companion site](https://andystats.github.io/causal-shap-target-dags/):** the
-  visual narrative, workflow ladder, cheatsheets, glossary, and reproducibility
-  guide (Quarto source in [`site/`](site/)).
+- **[Focused demonstration](https://andystats.github.io/causal-shap-target-dags/):**
+  the elevator pitch, the five-node failure, and the path from attribution to
+  intervenable recommendations.
+- **[Why it happens](https://andystats.github.io/causal-shap-target-dags/why-it-happens.html):**
+  the three-node Markov proof and its assumptions.
+- **[Evidence ledger](https://andystats.github.io/causal-shap-target-dags/evidence.html):**
+  the teaching result, the ordering-only null, and the structural prototype.
 - **Interactive app:** climb every rung on four datasets; run discovery and
   validation live ([`app/app.py`](app/app.py)).
 
@@ -115,6 +114,7 @@ provisional** — it plugs into a registry seam for the authors' final score.
 - Heskes et al. [Causal Shapley Values](https://proceedings.neurips.cc/paper_files/paper/2020/hash/32e54441e6382a7fbacbbbaf3c450059-Abstract.html), NeurIPS 2020.
 - Frye, Rowat, Feige. [Asymmetric Shapley Values](https://papers.nips.cc/paper/2020/file/0d770c496aa3da6d2c3f2bd19e7b9d6b-Paper.pdf), NeurIPS 2020.
 - Janzing, Minorics, Blöbaum. [Feature Relevance Quantification in Explainable AI](https://proceedings.mlr.press/v108/janzing20a), AISTATS 2020.
+- Karimi, Schölkopf, Valera. [Algorithmic Recourse: from Counterfactual Explanations to Interventions](https://arxiv.org/abs/2002.06278), FAccT 2021.
 - Parikh et al. [Validating Causal Inference Methods (Credence)](https://proceedings.mlr.press/v162/parikh22a.html), ICML 2022.
 
 The simulation-validation layer is implemented from the author's own Instats
