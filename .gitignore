@@ -14,6 +14,8 @@ demo-sources/
 # source text is explicitly retained because the simulations require it.
 references/*
 !references/renal-stone-dag-code-SA-07566.txt
+!references/robert-reynolds-2026-07-13/
+!references/robert-reynolds-2026-07-13/*.txt
 
 # Generated/runtime noise
 .venv/

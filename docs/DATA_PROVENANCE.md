@@ -18,6 +18,23 @@ Public sources:
 The repository's renal-stone datasets are entirely synthetic. They do not
 contain astronaut, patient, or participant records.
 
+## Robert Reynolds DAG handoff
+
+Robert Reynolds supplied two raw DAGitty files by email on 2026-07-13:
+
+- `Renal Stone Risk Edge Work DAG CM Final - Errata 20220322`
+- `SANS Risk Edge Work DAG CM Final - Errata 20220411`
+
+The raw graph text is preserved under `references/robert-reynolds-2026-07-13/`.
+`analysis/10_ingest_robert_dags.R` converts both graphs to canonical node and
+edge tables, renders them, and checks lossless graph round trips. The associated
+email itself is not stored in this public research repository; a concise record
+of the scientific notes is in `ROBERT_REYNOLDS_DAGS_2026-07-13.md`.
+
+The SANS graph currently establishes topology and provenance only. No SANS
+coefficients, distributions, synthetic records, or attribution results are
+claimed.
+
 ## Simulation regimes
 
 - `source_aligned_clean_v3`: 10,000 synthetic records generated directly from

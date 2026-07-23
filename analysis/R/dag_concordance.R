@@ -4,15 +4,22 @@ suppressPackageStartupMessages({
   library(ggplot2)
 })
 
-read_nasa_dag_code <- function(path) {
+read_dagitty_source <- function(path) {
   code <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
-  start <- regexpr("dag \\{", code, fixed = TRUE)
+  # Source files arrive in two equivalent forms: raw DAGitty (`dag {`) and
+  # Pandoc-escaped text (`dag \\{`). Accept both so the ingestion pipeline can
+  # preserve collaborators' original attachments without rewriting them.
+  starts <- c(
+    regexpr("dag {", code, fixed = TRUE)[[1]],
+    regexpr("dag \\{", code, fixed = TRUE)[[1]]
+  )
+  starts <- starts[starts >= 0L]
 
-  if (start[[1]] < 0L) {
-    stop("Could not find the DAGitty graph in the NASA code file.")
+  if (length(starts) == 0L) {
+    stop("Could not find a DAGitty graph in the source file.")
   }
 
-  code <- substring(code, start[[1]])
+  code <- substring(code, min(starts))
   code <- gsub("\\{", "{", code, fixed = TRUE)
   code <- gsub("\\}", "}", code, fixed = TRUE)
   code <- gsub("{[}", "[", code, fixed = TRUE)
@@ -21,6 +28,11 @@ read_nasa_dag_code <- function(path) {
   code <- gsub("[[:space:]]+", " ", code)
 
   dagitty(code)
+}
+
+# Backward-compatible name retained for the renal-stone simulation scripts.
+read_nasa_dag_code <- function(path) {
+  read_dagitty_source(path)
 }
 
 dag_edges <- function(dag) {

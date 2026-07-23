@@ -1,0 +1,3 @@
+"comparison","node_count","directed_pair_count","reference_edge_count","candidate_edge_count","true_positive","true_negative","false_positive","false_negative","observed_agreement","cohen_kappa","precision","recall","f1","structural_hamming_distance","exact_match"
+"Existing SA-07566 source vs Robert renal DAG (strict labels)",62,3782,75,83,51,3675,32,24,0.985193019566367,0.638027981254677,0.614457831325301,0.68,0.645569620253165,56,FALSE
+"Existing SA-07566 vs Robert renal DAG (semantic shared-node projection)",48,2256,72,69,69,2184,0,3,0.998670212765957,0.97803738317757,1,0.958333333333333,0.978723404255319,3,FALSE

@@ -1,0 +1,144 @@
+SANS Risk Edge Work DAG CM Final - Errata 20220411
+
+dag {
+"Altered Gravity" [exposure,pos="-1.879,0.350"]
+"Astronaut Selection" [pos="-1.840,1.350"]
+"Brain Structural Changes" [pos="-1.430,0.948"]
+"CO2 Physiologic Changes" [pos="-1.430,-0.438"]
+"Chorioretinal Folds" [pos="-0.226,-0.496"]
+"Crew Capability" [pos="0.705,-1.715"]
+"Crew Health and Performance System" [pos="-0.831,-2.948"]
+"Detect Brain Structural Changes" [pos="-0.015,1.193"]
+"Detect Intracranial Pressure Changes" [pos="-1.042,0.539"]
+"Detect Long Term Health Outcomes" [pos="0.602,0.789"]
+"Detect Ocular Structural Changes" [pos="-0.039,-1.701"]
+"Detect Visual Changes" [pos="0.133,-2.151"]
+"Distance from Earth" [exposure,pos="-1.845,-2.961"]
+"Flight Recertification" [outcome,pos="0.732,-0.661"]
+"Fluid Shifts" [pos="-1.590,0.356"]
+"Globe Flattening" [pos="-0.555,-1.068"]
+"HSI Processes" [pos="-1.169,-3.418"]
+"Individual Factors" [pos="-0.523,1.350"]
+"Individual Readiness" [pos="0.456,-1.443"]
+"Intracranial Pressure Changes" [pos="-1.146,-0.053"]
+"Intracranial Pressure Monitoring" [pos="-0.749,-1.552"]
+"Long Term Health Outcomes" [outcome,pos="0.655,0.048"]
+"Loss of Mission Objectives" [outcome,pos="0.687,-2.900"]
+"Loss of Mission" [outcome,pos="0.761,-3.490"]
+"Lower Body Negative Pressure" [pos="-1.767,-0.679"]
+"Medical Prevention Capability" [pos="-1.710,-1.538"]
+"Medical Treatment Capability" [pos="0.204,-2.941"]
+"Optic Disc Edema" [pos="-0.597,-0.217"]
+"Optical Coherence Tomography" [pos="-0.492,-2.021"]
+"Pharmaceutical Effectiveness" [pos="-1.753,-2.063"]
+"Pharmaceutical Storage Conditions" [pos="-1.441,-2.462"]
+"Physiologic Monitoring Capability" [pos="-0.805,-2.464"]
+"Refractive Error Shift" [pos="0.009,-1.000"]
+"Retinal Nerve Fiber Layer Atrophy" [pos="-0.171,0.335"]
+"Task Performance" [outcome,pos="0.716,-2.226"]
+"Thigh Cuffs" [pos="-1.617,-0.918"]
+"Vascular Congestion" [pos="-1.141,-0.891"]
+"Vascular Structure/Function" [pos="-0.705,-0.669"]
+"Vehicle Design" [pos="-1.441,-2.948"]
+"Visual AcuityTests" [pos="-0.228,-2.749"]
+"Visual Field Defect" [pos="0.154,0.216"]
+"Visual Fields Tests" [pos="-0.315,-2.239"]
+Fundoscopy [pos="-0.922,-1.804"]
+Lenses [pos="0.380,-2.273"]
+MRI [pos="-0.642,0.446"]
+Medications [pos="-1.450,-1.102"]
+Stress [pos="-1.686,-0.088"]
+Supplements [pos="-1.404,-1.708"]
+Surveillance [pos="0.361,1.351"]
+Ultrasound [pos="-1.104,-2.056"]
+"Altered Gravity" -> "Fluid Shifts"
+"Astronaut Selection" -> "Individual Factors"
+"Brain Structural Changes" -> "Detect Brain Structural Changes"
+"Brain Structural Changes" -> "Long Term Health Outcomes"
+"CO2 Physiologic Changes" -> "Intracranial Pressure Changes"
+"Chorioretinal Folds" -> "Detect Ocular Structural Changes"
+"Chorioretinal Folds" -> "Flight Recertification"
+"Chorioretinal Folds" -> "Visual Field Defect"
+"Crew Capability" -> "Task Performance"
+"Crew Health and Performance System" -> "Medical Prevention Capability"
+"Crew Health and Performance System" -> "Medical Treatment Capability"
+"Crew Health and Performance System" -> "Physiologic Monitoring Capability"
+"Detect Brain Structural Changes" -> "Detect Long Term Health Outcomes"
+"Detect Intracranial Pressure Changes" -> "Detect Long Term Health Outcomes"
+"Detect Intracranial Pressure Changes" -> "Flight Recertification"
+"Detect Ocular Structural Changes" -> "Detect Long Term Health Outcomes"
+"Detect Ocular Structural Changes" -> "Flight Recertification"
+"Detect Visual Changes" -> Lenses
+"Distance from Earth" -> "Vehicle Design"
+"Fluid Shifts" -> "Brain Structural Changes"
+"Fluid Shifts" -> "Intracranial Pressure Changes"
+"Fluid Shifts" -> "Vascular Congestion"
+"Globe Flattening" -> "Chorioretinal Folds"
+"Globe Flattening" -> "Detect Ocular Structural Changes"
+"Globe Flattening" -> "Refractive Error Shift"
+"HSI Processes" -> "Crew Health and Performance System"
+"HSI Processes" -> "Vehicle Design"
+"Individual Factors" -> "Brain Structural Changes"
+"Individual Factors" -> "Chorioretinal Folds"
+"Individual Factors" -> "Globe Flattening"
+"Individual Factors" -> "Intracranial Pressure Changes"
+"Individual Factors" -> "Optic Disc Edema"
+"Individual Factors" -> "Refractive Error Shift"
+"Individual Factors" -> "Retinal Nerve Fiber Layer Atrophy"
+"Individual Factors" -> "Vascular Congestion"
+"Individual Factors" -> "Visual Field Defect"
+"Individual Readiness" -> "Crew Capability"
+"Intracranial Pressure Changes" -> "Brain Structural Changes"
+"Intracranial Pressure Changes" -> "Detect Intracranial Pressure Changes"
+"Intracranial Pressure Changes" -> "Globe Flattening"
+"Intracranial Pressure Changes" -> "Long Term Health Outcomes"
+"Intracranial Pressure Changes" -> "Optic Disc Edema"
+"Intracranial Pressure Monitoring" -> "Detect Intracranial Pressure Changes"
+"Long Term Health Outcomes" -> "Detect Long Term Health Outcomes"
+"Loss of Mission Objectives" -> "Loss of Mission"
+"Lower Body Negative Pressure" -> "Vascular Congestion"
+"Medical Prevention Capability" -> "Lower Body Negative Pressure"
+"Medical Prevention Capability" -> "Thigh Cuffs"
+"Medical Prevention Capability" -> Medications
+"Medical Prevention Capability" -> Supplements
+"Medical Treatment Capability" -> Lenses
+"Optic Disc Edema" -> "Chorioretinal Folds"
+"Optic Disc Edema" -> "Detect Ocular Structural Changes"
+"Optic Disc Edema" -> "Retinal Nerve Fiber Layer Atrophy"
+"Optic Disc Edema" -> "Visual Field Defect"
+"Optical Coherence Tomography" -> "Detect Ocular Structural Changes"
+"Pharmaceutical Effectiveness" -> "Medical Prevention Capability"
+"Pharmaceutical Storage Conditions" -> Supplements
+"Physiologic Monitoring Capability" -> "Intracranial Pressure Monitoring"
+"Physiologic Monitoring Capability" -> "Optical Coherence Tomography"
+"Physiologic Monitoring Capability" -> "Visual AcuityTests"
+"Physiologic Monitoring Capability" -> "Visual Fields Tests"
+"Physiologic Monitoring Capability" -> Fundoscopy
+"Physiologic Monitoring Capability" -> Ultrasound
+"Refractive Error Shift" -> "Detect Visual Changes"
+"Refractive Error Shift" -> "Individual Readiness"
+"Retinal Nerve Fiber Layer Atrophy" -> "Visual Field Defect"
+"Task Performance" -> "Loss of Mission Objectives"
+"Thigh Cuffs" -> "Vascular Congestion"
+"Vascular Congestion" -> "Globe Flattening"
+"Vascular Congestion" -> "Intracranial Pressure Changes"
+"Vascular Congestion" -> "Optic Disc Edema"
+"Vascular Structure/Function" -> "Optic Disc Edema"
+"Vehicle Design" -> "Crew Health and Performance System"
+"Visual AcuityTests" -> "Detect Visual Changes"
+"Visual Field Defect" -> "Detect Visual Changes"
+"Visual Field Defect" -> "Individual Readiness"
+"Visual Field Defect" -> "Long Term Health Outcomes"
+"Visual Fields Tests" -> "Detect Visual Changes"
+Fundoscopy -> "Detect Ocular Structural Changes"
+Lenses -> "Individual Readiness"
+MRI -> "Detect Brain Structural Changes"
+MRI -> "Detect Ocular Structural Changes"
+Medications -> "Intracranial Pressure Changes"
+Medications -> "Vascular Congestion"
+Stress -> "Intracranial Pressure Changes"
+Supplements -> "Intracranial Pressure Changes"
+Surveillance -> "Detect Long Term Health Outcomes"
+Ultrasound -> "Detect Ocular Structural Changes"
+}
+
