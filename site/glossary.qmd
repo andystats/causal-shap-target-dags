@@ -1,9 +1,0 @@
----
-title: "Glossary"
----
-
-Every term below is defined once in `data/glossary.yml` — the single source shared
-with the interactive app's hover popovers. The list is regenerated (no code runs
-at render time) by `python -m causal_shap.build glossary`.
-
-{{< include _includes/glossary_body.md >}}

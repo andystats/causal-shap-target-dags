@@ -28,20 +28,17 @@ implementation notes, and scientific guardrails belong here.
 - [`ROBERT_REYNOLDS_DAGS_2026-07-13.md`](ROBERT_REYNOLDS_DAGS_2026-07-13.md) —
   the renal-stone and SANS DAG handoff, concordance, and modeling decisions.
 
-## Two web surfaces
+## Public web surface
 
-The repository currently contains two intentionally distinct front ends:
+The repository has one public narrative: the single-page Quarto source at
+`site/index.qmd`. The Pages workflow renders `site/_site` and deploys it. The
+root `index.html` only redirects readers to that canonical page.
 
-1. **Canonical GitHub Pages site:** Quarto source under `site/*.qmd`. The Pages
-   workflow renders `site/_site` and deploys it.
-2. **Exploratory static research companion:** root `index.html` with
-   `site/styles.css` and `site/app.js`. It is a no-build prototype and is not the
-   artifact deployed by the current Pages workflow.
-
-Narrative or scientific claims should be settled in this documentation first,
-then incorporated into the Quarto site. Port them to the static companion only
-when that surface is being deliberately maintained; do not let two versions of
-the claim evolve independently.
+The public page is intentionally spare: ACIC motivation, Markov explanation,
+five-rung hierarchy, three decisive results, recommendation target, and claim
+boundary. Narrative or scientific claims should be settled in this
+documentation first, then incorporated into that page. Methodological depth
+stays here instead of spawning parallel public pages.
 
 ## Documentation rule
 

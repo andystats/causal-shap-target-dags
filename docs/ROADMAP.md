@@ -1,18 +1,20 @@
 # Roadmap
 
-## Companion toolkit (in place)
+## Research toolkit (in place)
 
-The public companion is built around a six-rung workflow ladder — vanilla SHAP →
-causal discovery → complexity score → structural Causal SHAP → simulation
-validation → iteration:
+The interactive app is built around a six-rung workflow ladder — vanilla SHAP
+→ causal discovery → complexity score → structural Causal SHAP → simulation
+validation → iteration. The public site now reduces that machinery to a
+five-question conceptual hierarchy from prediction to recommendation:
 
 - `app/causal_shap/` now includes teaching DAGs, causal discovery (PC/GES live via
   causal-learn; LiNGAM/NOTEARS as precomputed appendix), a pluggable complexity
   score (PSCI v0), a Credence-style layered-parameter validation subpackage, and
   the homunculus/ladder figures.
 - The Shiny app is rebuilt as the ladder, with live discovery and validation.
-- A Quarto site (`site/`) carries the narrative, cheatsheets, and glossary and
-  is published through GitHub Pages.
+- A single-page Quarto site (`site/`) carries the ACIC-to-Target-DAGs argument
+  and five-rung hierarchy. Detailed methods, references, provenance, and
+  limitations remain in `docs/`.
 
 Remaining toolkit tasks: swap in the authors' final complexity score at the
 registry seam and optionally extend validation to multiple treatments and
@@ -33,7 +35,7 @@ the scientific stack.
 - Obtain domain review of graph version, coefficients, actionability, and
   intervention cost/difficulty.
 
-## Explanation-to-intervention stack
+## Explanation-to-intervention research program
 
 - Validate LumaWarp as a prespecified candidate-depth diagnostic against known
   DAG depth and intervention truth; do not treat its score as causal proof.

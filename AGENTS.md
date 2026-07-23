@@ -16,13 +16,15 @@
 
 ## Public-site convention
 
-- The canonical GitHub Pages site is the Quarto project under `site/`; the
-  deployment workflow publishes `site/_site`.
-- The root `index.html` plus `site/styles.css` and `site/app.js` is a separate
-  exploratory, no-build research companion. Preserve it, but do not confuse it
-  with the Pages deployment.
+- The only canonical public site is the single-page Quarto project under
+  `site/`; the deployment workflow publishes `site/_site`.
+- Keep the public page as a minimalist hierarchy from prediction through
+  recommendation. Put methodological depth, references, provenance, and
+  limitations in `docs/`, not in additional public microsites.
+- The root `index.html` is only a lightweight redirect to GitHub Pages. Do not
+  grow it into a second web surface.
 - Settle narrative and references in `docs/PROJECT_NARRATIVE.md` and
-  `docs/RESEARCH_REFERENCES.md` before changing either web surface.
+  `docs/RESEARCH_REFERENCES.md` before changing the public page.
 
 ## Scientific guardrails
 
