@@ -49,6 +49,10 @@ python -m causal_shap.build nasa-structural # the pre-frozen NASA structural pro
 
 Non-torch artifacts are bit-for-bit reproducible across runs. The `validate` stage
 hashes `analysis/output/` against a committed baseline and fails on any change.
+When a reviewed pipeline stage intentionally adds a new checked output—such as
+the Robert Reynolds DAG source artifacts—the same commit must add its SHA-256 to
+`app/bundles/analysis_output_baseline_hashes.json`. This preserves the gate
+instead of exempting the new output directory.
 
 ## Companion site (Quarto)
 
