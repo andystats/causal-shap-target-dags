@@ -1,0 +1,51 @@
+"node","x","y","exposure","outcome","latent"
+"Altered Gravity",-1.879,0.35,TRUE,FALSE,FALSE
+"Astronaut Selection",-1.84,1.35,FALSE,FALSE,FALSE
+"Brain Structural Changes",-1.43,0.948,FALSE,FALSE,FALSE
+"CO2 Physiologic Changes",-1.43,-0.438,FALSE,FALSE,FALSE
+"Chorioretinal Folds",-0.226,-0.496,FALSE,FALSE,FALSE
+"Crew Capability",0.705,-1.715,FALSE,FALSE,FALSE
+"Crew Health and Performance System",-0.831,-2.948,FALSE,FALSE,FALSE
+"Detect Brain Structural Changes",-0.015,1.193,FALSE,FALSE,FALSE
+"Detect Intracranial Pressure Changes",-1.042,0.539,FALSE,FALSE,FALSE
+"Detect Long Term Health Outcomes",0.602,0.789,FALSE,FALSE,FALSE
+"Detect Ocular Structural Changes",-0.039,-1.701,FALSE,FALSE,FALSE
+"Detect Visual Changes",0.133,-2.151,FALSE,FALSE,FALSE
+"Distance from Earth",-1.845,-2.961,TRUE,FALSE,FALSE
+"Flight Recertification",0.732,-0.661,FALSE,TRUE,FALSE
+"Fluid Shifts",-1.59,0.356,FALSE,FALSE,FALSE
+"Fundoscopy",-0.922,-1.804,FALSE,FALSE,FALSE
+"Globe Flattening",-0.555,-1.068,FALSE,FALSE,FALSE
+"HSI Processes",-1.169,-3.418,FALSE,FALSE,FALSE
+"Individual Factors",-0.523,1.35,FALSE,FALSE,FALSE
+"Individual Readiness",0.456,-1.443,FALSE,FALSE,FALSE
+"Intracranial Pressure Changes",-1.146,-0.053,FALSE,FALSE,FALSE
+"Intracranial Pressure Monitoring",-0.749,-1.552,FALSE,FALSE,FALSE
+"Lenses",0.38,-2.273,FALSE,FALSE,FALSE
+"Long Term Health Outcomes",0.655,0.048,FALSE,TRUE,FALSE
+"Loss of Mission",0.761,-3.49,FALSE,TRUE,FALSE
+"Loss of Mission Objectives",0.687,-2.9,FALSE,TRUE,FALSE
+"Lower Body Negative Pressure",-1.767,-0.679,FALSE,FALSE,FALSE
+"MRI",-0.642,0.446,FALSE,FALSE,FALSE
+"Medical Prevention Capability",-1.71,-1.538,FALSE,FALSE,FALSE
+"Medical Treatment Capability",0.204,-2.941,FALSE,FALSE,FALSE
+"Medications",-1.45,-1.102,FALSE,FALSE,FALSE
+"Optic Disc Edema",-0.597,-0.217,FALSE,FALSE,FALSE
+"Optical Coherence Tomography",-0.492,-2.021,FALSE,FALSE,FALSE
+"Pharmaceutical Effectiveness",-1.753,-2.063,FALSE,FALSE,FALSE
+"Pharmaceutical Storage Conditions",-1.441,-2.462,FALSE,FALSE,FALSE
+"Physiologic Monitoring Capability",-0.805,-2.464,FALSE,FALSE,FALSE
+"Refractive Error Shift",0.009,-1,FALSE,FALSE,FALSE
+"Retinal Nerve Fiber Layer Atrophy",-0.171,0.335,FALSE,FALSE,FALSE
+"Stress",-1.686,-0.088,FALSE,FALSE,FALSE
+"Supplements",-1.404,-1.708,FALSE,FALSE,FALSE
+"Surveillance",0.361,1.351,FALSE,FALSE,FALSE
+"Task Performance",0.716,-2.226,FALSE,TRUE,FALSE
+"Thigh Cuffs",-1.617,-0.918,FALSE,FALSE,FALSE
+"Ultrasound",-1.104,-2.056,FALSE,FALSE,FALSE
+"Vascular Congestion",-1.141,-0.891,FALSE,FALSE,FALSE
+"Vascular Structure/Function",-0.705,-0.669,FALSE,FALSE,FALSE
+"Vehicle Design",-1.441,-2.948,FALSE,FALSE,FALSE
+"Visual AcuityTests",-0.228,-2.749,FALSE,FALSE,FALSE
+"Visual Field Defect",0.154,0.216,FALSE,FALSE,FALSE
+"Visual Fields Tests",-0.315,-2.239,FALSE,FALSE,FALSE

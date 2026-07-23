@@ -20,6 +20,15 @@ Rung 5  Iteration           →  refine the DAG; report uncertainty
   (Quarto → GitHub Pages, source in [`site/`](site/)).
 - **Interactive app:** climb every rung on four datasets; run discovery and
   validation live ([`app/app.py`](app/app.py)).
+- **Research companion (static):** the applied “valor-stealing mediator” example
+  and the larger path from structural Causal SHAP through LumaWarp, DiCE, and
+  cost-sensitive counterfactual recourse — a no-build static page at
+  [`index.html`](index.html).
+
+The analyzed worked example uses NASA's public SA-07566 renal-stone DAG. A
+second source topology for spaceflight-associated neuro-ocular syndrome (SANS)
+is now ingested and validated, but it does not yet have calibrated structural
+equations or SHAP results.
 
 ## The result in one figure
 
@@ -51,7 +60,14 @@ structural prototype closes the gap to the frozen interventional truth.
 - [`app/`](app/) — the six-rung tutorial Shiny app and self-contained bundles.
 - [`app/scripts/`](app/scripts/) — the numbered build pipeline (`20`–`29`).
 - [`site/`](site/) — the Quarto companion website.
+- [`index.html`](index.html) — public-facing static research companion centered
+  on mediator credit transfer, actionable intervention targets, an animated
+  method-stack schematic, and annotated evidence.
 - [`analysis/`](analysis/) — the frozen R science (kept byte-for-byte stable).
+- [`references/robert-reynolds-2026-07-13/`](references/robert-reynolds-2026-07-13/)
+  — Robert Reynolds's renal-stone and SANS DAGitty source files.
+- [`docs/ROBERT_REYNOLDS_DAGS_2026-07-13.md`](docs/ROBERT_REYNOLDS_DAGS_2026-07-13.md)
+  — provenance, renal concordance result, and modeling notes from the handoff.
 - [`docs/`](docs/) — methods, results, reproducibility, limitations, roadmap.
 
 ## Quickstart

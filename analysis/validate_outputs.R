@@ -69,6 +69,10 @@ predictive_signal_plot_path <- file.path(shap_output_dir, "predictive_signal_dia
 structural_importance_path <- file.path(shap_output_dir, "structural_causal_shap_importance.csv")
 structural_values_path <- file.path(shap_output_dir, "structural_causal_shap_values.csv")
 structural_summary_path <- file.path(shap_output_dir, "structural_causal_shap_summary.json")
+dag_sources_dir <- file.path(analysis_dir, "output", "dag_sources")
+robert_inventory_path <- file.path(dag_sources_dir, "robert_dag_inventory.csv")
+robert_roundtrip_path <- file.path(dag_sources_dir, "robert_dag_roundtrip_summary.csv")
+robert_concordance_path <- file.path(dag_sources_dir, "robert_renal_concordance_summary.csv")
 
 stopifnot(
   file.exists(clean_path),
@@ -90,7 +94,10 @@ stopifnot(
   file.exists(predictive_signal_plot_path),
   file.exists(structural_importance_path),
   file.exists(structural_values_path),
-  file.exists(structural_summary_path)
+  file.exists(structural_summary_path),
+  file.exists(robert_inventory_path),
+  file.exists(robert_roundtrip_path),
+  file.exists(robert_concordance_path)
 )
 
 clean <- read.csv(clean_path, na.strings = "")
@@ -110,6 +117,9 @@ efficiency <- read.csv(efficiency_path, na.strings = "")
 predictive_signal <- read.csv(predictive_signal_path, na.strings = "")
 structural_importance <- read.csv(structural_importance_path, na.strings = "")
 structural_values <- read.csv(structural_values_path, na.strings = "")
+robert_inventory <- read.csv(robert_inventory_path, na.strings = "")
+robert_roundtrip <- read.csv(robert_roundtrip_path, na.strings = "")
+robert_concordance <- read.csv(robert_concordance_path, na.strings = "")
 
 node_path <- file.path(
   analysis_dir,
@@ -216,7 +226,17 @@ stopifnot(
   nrow(structural_importance) == 28L,
   abs(sum(structural_importance$normalized_importance) - 1) < 1e-10,
   nrow(structural_values) == 32L,
-  ncol(structural_values) == 29L
+  ncol(structural_values) == 29L,
+  nrow(robert_inventory) == 2L,
+  identical(robert_inventory$node_count, c(53L, 50L)),
+  identical(robert_inventory$edge_count, c(83L, 89L)),
+  all(robert_roundtrip$exact_match),
+  all(robert_roundtrip$cohen_kappa == 1),
+  !robert_concordance$exact_match[[1]],
+  !robert_concordance$exact_match[[2]],
+  robert_concordance$false_positive[[2]] == 0L,
+  robert_concordance$false_negative[[2]] == 3L,
+  robert_concordance$cohen_kappa[[2]] > 0.97
 )
 
 cat("Validation passed.\n")
@@ -268,5 +288,15 @@ cat(
     ],
     collapse = ", "
   ),
+  "\n"
+)
+cat(
+  "Robert renal / SANS source nodes:",
+  paste(robert_inventory$node_count, collapse = " / "),
+  "\n"
+)
+cat(
+  "Robert renal semantic projection kappa:",
+  round(robert_concordance$cohen_kappa[[2]], 4),
   "\n"
 )

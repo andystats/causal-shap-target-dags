@@ -8,6 +8,8 @@
   structural engine, builders, and unit tests.
 - `references/renal-stone-dag-code-SA-07566.txt`: public machine-readable NASA
   DAG input required by the simulator.
+- `references/robert-reynolds-2026-07-13/`: the renal-stone and SANS DAGitty
+  files supplied by Robert Reynolds on 2026-07-13.
 - `docs/`: public methods, results, provenance, limitations, demo guide, and
   roadmap.
 
@@ -69,6 +71,7 @@ command:
 Rscript analysis/install_dependencies.R
 Rscript analysis/run_all.R     # generate all datasets → DAG validation → truth
                                # → SHAP comparison → bootstrap → diagnostics → gate
+Rscript analysis/10_ingest_robert_dags.R   # Robert Reynolds DAG ingest (standalone)
 ```
 
 Individual stages are still runnable on their own, and — unlike the old numbered

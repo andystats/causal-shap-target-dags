@@ -91,6 +91,18 @@ interactively (`source("analysis/generate.R"); generate_dataset("source_aligned_
 the old `--file=` header. The four numbered generators (`01/02/04/05`) are
 consolidated into `generate.R`.
 
+The Robert Reynolds DAG ingest runs separately from the main pipeline:
+
+```bash
+Rscript analysis/10_ingest_robert_dags.R
+```
+
+`10_ingest_robert_dags.R` preserves and parses Robert Reynolds's renal-stone
+and SANS DAGitty files, exports canonical node/edge tables and plots, verifies
+lossless round trips, and compares the renal graph with the repository's
+previous SA-07566 source. It ingests SANS topology only; it does not invent
+structural coefficients or a SANS data-generating mechanism.
+
 The scripts require `simcausal`, `igraph`, `xgboost`, `dagitty`, `ggdag`, and
 `ggplot2` (run under R 4.5.2 in this project).
 

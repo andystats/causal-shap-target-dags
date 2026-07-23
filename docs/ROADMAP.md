@@ -32,10 +32,21 @@ the browser sandbox can't load the scientific stack.
 - Obtain domain review of graph version, coefficients, actionability, and
   intervention cost/difficulty.
 
+## Explanation-to-intervention stack
+
+- Validate LumaWarp as a prespecified candidate-depth diagnostic against known
+  DAG depth and intervention truth; do not treat its score as causal proof.
+- Add causally screened DiCE counterfactuals restricted to mutable,
+  intervenable nodes and structurally possible descendant responses.
+- Extend DiCE with decision-specific cost, burden, time, reversibility, and
+  feasibility penalties.
+- Compare the complete stack with traditional SHAP on causal influence,
+  intervenability, feasibility, and recovery of a prespecified actionable
+  target set.
+- Add manifold-constrained counterfactual/recourse sensitivity analyses.
+
 ## Subsequent extensions
 
-- Add cost- and feasibility-aware intervention ranking.
-- Add manifold-constrained counterfactual/recourse methods.
 - Evaluate a second human-system-risk DAG when a reviewable graph is available.
 - Produce the intervention-propagation animation and record the guided app
   walkthrough.
