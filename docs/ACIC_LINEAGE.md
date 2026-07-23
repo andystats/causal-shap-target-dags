@@ -1,7 +1,10 @@
-# From the ACIC 2026 Poster to Target DAGs
+# From the ACIC 2026 Causal SHAP project to Target DAGs
 
-The NASA Target DAGs project follows the ACIC poster's central argument and
-expands its scientific test.
+The NASA Target DAGs project follows the archived Tao RWD ACIC 2026 project,
+[“SHAP has short memory. Causal SHAP remembers the
+DAG.”](https://www.tao-rwd.com/acic-2026/causal-shap), and expands its scientific
+test. That page—not the sparse local conference pointer—is the visual and
+narrative source of truth for the earlier work.
 
 ## What carries forward
 
@@ -26,4 +29,4 @@ expands its scientific test.
 
 The small structural prototype is encouraging, but its scale and uncertainty do
 not yet justify a manuscript claim. That guardrail is a direct continuation of
-the poster's 50-versus-500-permutation sensitivity lesson.
+the original project's 50-versus-500-permutation sensitivity lesson.

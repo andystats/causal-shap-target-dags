@@ -338,7 +338,7 @@ app_ui = ui.page_fluid(
         ),
         ui.HTML(
             '<div class="footer">Companion site — '
-            '<a href="https://andystats.github.io/causal-shap-target-dags/">the ladder, cheatsheets &amp; glossary</a>'
+            '<a href="https://andystats.github.io/causal-shap-target-dags/">the Target DAG hierarchy</a>'
             ' · <a href="https://github.com/andystats/causal-shap-target-dags">source on GitHub</a>. '
             "All datasets are synthetic; the complexity score is provisional.</div>"
         ),

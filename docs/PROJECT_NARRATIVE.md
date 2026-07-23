@@ -1,5 +1,11 @@
 # Canonical project narrative
 
+This project is the next step after the archived ACIC 2026 Causal SHAP
+demonstration, [“SHAP has short memory. Causal SHAP remembers the
+DAG.”](https://www.tao-rwd.com/acic-2026/causal-shap). The archive establishes
+the attribution problem; Target DAGs asks how that causal account can support
+the search for an intervention target.
+
 ## One sentence
 
 **SHAP explains the model's ears. Target DAGs look for the system's levers.**

@@ -1,81 +1,78 @@
 ---
-title: "Target DAGs"
+title: ""
 pagetitle: "Target DAGs · from causal attribution to intervention"
-description: "An ACIC Causal SHAP application: move from predictive credit to defensible intervention targets."
+description: "An application of the ACIC Causal SHAP argument: move from predictive credit to defensible intervention targets."
 page-layout: full
 toc: false
 ---
 
-::: {.poster-shell}
-::: {.hero-grid}
-::: {.hero-copy}
-<p class="lineage-tag">ACIC 2026 CAUSAL SHAP → TARGET DAGS</p>
+::: {.editorial-shell}
+::: {.hero}
+<p class="lineage-tag"><a href="https://www.tao-rwd.com/acic-2026/causal-shap">ACIC 2026 CAUSAL SHAP</a> <span>→</span> TARGET DAGS</p>
 
-# SHAP has short memory. **Action starts upstream.**
+# SHAP has short memory. **Causal SHAP remembers the DAG.**
 
-The ACIC work showed the motivating failure: downstream mediators can **hog
-predictive credit** from the causes that feed them. This project asks the next
-question:
+<p class="hero-lede">Target DAGs begins where that demonstration leaves off: once attribution respects the system, <mark>which upstream node should we actually try to change?</mark></p>
 
-<p class="hero-question">Once credit moves upstream, which node is a defensible intervention target?</p>
-
-Target DAGs separates five questions that are too often collapsed into one—from
-what predicts an outcome to what action is feasible, effective, and worth
+This project separates five questions that are too often collapsed into one—
+from what predicts an outcome to what action is feasible, effective, and worth
 testing.
 
 <div class="hero-actions">
   <a class="button button-primary" href="#hierarchy">See the hierarchy</a>
-  <a class="button button-secondary" href="#demonstration">See the result</a>
+  <a class="button button-secondary" href="https://www.tao-rwd.com/acic-2026/causal-shap">Begin with the ACIC project ↗</a>
 </div>
 :::
 
-<figure class="sketch-slot hero-sketch" role="img" aria-label="Placeholder for a hand-drawn comparison of causal truth with SHAP credit concentrated on a downstream mediator">
-  <p class="slot-label">HAND-DRAWN INSERT 01 · POSTER CONTINUATION</p>
-  <div class="sketch-columns">
-    <div>
-      <span class="hand-label blue-ink">causal path</span>
-      <div class="mini-dag">
-        <span class="node cause">A</span><i>→</i><span class="node mediator">B</span><i>→</i><span class="node outcome">Y</span>
-      </div>
-      <small>A acts through B</small>
-    </div>
-    <div>
-      <span class="hand-label red-ink">what SHAP sees</span>
-      <div class="mini-dag credit-splat">
-        <span class="node cause faded">A</span><i class="faded">→</i><span class="node mediator oversized">B</span><i>→</i><span class="node outcome">Y</span>
-      </div>
-      <small>B absorbs A's credit</small>
-    </div>
-  </div>
-  <figcaption><strong>Truth vs. what SHAP thinks.</strong> Replace with a loose-ink extension of the ACIC central argument.</figcaption>
+<figure class="archive-illustration wizard-illustration">
+  <img
+    src="https://www.tao-rwd.com/img/acic-2026/WizardOfShap.png"
+    alt="A Wizard of SHAP hides severity of illness behind a curtain and attributes importance to vasopressors; Causal SHAP pulls back the curtain to reveal the upstream cause.">
+  <figcaption><strong>The original ACIC motivation.</strong> A model can reward the closest measured feature while hiding the system that produced it. Illustration from the <a href="https://www.tao-rwd.com/acic-2026/causal-shap">archived project</a>.</figcaption>
 </figure>
-:::
 
 <div class="thesis-line" aria-label="From model explanation to intervention recommendation">
   <span>model explanation</span><b>→</b><span>causal attribution</span><b>→</b><span>intervention target</span><b>→</b><span>recommendation candidate</span>
 </div>
 
-## The motivation carries forward {#motivation}
+## Prediction forgets what intervention remembers {#motivation}
+
+<p class="section-deck">The inherited failure mode is simple: an outcome-near mediator can screen off its ancestors for prediction while continuing to transmit their causal effects.</p>
+
+<div class="archive-comparison" aria-label="Causal truth compared with what ordinary SHAP sees">
+  <figure>
+    <p class="figure-kicker teal-ink">CAUSAL TRUTH</p>
+    <img
+      src="https://www.tao-rwd.com/img/acic-2026/SimpleTruth.jpg"
+      alt="A hand-drawn causal chain in which cause A points to mediator B, which points to outcome Y.">
+    <figcaption>A acts through B.</figcaption>
+  </figure>
+  <figure>
+    <p class="figure-kicker orange-ink">WHAT ORDINARY SHAP CAN SEE</p>
+    <img
+      src="https://www.tao-rwd.com/img/acic-2026/SimpleWhatSHapSees.jpg"
+      alt="The same chain with upstream cause A faded and mediator B enlarged because the mediator absorbs the predictive credit.">
+    <figcaption>B absorbs A's predictive credit.</figcaption>
+  </figure>
+</div>
 
 ::: {.motivation-grid}
-::: {.poster-claim}
-<p class="section-number">01 · FROM THE ACIC POSTER</p>
+::: {.lineage-card}
+<p class="section-number">THE HANDOFF</p>
 
-### “Downstream variables HOG credit.”
+### From coherent attribution to an actionable target.
 
-The poster framed Causal SHAP as an expert-augmented cycle: discovery proposes,
-the expert resolves, and attribution is grounded in a DAG both can defend.
-Target DAGs keeps that discipline and makes the scientific test harder.
+The [ACIC project](https://www.tao-rwd.com/acic-2026/causal-shap) showed why
+causal order and expert knowledge belong in the explanation. Target DAGs makes
+the next test explicit: compare predictive attribution, causal ordering, and
+**intervention propagation** against known total-effect truth.
 
-It compares ordinary attribution, causal ordering, and **structural intervention
-propagation** against known total-effect truth on teaching graphs and a public
-NASA renal-stone topology.
-
-[Read the ACIC-to-Target-DAGs lineage →](https://github.com/andystats/causal-shap-target-dags/blob/main/docs/ACIC_LINEAGE.md)
+The question is no longer only “who deserves credit?” It is “which upstream
+node can change the downstream outcome?”
 :::
 
 ::: {.markov-card}
-<p class="hand-label orange-ink">why the credit leak is expected</p>
+<p class="hand-label orange-ink">why the last-node splat is expected</p>
 
 <div class="chain" role="img" aria-label="Causal chain from X through mediator M to outcome Y">
   <span class="node cause">X</span><i>→</i><span class="node mediator">M</span><i>→</i><span class="node outcome">Y</span>
@@ -85,20 +82,19 @@ For the chain $X\rightarrow M\rightarrow Y$,
 
 $$Y\perp X\mid M.$$
 
-Once the model sees $M$, the ancestor $X$ can add no predictive information.
-If $M=aX+\varepsilon_M$ and $Y=bM+\varepsilon_Y$, its intervention effect
-nevertheless remains:
+Once the model sees $M$, the ancestor $X$ adds no predictive information. Yet
+if $M=aX+\varepsilon_M$ and $Y=bM+\varepsilon_Y$, its intervention effect is
 
 $$\frac{\partial}{\partial x}\,\mathbb E[Y\mid do(X=x)]=ab.$$
 
 The mediator screens off $X$ for prediction while still transmitting its
-effect. That is the gap between explanation and action.
+effect. This is an estimand mismatch, not a failure of the Shapley axioms.
 :::
 :::
 
-## One hierarchy, five different questions {#hierarchy}
+## One hierarchy. Five different questions. {#hierarchy}
 
-<p class="section-deck">Each rung inherits the one before it, but answers a stricter question. A higher rung cannot be claimed from a lower-rung score.</p>
+<p class="section-deck">Each rung inherits the one before it but makes a stricter claim. A score from a lower rung cannot answer a higher-rung question.</p>
 
 ```{=html}
 <ol class="hierarchy" aria-label="Hierarchy from prediction to recommendation">
@@ -131,14 +127,14 @@ effect. That is the gap between explanation and action.
 ```
 
 <figure class="sketch-slot hierarchy-sketch" role="img" aria-label="Placeholder for a hand-drawn staircase from predictive explanation to an upstream intervention lever">
-  <p class="slot-label">HAND-DRAWN INSERT 02 · THE HIERARCHY</p>
+  <p class="slot-label">HAND-DRAWN INSERT 01 · THE TARGET DAG HIERARCHY</p>
   <div class="step-sketch" aria-hidden="true"><span>predict</span><span>explain</span><span>propagate</span><span>filter</span><span>recommend</span></div>
-  <figcaption>A margin-note staircase: the SHAP splat stays low; a hand reaches the upstream lever only after propagation and feasibility.</figcaption>
+  <figcaption>Draw the SHAP splat on the lower steps; let a hand reach the upstream lever only after propagation and feasibility. Current evidence stops at step three.</figcaption>
 </figure>
 
 ## The smallest useful demonstration {#demonstration}
 
-<p class="section-deck">One controlled failure, one matched negative result, and one promising structural result. Everything else belongs in the research record.</p>
+<p class="section-deck">One controlled failure, one matched negative result, and one promising structural result. Everything else stays in the research record.</p>
 
 ```{=html}
 <div class="result-grid">
@@ -224,7 +220,7 @@ $$\Pr\{\Delta_Y(a)>0\}\ge 1-\alpha$$
 :::
 
 <div class="source-strip">
-  <div><p class="section-number">KEEP THE PAGE LIGHT; KEEP THE RECORD DEEP</p><strong>The methods, references, provenance, limitations, and reproducibility instructions remain in <code>docs/</code>.</strong></div>
+  <div><p class="section-number">ONE PAGE FOR THE ARGUMENT; ONE RECORD FOR THE DETAIL</p><strong>Methods, references, provenance, limitations, and reproducibility stay in <code>docs/</code>.</strong></div>
   <a class="button button-primary" href="https://github.com/andystats/causal-shap-target-dags/tree/main/docs">Open the research record</a>
   <a class="button button-secondary" href="https://github.com/andystats/causal-shap-target-dags">View the repository</a>
 </div>

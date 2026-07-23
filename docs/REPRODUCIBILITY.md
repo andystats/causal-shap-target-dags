@@ -63,9 +63,9 @@ The public site is
 quarto render site       # renders with zero code execution; output in site/_site
 ```
 
-The current pages contain prose, pre-built figures, and a generated glossary, so
-no Python or R runs at render time. `freeze: true` protects that boundary if an
-executable chunk is added later. Deploy is handled by
+The single page contains prose and pre-built figures, so no Python or R runs at
+render time. `freeze: true` protects that boundary if an executable chunk is
+added later. Deploy is handled by
 `.github/workflows/publish-site.yml` (GitHub Pages). The interactive app is **not
 hosted** — install from the repository root, then run it locally
 (`pip install -e ".[discovery]" && cd app && shiny run app.py`). This is a

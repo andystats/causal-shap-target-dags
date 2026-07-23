@@ -9,7 +9,7 @@ execute:
 
 website:
   title: "Target DAGs"
-  description: "An ACIC Causal SHAP application: move from predictive credit to defensible intervention targets."
+  description: "An application of the ACIC Causal SHAP argument: move from predictive credit to defensible intervention targets."
   site-url: https://andystats.github.io/causal-shap-target-dags/
   favicon: favicon.svg
   search: false
@@ -33,6 +33,8 @@ website:
   page-footer:
     left: "ACIC 2026 Causal SHAP → Target DAGs"
     right:
+      - text: "Original ACIC project"
+        href: https://www.tao-rwd.com/acic-2026/causal-shap
       - text: "Methods, evidence, and sources"
         href: https://github.com/andystats/causal-shap-target-dags/tree/main/docs
 

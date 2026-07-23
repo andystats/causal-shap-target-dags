@@ -23,8 +23,8 @@ implementation notes, and scientific guardrails belong here.
 - [`DATA_PROVENANCE.md`](DATA_PROVENANCE.md) — graph and data lineage.
 - [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) — environments and build commands.
 - [`ROADMAP.md`](ROADMAP.md) — publication-critical and exploratory next steps.
-- [`ACIC_LINEAGE.md`](ACIC_LINEAGE.md) — continuity with the earlier Causal SHAP
-  poster.
+- [`ACIC_LINEAGE.md`](ACIC_LINEAGE.md) — continuity with the archived Tao RWD
+  ACIC Causal SHAP project.
 - [`ROBERT_REYNOLDS_DAGS_2026-07-13.md`](ROBERT_REYNOLDS_DAGS_2026-07-13.md) —
   the renal-stone and SANS DAG handoff, concordance, and modeling decisions.
 
