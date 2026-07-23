@@ -1,64 +1,49 @@
 project:
   type: website
   output-dir: _site
+  render:
+    - index.qmd
 
-# The current pages use prose and pre-built assets, so renders execute no analysis
-# code. Freeze remains enabled as a safeguard for any future executable chunks.
 execute:
   freeze: true
 
 website:
   title: "Target DAGs"
-  description: "Why predictive attribution points to the last node—and how intervention propagation moves action upstream."
+  description: "An ACIC Causal SHAP application: move from predictive credit to defensible intervention targets."
   site-url: https://andystats.github.io/causal-shap-target-dags/
-  page-navigation: true
+  favicon: favicon.svg
+  search: false
+  page-navigation: false
   navbar:
     background: light
+    collapse: true
     left:
-      - text: "The demonstration"
-        href: index.qmd
-      - text: "Why it happens"
-        href: why-it-happens.qmd
-      - text: "Evidence"
-        href: evidence.qmd
-      - text: "Research lineage"
-        href: research-lineage.qmd
-      - text: "Reproduce"
-        href: reproducibility.qmd
-      - text: "Lab notebook"
-        menu:
-          - text: "Six-rung workflow"
-            href: workflow/index.qmd
-          - text: "Interactive app"
-            href: app.qmd
-          - text: "DAG vocabulary"
-            href: cheatsheets/dag-vocabulary.qmd
-          - text: "Discovery algorithms"
-            href: cheatsheets/discovery-algorithms.qmd
-          - text: "SHAP variants & equations"
-            href: cheatsheets/shap-variants.qmd
-          - text: "Estimands & validation"
-            href: cheatsheets/estimands-validation.qmd
-          - text: "Glossary"
-            href: glossary.qmd
+      - text: "Motivation"
+        href: index.qmd#motivation
+      - text: "Hierarchy"
+        href: index.qmd#hierarchy
+      - text: "Demonstration"
+        href: index.qmd#demonstration
+      - text: "Status"
+        href: index.qmd#status
     right:
-      - text: "About"
-        href: about.qmd
       - icon: github
+        aria-label: "GitHub repository"
         href: https://github.com/andystats/causal-shap-target-dags
+  page-footer:
+    left: "ACIC 2026 Causal SHAP → Target DAGs"
+    right:
+      - text: "Methods, evidence, and sources"
+        href: https://github.com/andystats/causal-shap-target-dags/tree/main/docs
 
 format:
   html:
     theme:
       - cosmo
       - theme.scss
-    toc: true
-    toc-depth: 3
-    code-copy: true
-    code-overflow: wrap
-    fig-cap-location: bottom
+    toc: false
+    anchor-sections: false
     smooth-scroll: true
     grid:
-      body-width: 860px
-      sidebar-width: 260px
-      margin-width: 260px
+      body-width: 1180px
+      gutter-width: 1.5rem

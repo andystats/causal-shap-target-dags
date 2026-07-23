@@ -1,218 +1,231 @@
 ---
-title: "Causal SHAP for Target DAGs"
-pagetitle: "Causal SHAP for Target DAGs"
-description: "A focused demonstration of why SHAP can reward the last measured nodes instead of useful upstream intervention targets."
+title: "Target DAGs"
+pagetitle: "Target DAGs · from causal attribution to intervention"
+description: "An ACIC Causal SHAP application: move from predictive credit to defensible intervention targets."
 page-layout: full
 toc: false
 ---
 
-::: {.home-shell}
-::: {.site-hero}
+::: {.poster-shell}
+::: {.hero-grid}
 ::: {.hero-copy}
-<p class="eyebrow">FROM PREDICTIVE ATTRIBUTION TO INTERVENABLE RECOMMENDATIONS</p>
+<p class="lineage-tag">ACIC 2026 CAUSAL SHAP → TARGET DAGS</p>
 
-# SHAP points to the last node. Action starts upstream.
+# SHAP has short memory. **Action starts upstream.**
 
-SHAP tells us what the model listened to. A recommendation needs a different
-answer: **which feasible intervention will propagate to the outcome?**
+The ACIC work showed the motivating failure: downstream mediators can **hog
+predictive credit** from the causes that feed them. This project asks the next
+question:
 
-On a causal DAG, an accurate predictor can compress onto the last measured
-mediator or proxy. SHAP then faithfully concentrates credit there—even when the
-useful lever is upstream, or the winning feature has zero total effect.
+<p class="hero-question">Once credit moves upstream, which node is a defensible intervention target?</p>
+
+Target DAGs separates five questions that are too often collapsed into one—from
+what predicts an outcome to what action is feasible, effective, and worth
+testing.
 
 <div class="hero-actions">
-  <a class="button button-primary" href="#the-demonstration">See the 30-second demonstration</a>
-  <a class="button button-quiet" href="why-it-happens.html">Read the three-node proof</a>
+  <a class="button button-primary" href="#hierarchy">See the hierarchy</a>
+  <a class="button button-secondary" href="#demonstration">See the result</a>
 </div>
 :::
 
-<figure class="illustration-slot hero-illustration" role="img" aria-label="Placeholder for a hand-drawn illustration contrasting an attribution splat with an upstream lever">
-  <div class="illustration-number">HAND-DRAWN SLOT 01</div>
-  <div class="illustration-mark">✦</div>
-  <figcaption>
-    <strong>The splat and the lever</strong>
-    <span>A paint splat sticks to the last node while a hand reaches upstream for the lever.</span>
-    <small>Suggested crop: 4:3 · loose ink + one coral wash</small>
-  </figcaption>
+<figure class="sketch-slot hero-sketch" role="img" aria-label="Placeholder for a hand-drawn comparison of causal truth with SHAP credit concentrated on a downstream mediator">
+  <p class="slot-label">HAND-DRAWN INSERT 01 · POSTER CONTINUATION</p>
+  <div class="sketch-columns">
+    <div>
+      <span class="hand-label blue-ink">causal path</span>
+      <div class="mini-dag">
+        <span class="node cause">A</span><i>→</i><span class="node mediator">B</span><i>→</i><span class="node outcome">Y</span>
+      </div>
+      <small>A acts through B</small>
+    </div>
+    <div>
+      <span class="hand-label red-ink">what SHAP sees</span>
+      <div class="mini-dag credit-splat">
+        <span class="node cause faded">A</span><i class="faded">→</i><span class="node mediator oversized">B</span><i>→</i><span class="node outcome">Y</span>
+      </div>
+      <small>B absorbs A's credit</small>
+    </div>
+  </div>
+  <figcaption><strong>Truth vs. what SHAP thinks.</strong> Replace with a loose-ink extension of the ACIC central argument.</figcaption>
 </figure>
 :::
 
-<div class="thesis-strip" aria-label="Project thesis">
-  <span>Prediction</span><b>≠</b><span>intervention</span><b>≠</b><span>recommendation</span>
+<div class="thesis-line" aria-label="From model explanation to intervention recommendation">
+  <span>model explanation</span><b>→</b><span>causal attribution</span><b>→</b><span>intervention target</span><b>→</b><span>recommendation candidate</span>
 </div>
 
-## The demonstration {#the-demonstration}
+## The motivation carries forward {#motivation}
 
-<p class="section-deck">A deliberately legible stress test. The graph is known, the data are synthetic, and every method explains the same fitted predictor.</p>
+::: {.motivation-grid}
+::: {.poster-claim}
+<p class="section-number">01 · FROM THE ACIC POSTER</p>
+
+### “Downstream variables HOG credit.”
+
+The poster framed Causal SHAP as an expert-augmented cycle: discovery proposes,
+the expert resolves, and attribution is grounded in a DAG both can defend.
+Target DAGs keeps that discipline and makes the scientific test harder.
+
+It compares ordinary attribution, causal ordering, and **structural intervention
+propagation** against known total-effect truth on teaching graphs and a public
+NASA renal-stone topology.
+
+[Read the ACIC-to-Target-DAGs lineage →](https://github.com/andystats/causal-shap-target-dags/blob/main/docs/ACIC_LINEAGE.md)
+:::
+
+::: {.markov-card}
+<p class="hand-label orange-ink">why the credit leak is expected</p>
+
+<div class="chain" role="img" aria-label="Causal chain from X through mediator M to outcome Y">
+  <span class="node cause">X</span><i>→</i><span class="node mediator">M</span><i>→</i><span class="node outcome">Y</span>
+</div>
+
+For the chain $X\rightarrow M\rightarrow Y$,
+
+$$Y\perp X\mid M.$$
+
+Once the model sees $M$, the ancestor $X$ can add no predictive information.
+If $M=aX+\varepsilon_M$ and $Y=bM+\varepsilon_Y$, its intervention effect
+nevertheless remains:
+
+$$\frac{\partial}{\partial x}\,\mathbb E[Y\mid do(X=x)]=ab.$$
+
+The mediator screens off $X$ for prediction while still transmitting its
+effect. That is the gap between explanation and action.
+:::
+:::
+
+## One hierarchy, five different questions {#hierarchy}
+
+<p class="section-deck">Each rung inherits the one before it, but answers a stricter question. A higher rung cannot be claimed from a lower-rung score.</p>
 
 ```{=html}
-<div class="demo-layout">
-  <section class="demo-setup" aria-labelledby="demo-setup-title">
-    <p class="step-label">01 · BUILD THE TRAP</p>
-    <h3 id="demo-setup-title">Put a mediator and a downstream proxy next to the outcome.</h3>
-    <div class="dag-schematic" role="img" aria-label="Schematic causal chain from Diet and Climate through Hydration to Outcome and then Clinic Visit">
-      <div class="dag-roots">
-        <span class="dag-node lever">Diet</span>
-        <span class="dag-node lever">Climate</span>
-      </div>
-      <span class="dag-arrow" aria-hidden="true">→</span>
-      <span class="dag-node mediator">Hydration</span>
-      <span class="dag-arrow" aria-hidden="true">→</span>
-      <span class="dag-node outcome">Outcome</span>
-      <span class="dag-arrow" aria-hidden="true">→</span>
-      <span class="dag-node proxy">Clinic visit</span>
-    </div>
-    <p class="microcopy">Schematic, read left to right. In the full toy DAG, Climate also points to the outcome and Diet also points to ClinicVisit.</p>
-    <div class="zero-effect-stamp"><strong>ClinicVisit:</strong> highly predictive · total effect = 0</div>
-  </section>
+<ol class="hierarchy" aria-label="Hierarchy from prediction to recommendation">
+  <li>
+    <span class="rung-number">01</span>
+    <div><p>Prediction</p><h3>What is likely to happen?</h3><small>A fitted model estimates an outcome from observed features.</small></div>
+    <b class="rung-limit">association</b>
+  </li>
+  <li>
+    <span class="rung-number">02</span>
+    <div><p>Predictive attribution</p><h3>What did this model use?</h3><small>Ordinary SHAP allocates credit for the fitted prediction—not for changing the world.</small></div>
+    <b class="rung-limit">model credit</b>
+  </li>
+  <li class="rung-current">
+    <span class="rung-number">03</span>
+    <div><p>Structural attribution</p><h3>What propagates under intervention?</h3><small>Set a DAG node, regenerate its descendants, and measure the full downstream response.</small></div>
+    <b class="rung-limit">current evidence</b>
+  </li>
+  <li>
+    <span class="rung-number">04</span>
+    <div><p>Intervention target</p><h3>What can we actually change?</h3><small>Filter upstream influence through mutability, timing, constraints, and domain review.</small></div>
+    <b class="rung-limit">next layer</b>
+  </li>
+  <li>
+    <span class="rung-number">05</span>
+    <div><p>Recommendation candidate</p><h3>Which feasible action is worth testing?</h3><small>Compare expected benefit, cost, and uncertainty. This is a decision claim, not another importance score.</small></div>
+    <b class="rung-limit">decision layer</b>
+  </li>
+</ol>
+```
 
-  <section class="demo-result" aria-labelledby="demo-result-title">
-    <p class="step-label">02 · WATCH CREDIT SPLAT DOWNSTREAM</p>
-    <h3 id="demo-result-title">Ordinary SHAP ranks the zero-effect proxy first.</h3>
-    <div class="bar-chart" aria-label="Ordinary SHAP normalized importance: Diet 9 percent, Climate 15 percent, Hydration 30 percent, Clinic visit 46 percent">
-      <div class="bar-row"><span>Diet</span><div class="bar-track"><i class="bar upstream" style="width: 9%"></i></div><b>9%</b></div>
-      <div class="bar-row"><span>Climate</span><div class="bar-track"><i class="bar upstream" style="width: 15%"></i></div><b>15%</b></div>
-      <div class="bar-row"><span>Hydration</span><div class="bar-track"><i class="bar middle" style="width: 30%"></i></div><b>30%</b></div>
-      <div class="bar-row winner"><span>ClinicVisit</span><div class="bar-track"><i class="bar downstream" style="width: 46%"></i></div><b>46%</b></div>
-    </div>
-    <p class="chart-note">Normalized mean absolute SHAP. The method is answering “what did the predictor use?” correctly.</p>
-  </section>
+<figure class="sketch-slot hierarchy-sketch" role="img" aria-label="Placeholder for a hand-drawn staircase from predictive explanation to an upstream intervention lever">
+  <p class="slot-label">HAND-DRAWN INSERT 02 · THE HIERARCHY</p>
+  <div class="step-sketch" aria-hidden="true"><span>predict</span><span>explain</span><span>propagate</span><span>filter</span><span>recommend</span></div>
+  <figcaption>A margin-note staircase: the SHAP splat stays low; a hand reaches the upstream lever only after propagation and feasibility.</figcaption>
+</figure>
 
-  <section class="demo-truth" aria-labelledby="demo-truth-title">
-    <p class="step-label">03 · ASK THE INTERVENTION QUESTION</p>
-    <h3 id="demo-truth-title">Known total-effect truth moves the ranking upstream.</h3>
-    <div class="bar-chart truth-chart" aria-label="Interventional truth normalized importance: Diet 28 percent, Climate 38 percent, Hydration 34 percent, Clinic visit 0 percent">
-      <div class="bar-row"><span>Diet</span><div class="bar-track"><i class="bar upstream" style="width: 28%"></i></div><b>28%</b></div>
-      <div class="bar-row"><span>Climate</span><div class="bar-track"><i class="bar upstream" style="width: 38%"></i></div><b>38%</b></div>
-      <div class="bar-row"><span>Hydration</span><div class="bar-track"><i class="bar middle" style="width: 34%"></i></div><b>34%</b></div>
-      <div class="bar-row zero"><span>ClinicVisit</span><div class="bar-track"><i class="bar downstream" style="width: 0%"></i></div><b>0%</b></div>
-    </div>
-    <p class="chart-note">Normalized absolute total effects from the known structural equations—not an estimate from observational data.</p>
-  </section>
+## The smallest useful demonstration {#demonstration}
+
+<p class="section-deck">One controlled failure, one matched negative result, and one promising structural result. Everything else belongs in the research record.</p>
+
+```{=html}
+<div class="result-grid">
+  <article class="result-card result-warning">
+    <p>Teaching stress test</p>
+    <strong>46%</strong>
+    <h3>Ordinary SHAP mass on ClinicVisit</h3>
+    <small>The downstream proxy ranks first while its known total effect is <b>0%</b>.</small>
+  </article>
+  <article class="result-card">
+    <p>NASA-topology simulation</p>
+    <strong>τ 0.528</strong>
+    <h3>DAG ordering alone</h3>
+    <small>Essentially tied with matched ordinary SHAP at τ 0.506. Ordering is not propagation.</small>
+  </article>
+  <article class="result-card result-positive">
+    <p>Structural prototype</p>
+    <strong>τ 0.794</strong>
+    <h3>Intervention propagation</h3>
+    <small>Top-five recovery is 1.00 against frozen total-effect truth; promising, still provisional.</small>
+  </article>
 </div>
 ```
 
-<div class="demo-takeaway">
-  <span class="takeaway-kicker">THE GAP</span>
-  <p><strong>The most predictive feature is not necessarily an intervention target.</strong> In this toy example, ordinary SHAP gives 46% of its mass to a downstream proxy with no causal effect on the outcome.</p>
-  <a href="evidence.html">Inspect the full evidence →</a>
+::: {.demo-dag}
+::: {.demo-dag-copy}
+<p class="section-number">THE TRAP, READ LEFT TO RIGHT</p>
+
+### A useful lever can disappear behind a nearby measurement.
+
+Diet and climate act upstream; hydration transmits part of their effect; the
+outcome then predicts a clinic visit. A predictive explainer can faithfully
+reward the final measurement even though intervening on it cannot change the
+outcome that preceded it.
+:::
+
+<div class="wide-dag" role="img" aria-label="Diet and climate point to hydration, which points to outcome, which points to clinic visit">
+  <div><span class="node cause">Diet</span><span class="node cause">Climate</span></div><i>→</i><span class="node mediator">Hydration</span><i>→</i><span class="node outcome">Outcome</span><i>→</i><span class="node proxy">Clinic visit</span>
 </div>
-
-## Why the splat is mathematically expected
-
-::: {.proof-preview}
-::: {.proof-copy}
-For the chain $X \rightarrow M \rightarrow Y$, the local Markov property gives
-
-$$Y \perp X \mid M.$$
-
-If $M=aX+\varepsilon_M$ and $Y=bM+\varepsilon_Y$, then the best predictor given
-both inputs is $f(x,m)=\mathbb{E}[Y\mid x,m]=bm$. It has no remaining predictive
-use for $X$, so ordinary model attribution can assign $X$ zero credit.
-
-But intervention leverage has not disappeared:
-
-$$\frac{\partial}{\partial x}\mathbb{E}[Y\mid do(X=x)] = ab.$$
-
-The mediator **screens off** the upstream cause for prediction while still
-**transmitting** its intervention effect. That is the whole failure mode in four
-lines.
-
-[See the assumptions, variants, and published precedents →](why-it-happens.qmd)
 :::
 
-<figure class="illustration-slot proof-illustration" role="img" aria-label="Placeholder for a hand-drawn Markov screening illustration">
-  <div class="illustration-number">HAND-DRAWN SLOT 02</div>
-  <div class="illustration-mark">↝</div>
-  <figcaption>
-    <strong>The screening curtain</strong>
-    <span>M closes a curtain between X and prediction, but an intervention arrow still travels X → M → Y.</span>
-    <small>Suggested crop: tall 3:4 · black ink + green highlight</small>
-  </figcaption>
-</figure>
+## The destination is a decision {#recommendation}
+
+::: {.decision-band}
+::: {.decision-copy}
+<p class="section-number section-number-light">THE ELEVATOR PITCH</p>
+
+### SHAP explains the model's ears. Target DAGs look for the system's levers.
+
+Structural attribution is an input to a recommendation—not the recommendation
+itself. The eventual target is a feasible action with positive propagated
+benefit, acceptable cost, and robustness to uncertainty.
 :::
 
-## Our move: change the coalition question
-
-<p class="section-deck">This project extends our earlier Causal SHAP work by testing target recovery on a public NASA DAG topology and by separating causal ordering from actual intervention propagation.</p>
-
-::: {.method-band}
-::: {.method-formula}
-<span class="formula-label">STRUCTURAL COALITION VALUE</span>
-
-$$v_{do}(S)=\mathbb{E}\!\left[f(X)\mid do(X_S=x_S)\right]$$
-
-<p>Fix the in-coalition variables, then regenerate unfixed descendants through the structural model. The resulting Shapley value can contain both direct and propagated indirect contribution.</p>
-:::
-
-::: {.method-contrast}
-<div><span>Ordering alone</span><p>Changes which coalitions are allowed.</p></div>
-<div><span>Propagation</span><p>Changes what the world does after the intervention.</p></div>
-<strong>The NASA experiment says only the second move closes the target-recovery gap in this prototype.</strong>
-:::
-:::
-
-## The destination is a recommendation, not another importance score
-
-<div class="recommendation-flow">
-  <div class="flow-step"><span>01</span><strong>Structural effect</strong><p>What changes downstream under $do(a)$?</p></div>
-  <div class="flow-join">+</div>
-  <div class="flow-step"><span>02</span><strong>Feasibility + cost</strong><p>Can we act here, and at what burden?</p></div>
-  <div class="flow-join">+</div>
-  <div class="flow-step"><span>03</span><strong>Uncertainty</strong><p>Does the choice survive plausible models?</p></div>
-  <div class="flow-join">→</div>
-  <div class="flow-step flow-output"><span>04</span><strong>Recommendation candidate</strong><p>A lever worth testing—not a causal promise.</p></div>
-</div>
-
-A general decision target is
-
+::: {.decision-formula}
 $$a^*=\arg\max_{a\in\mathcal A_{\mathrm{feasible}}}
-\frac{\mathbb E[Y\mid do(a)]-\mathbb E[Y]}{C(a)}
-\quad\text{subject to}\quad
-\Pr\{\Delta_Y(a)>0\}\ge 1-\alpha.$$
+\frac{\mathbb E[Y\mid do(a)]-\mathbb E[Y]}{C(a)}$$
 
-The current repository validates the **structural-attribution** piece of that
-path. It does not yet estimate real action costs or guarantee recourse. That next
-step follows the causal-recourse framing of
-[Karimi, Schölkopf & Valera](https://arxiv.org/abs/2002.06278).
+$$\Pr\{\Delta_Y(a)>0\}\ge 1-\alpha$$
 
-<figure class="illustration-slot wide-illustration" role="img" aria-label="Placeholder for a hand-drawn intervention recommendation pipeline">
-  <div class="illustration-number">HAND-DRAWN SLOT 03</div>
-  <div class="illustration-mark">☞</div>
-  <figcaption>
-    <strong>Choose the reachable lever</strong>
-    <span>Several upstream levers, with a hand circling the one that is effective, feasible, and robust.</span>
-    <small>Suggested crop: 3:1 · margin-note style</small>
-  </figcaption>
-</figure>
+<p>effective × feasible × robust ÷ costly</p>
+:::
+:::
 
-## What is established—and what is not
+## What this project can claim {#status}
 
-<div class="evidence-status">
-  <section>
-    <span class="status-label established">ESTABLISHED IN THIS REPO</span>
-    <ul>
-      <li>A zero-effect downstream proxy can dominate ordinary SHAP in a known toy SCM.</li>
-      <li>On the NASA-topology simulation, ordinary and DAG-ordering SHAP are statistically tied.</li>
-      <li>The intervention-propagating prototype is much closer to frozen total-effect truth.</li>
-    </ul>
-  </section>
-  <section>
-    <span class="status-label provisional">STILL PROVISIONAL</span>
-    <ul>
-      <li>All outcomes are synthetic; NASA supplies topology, not effect estimates.</li>
-      <li>The structural NASA run is small and still needs paired uncertainty and scale-up.</li>
-      <li>Target attribution is not yet a feasibility-aware intervention policy.</li>
-    </ul>
-  </section>
-</div>
+::: {.status-grid}
+::: {.status-column}
+<span class="status-tag established">ESTABLISHED HERE</span>
 
-<div class="closing-band">
-  <p class="eyebrow">THE ELEVATOR PITCH</p>
-  <h2>SHAP explains the model’s ears.<br>Target DAGs look for the system’s levers.</h2>
-  <div class="hero-actions">
-<a class="button button-primary" href="research-lineage.html">See how this extends Causal SHAP</a>
-<a class="button button-quiet" href="reproducibility.html">Reproduce the demonstration</a>
-  </div>
+- A zero-effect downstream proxy can dominate ordinary SHAP in a known toy SCM.
+- On the NASA-topology simulation, ordering-only and ordinary SHAP are tied.
+- Structural propagation moves attribution toward frozen intervention truth.
+:::
+
+::: {.status-column}
+<span class="status-tag provisional">NOT ESTABLISHED YET</span>
+
+- NASA supplies topology, not empirical coefficients or effects.
+- The structural result still needs larger runs and paired uncertainty.
+- No attribution score in this repository is a clinical recommendation.
+:::
+:::
+
+<div class="source-strip">
+  <div><p class="section-number">KEEP THE PAGE LIGHT; KEEP THE RECORD DEEP</p><strong>The methods, references, provenance, limitations, and reproducibility instructions remain in <code>docs/</code>.</strong></div>
+  <a class="button button-primary" href="https://github.com/andystats/causal-shap-target-dags/tree/main/docs">Open the research record</a>
+  <a class="button button-secondary" href="https://github.com/andystats/causal-shap-target-dags">View the repository</a>
 </div>
 :::

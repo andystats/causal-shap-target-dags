@@ -18,18 +18,12 @@ an intervention-propagating structural value function is promising, but still
 needs larger runs and uncertainty estimates.
 
 - **[Focused demonstration](https://andystats.github.io/causal-shap-target-dags/):**
-  the elevator pitch, the five-node failure, and the path from attribution to
-  intervenable recommendations.
-- **[Why it happens](https://andystats.github.io/causal-shap-target-dags/why-it-happens.html):**
-  the three-node Markov proof and its assumptions.
-- **[Evidence ledger](https://andystats.github.io/causal-shap-target-dags/evidence.html):**
-  the teaching result, the ordering-only null, and the structural prototype.
+  one poster-descended argument from prediction through recommendation, with
+  the Markov explanation and three decisive results kept on the same page.
+- **[Research record](docs/README.md):** methods, evidence, references,
+  provenance, limitations, reproducibility, and the ACIC lineage.
 - **Interactive app:** climb every rung on four datasets; run discovery and
   validation live ([`app/app.py`](app/app.py)).
-- **Research companion (static):** the applied “valor-stealing mediator” example
-  and the larger path from structural Causal SHAP through LumaWarp, DiCE, and
-  cost-sensitive counterfactual recourse — a no-build static page at
-  [`index.html`](index.html).
 
 The analyzed worked example uses NASA's public SA-07566 renal-stone DAG. A
 second source topology for spaceflight-associated neuro-ocular syndrome (SANS)
@@ -67,10 +61,10 @@ structural prototype closes the gap to the frozen interventional truth.
 - [`app/causal_shap/build/`](app/causal_shap/build/) — the consolidated build CLI
   for teaching data, discovery, attribution, validation, figures, and release
   checks.
-- [`site/`](site/) — the Quarto companion website.
-- [`index.html`](index.html) — public-facing static research companion centered
-  on mediator credit transfer, actionable intervention targets, an animated
-  method-stack schematic, and annotated evidence.
+- [`site/`](site/) — the single-page Quarto exposition, visually and
+  rhetorically continuous with the ACIC 2026 poster.
+- [`index.html`](index.html) — a lightweight redirect to the canonical GitHub
+  Pages site; it intentionally contains no second version of the narrative.
 - [`analysis/`](analysis/) — the R analysis pipeline and frozen result artifacts.
 - [`references/robert-reynolds-2026-07-13/`](references/robert-reynolds-2026-07-13/)
   — Robert Reynolds's renal-stone and SANS DAGitty source files.
@@ -81,9 +75,8 @@ structural prototype closes the gap to the frozen interventional truth.
   provenance, reproducibility, limitations, and roadmap.
 
 The checked CSVs, model, and figures under `analysis/output/` are the auditable
-result record. Selected copies under `app/bundles/` and `site/assets/` make the
-app and site self-contained; Git stores identical files as one blob, so these
-copies add much less repository weight than their checkout sizes suggest.
+result record. Selected copies under `app/bundles/` support the deterministic
+app and are validated against the frozen outputs.
 
 ## Quickstart
 
@@ -98,7 +91,7 @@ python -m pip install -e ".[discovery]"
 cd app && shiny run app.py  # open http://127.0.0.1:8000
 ```
 
-Rebuild the teaching pipeline and site figures:
+Rebuild the teaching pipeline and app figures:
 
 ```bash
 cd ..
@@ -116,8 +109,8 @@ python -m unittest discover -s app/tests -v     # library + app tests
 python -m causal_shap.build validate            # bundles + frozen-output hash gate
 ```
 
-See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) and the site's
-[Reproduce](site/reproducibility.qmd) page for the full two-language pipeline.
+See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the full
+two-language pipeline.
 
 ## Scientific status
 
