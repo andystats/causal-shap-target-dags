@@ -76,7 +76,9 @@ structural prototype closes the gap to the frozen interventional truth.
   — Robert Reynolds's renal-stone and SANS DAGitty source files.
 - [`docs/ROBERT_REYNOLDS_DAGS_2026-07-13.md`](docs/ROBERT_REYNOLDS_DAGS_2026-07-13.md)
   — provenance, renal concordance result, and modeling notes from the handoff.
-- [`docs/`](docs/) — methods, results, reproducibility, limitations, roadmap.
+- [`docs/README.md`](docs/README.md) — documentation index for the canonical
+  narrative, annotated references, site-integration guide, methods, results,
+  provenance, reproducibility, limitations, and roadmap.
 
 The checked CSVs, model, and figures under `analysis/output/` are the auditable
 result record. Selected copies under `app/bundles/` and `site/assets/` make the
