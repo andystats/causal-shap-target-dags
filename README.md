@@ -18,8 +18,10 @@ an intervention-propagating structural value function is promising, but still
 needs larger runs and uncertainty estimates.
 
 - **[Focused demonstration](https://andystats.github.io/causal-shap-target-dags/):**
-  one poster-descended argument from prediction through recommendation, with
-  the Markov explanation and three decisive results kept on the same page.
+  one application of the [archived ACIC Causal SHAP
+  project](https://www.tao-rwd.com/acic-2026/causal-shap), moving from prediction
+  through recommendation with the Markov explanation and three decisive
+  results on one page.
 - **[Research record](docs/README.md):** methods, evidence, references,
   provenance, limitations, reproducibility, and the ACIC lineage.
 - **Interactive app:** climb every rung on four datasets; run discovery and
@@ -62,7 +64,7 @@ structural prototype closes the gap to the frozen interventional truth.
   for teaching data, discovery, attribution, validation, figures, and release
   checks.
 - [`site/`](site/) — the single-page Quarto exposition, visually and
-  rhetorically continuous with the ACIC 2026 poster.
+  rhetorically continuous with the archived Tao RWD ACIC project.
 - [`index.html`](index.html) — a lightweight redirect to the canonical GitHub
   Pages site; it intentionally contains no second version of the narrative.
 - [`analysis/`](analysis/) — the R analysis pipeline and frozen result artifacts.
