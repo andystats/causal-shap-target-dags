@@ -34,3 +34,8 @@ Thumbs.db
 
 # PNG and CSV outputs are the canonical checked artifacts; omit duplicate PDFs.
 analysis/output/**/*.pdf
+
+# Local clinical-row inputs are never part of the public Workbench bundle.
+app/workbench/data/sample_train.csv
+train.impute.csv
+test.impute.csv

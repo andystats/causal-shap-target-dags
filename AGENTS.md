@@ -23,8 +23,8 @@
   limitations in `docs/`, not in additional public microsites.
 - The root `index.html` is only a lightweight redirect to GitHub Pages. Do not
   grow it into a second web surface.
-- Settle narrative and references in `docs/PROJECT_NARRATIVE.md` and
-  `docs/RESEARCH_REFERENCES.md` before changing the public page.
+- Settle narrative and references in `docs/RESEARCH_RECORD.md` and
+  `docs/PROVENANCE_AND_REFERENCES.md` before changing the public page.
 
 ## Scientific guardrails
 

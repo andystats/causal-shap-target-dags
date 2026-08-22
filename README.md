@@ -70,7 +70,7 @@ structural prototype closes the gap to the frozen interventional truth.
 - [`analysis/`](analysis/) — the R analysis pipeline and frozen result artifacts.
 - [`references/robert-reynolds-2026-07-13/`](references/robert-reynolds-2026-07-13/)
   — Robert Reynolds's renal-stone and SANS DAGitty source files.
-- [`docs/ROBERT_REYNOLDS_DAGS_2026-07-13.md`](docs/ROBERT_REYNOLDS_DAGS_2026-07-13.md)
+- [`docs/PROVENANCE_AND_REFERENCES.md`](docs/PROVENANCE_AND_REFERENCES.md)
   — provenance, renal concordance result, and modeling notes from the handoff.
 - [`docs/README.md`](docs/README.md) — documentation index for the canonical
   narrative, annotated references, site-integration guide, methods, results,
@@ -111,7 +111,7 @@ python -m unittest discover -s app/tests -v     # library + app tests
 python -m causal_shap.build validate            # bundles + frozen-output hash gate
 ```
 
-See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the full
+See [`docs/REPRODUCIBILITY_AND_SITE.md`](docs/REPRODUCIBILITY_AND_SITE.md) for the full
 two-language pipeline.
 
 ## Scientific status
