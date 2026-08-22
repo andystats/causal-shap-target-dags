@@ -3,9 +3,12 @@ from __future__ import annotations
 import unittest
 
 import networkx as nx
+import numpy as np
 
 from causal_shap.discovery import (
     compare_graphs,
+    deterministic_consistent_extension,
+    direct_lingam_adjacency_to_pdag,
     enforce_dag,
     identify_adjustment_sets,
     pairwise_skeleton_disagreement,
@@ -15,6 +18,7 @@ from causal_shap.discovery import (
     skeleton_f1,
     to_dagitty,
 )
+from causal_shap.graphs import PDAG
 from causal_shap.teaching_dags import simulate_dataframe, toy_chain_fork_collider
 
 
@@ -41,6 +45,43 @@ class DiscoveryMetricsTests(unittest.TestCase):
         graph = nx.DiGraph(edges)
         self.assertTrue(nx.is_directed_acyclic_graph(graph))
         self.assertEqual(len(removed), 1)
+
+    def test_consistent_extension_preserves_equivalence_class(self) -> None:
+        pdag = PDAG(
+            nodes=("A", "B", "C", "D"),
+            directed_edges=frozenset({("A", "B"), ("C", "B")}),
+            undirected_edges=frozenset({("B", "D")}),
+        )
+        first = deterministic_consistent_extension(pdag)
+        second = deterministic_consistent_extension(pdag)
+
+        self.assertEqual(set(first.edges), set(second.edges))
+        self.assertEqual(set(pdag.directed_edges) - set(first.edges), set())
+        self.assertEqual(
+            {tuple(sorted(edge)) for edge in first.edges}, set(pdag.skeleton)
+        )
+        self.assertIn(("B", "D"), first.edges)
+        self.assertTrue(nx.is_directed_acyclic_graph(first))
+
+    def test_consistent_extension_rejects_cyclic_compelled_edges(self) -> None:
+        pdag = PDAG(
+            nodes=("A", "B", "C"),
+            directed_edges=frozenset({("A", "B"), ("B", "C"), ("C", "A")}),
+            undirected_edges=frozenset(),
+        )
+        with self.assertRaisesRegex(ValueError, "directed component is cyclic"):
+            deterministic_consistent_extension(pdag)
+
+    def test_direct_lingam_matrix_uses_child_parent_indexing(self) -> None:
+        matrix = np.zeros((3, 3))
+        matrix[1, 0] = 0.8  # A -> B
+        matrix[2, 1] = -0.4  # B -> C
+        pdag = direct_lingam_adjacency_to_pdag(
+            matrix, ("A", "B", "C"), threshold=0.1
+        )
+        self.assertEqual(
+            pdag.directed_edges, frozenset({("A", "B"), ("B", "C")})
+        )
 
     def test_shrier_platt_detects_open_backdoor(self) -> None:
         graph = nx.DiGraph([("L", "A"), ("L", "Y"), ("A", "Y")])

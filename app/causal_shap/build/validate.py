@@ -1,8 +1,10 @@
 """Release gate for the Python bundle pipeline (mirrors validate_outputs.R).
 
-Asserts three invariants: the frozen analysis/output tree is byte-for-byte
-unchanged (via a committed baseline hash manifest), the bundle manifest resolves
-with no missing files, and every expected stage artifact exists.
+Asserts three invariants: the frozen analysis/output tree is unchanged (via a
+committed baseline hash manifest), the bundle manifest resolves with no missing
+files, and every expected stage artifact exists. Text-file newlines are
+normalized to LF before hashing so Git's Windows checkout conversion is not
+misclassified as a scientific-output change; binary files remain byte-exact.
 """
 
 from __future__ import annotations
@@ -25,12 +27,25 @@ EXPECTED_STAGE_ARTIFACTS = {
     "nasa_renal_clean_v3": ["complexity.json", "validation_scorecard.csv", "validation_estimands.csv"],
 }
 
+TEXT_OUTPUT_SUFFIXES = frozenset(
+    {".csv", ".json", ".md", ".r", ".txt", ".yaml", ".yml"}
+)
+
+
+def _content_hash(path: Path) -> str:
+    """Hash text with canonical LF newlines and binary output byte-for-byte."""
+    content = path.read_bytes()
+    if path.suffix.lower() in TEXT_OUTPUT_SUFFIXES:
+        content = content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(content).hexdigest()
+
 
 def _hash_tree(root: Path) -> dict[str, str]:
     hashes: dict[str, str] = {}
     for path in sorted(root.rglob("*")):
         if path.is_file():
-            hashes[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+            relative_name = path.relative_to(root).as_posix()
+            hashes[relative_name] = _content_hash(path)
     return hashes
 
 

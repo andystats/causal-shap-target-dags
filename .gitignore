@@ -3,6 +3,7 @@
 EMAIL-DRAFT.md
 PLAN.md
 PRIVATE_PROJECT_INDEX.md
+PROJECT_MAP.md
 notes/
 raw images and figures/
 dag-candidates/*
@@ -39,3 +40,30 @@ analysis/output/**/*.pdf
 app/workbench/data/sample_train.csv
 train.impute.csv
 test.impute.csv
+
+# Private, duplicated, or uncleared working artifacts. These remain local
+# until their public-release boundary is explicitly resolved.
+paper/
+docs/_archive_*/
+docs/APP.md
+docs/LUMAWARP_EXPLAIN_GUIDE.md
+docs/workbench_mockup.html
+analysis/output/lumawarp_v1/
+app/bundles/hapri_demo/
+app/bundles/lumawarp_v1/
+app/causal_shap/lumawarp.py
+app/private_lumawarp.py
+app/lw_studio.py
+app/tests/test_lumawarp.py
+app/workbench/build_app.py
+app/private_workbench_build_app.py
+app/workbench/data/mimic_expert_dag.csv
+
+# Local build products. Release artifacts must be built from a clean checkout.
+/build/
+/dist/
+
+# Superseded single-session battery artifacts remain local. Version-2 output
+# also stays local until a pinned full run receives scientific review.
+analysis/output/battery_v1/
+analysis/output/battery_v2/

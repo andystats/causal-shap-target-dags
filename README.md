@@ -26,6 +26,11 @@ needs larger runs and uncertainty estimates.
   provenance, limitations, reproducibility, and the ACIC lineage.
 - **Interactive app:** climb every rung on four datasets; run discovery and
   validation live ([`app/app.py`](app/app.py)).
+- **Experimental M1–M5 Workbench:** inspect how a learned graph performs for a
+  target exposure–outcome question, using the frozen synthetic teaching fixture
+  or a local upload ([`app/workbench/`](app/workbench/)). Its discovery battery
+  is a single-seed pilot, not a validated benchmark; no clinical rows are
+  distributed with the repository.
 
 The analyzed worked example uses NASA's public SA-07566 renal-stone DAG. A
 second source topology for spaceflight-associated neuro-ocular syndrome (SANS)
@@ -60,6 +65,8 @@ structural prototype closes the gap to the frozen interventional truth.
   attribution (`structural_value.py`), Credence-style validation
   (`validation/`), and figures (`viz/`).
 - [`app/`](app/) — the six-rung tutorial Shiny app and self-contained bundles.
+- [`app/workbench/`](app/workbench/) — the experimental graph-discovery and
+  M1–M5 structural-importance Workbench, with a synthetic teaching fixture.
 - [`app/causal_shap/build/`](app/causal_shap/build/) — the consolidated build CLI
   for teaching data, discovery, attribution, validation, figures, and release
   checks.
@@ -102,6 +109,14 @@ python -m causal_shap.build all            # teaching data → discovery → …
 ```
 
 Add the `heavy` extra for the optional CVAE and NOTEARS build paths.
+
+From the repository root, run the experimental Workbench separately:
+
+```bash
+python -m pip install -e ".[workbench]"
+cd app/workbench
+python -m shiny run --port 8001 app.py
+```
 
 ## Validate
 

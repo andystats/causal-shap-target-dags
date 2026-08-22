@@ -1,0 +1,15 @@
+{
+    "_description": "Frozen total-effect answer key for the synthetic teaching fixture",
+    "_source": "Original generator was not preserved; see data/README.md",
+    "Treatment": 11.0,
+    "Comorbidity": -4.375,
+    "Inflammation": -2.25,
+    "Oxygenation": 0.5,
+    "BMI": -0.225,
+    "Age": -0.1,
+    "HR": -0.025,
+    "SBP": 0.0,
+    "Glucose": 0.0,
+    "Creatinine": 0.0,
+    "Sex": 0.0
+}

@@ -1,0 +1,6 @@
+# Dependencies are managed and pinned by the repository-root pyproject.toml.
+# From the repository root, install them with:
+#
+#   python -m pip install -e ".[workbench]"
+#
+# This pointer file is intentionally not a second dependency specification.

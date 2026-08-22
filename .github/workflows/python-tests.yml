@@ -38,13 +38,18 @@ jobs:
           python-version: "3.13"
           cache: pip
           cache-dependency-path: pyproject.toml
-      - name: Install package with discovery extra
-        run: python -m pip install -e ".[discovery]"
+      - name: Install package with Workbench dependencies
+        run: python -m pip install -e ".[workbench]"
       - name: Compile and test
         working-directory: app
         run: |
-          python -m compileall -q causal_shap stages tests app.py
+          python -m compileall -q causal_shap stages tests workbench app.py
           python -m unittest discover -s tests -v
+      - name: Smoke-test Workbench app
+        working-directory: app/workbench
+        run: python -c "import app"
+      - name: Smoke-test M1-M5 battery runner
+        run: python analysis/run_m1_m5_battery.py --example toy --output-dir "${{ runner.temp }}/battery-smoke"
       - name: Validate bundles and frozen output
         working-directory: app
         run: python -m causal_shap.build validate

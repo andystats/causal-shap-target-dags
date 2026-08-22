@@ -33,7 +33,9 @@ differences. Ordering alone does not recover the distributed total-effect truth.
 The small structural prototype is substantially closer to the frozen truth
 (Kendall tau 0.794; top-five recovery 1.00; PBI -0.113), while remaining explicitly
 exploratory pending scale-up and bootstrap uncertainty. See
-`../docs/RESULTS.md` and `../docs/METHODS.md`.
+the [current results](../docs/RESEARCH_RECORD.md#current-results) and
+[methods](../docs/RESEARCH_RECORD.md#methods) in the consolidated research
+record.
 
 ## Canonical versions for the SHAP pilot
 
@@ -73,6 +75,31 @@ These are the versions to use for the first definitive SHAP comparison.
 Both versions use identical renal-mechanism equations. Version 2 changes only the observation/selection process.
 
 The exploratory v1/v2 models predated discovery of NASA's machine-readable DAG code. They are retained for provenance, but their mapped source-projection kappas are approximately 0.81 and 0.80 and they should not be treated as source-exact.
+
+## Experimental M1–M5 discovery battery
+
+`run_m1_m5_battery.py` applies the Workbench graph-evaluation battery to the
+tracked toy and source-aligned renal simulations. It reads only repository
+fixtures and writes version-2 artifacts to `output/battery_v2/` by default:
+
+```bash
+python analysis/run_m1_m5_battery.py --example all
+```
+
+Use an isolated output directory for a smoke test so the frozen result record is
+not overwritten:
+
+```bash
+python analysis/run_m1_m5_battery.py --example toy --output-dir path/to/scratch
+```
+
+The local `battery_v1` files are a legacy, unverified single-session pilot and
+are excluded from the public result record; see
+[`BATTERY_LEGACY_NOTES.md`](BATTERY_LEGACY_NOTES.md). Version-2 output is not
+checked in until the full run passes in the pinned environment and receives
+scientific review. Any later addition of checked files under
+`analysis/output/` must update the frozen-output hash manifest in the same
+reviewed commit.
 
 ## Run
 
@@ -119,10 +146,12 @@ The scripts require `simcausal`, `igraph`, `xgboost`, `dagitty`, `ggdag`, and
 Exact results are seed-stable using the seeds in the generation scripts.
 
 Graph-validation and source versioning are summarized in
-`../docs/DATA_PROVENANCE.md` and checked in under `output/dag_validation/`.
+[`../docs/PROVENANCE_AND_REFERENCES.md`](../docs/PROVENANCE_AND_REFERENCES.md)
+and checked in under `output/dag_validation/`.
 
 ## Important limitation
 
 These are simulation-design parameters, not NASA estimates. The structure and
 coefficients need domain review before substantive interpretation. See
-`../docs/LIMITATIONS.md`.
+the consolidated [limitations and
+guardrails](../docs/RESEARCH_RECORD.md#limitations-and-guardrails).

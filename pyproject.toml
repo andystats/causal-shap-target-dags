@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Causal SHAP for target DAGs: attribution engines, teaching simulations, and companion-app utilities."
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 # Base runtime dependencies mirror app/requirements.txt (minus the discovery extra).
 dependencies = [
     "shiny>=1.4,<2",
@@ -25,6 +25,8 @@ dependencies = [
 [project.optional-dependencies]
 # The app's live causal-discovery path (pinned: 0.x API).
 discovery = ["causal-learn==0.1.4.8"]
+# Standalone M1-M5 Workbench: live discovery plus graph visualization.
+workbench = ["causal-learn==0.1.4.8", "pyvis>=0.3.2,<0.4"]
 # Local build scripts only — never imported by the app at runtime.
 heavy = ["torch>=2.4,<3", "gcastle>=1.0.3"]
 # Quarto site execution environment (renders happen on the author's machine).
@@ -33,4 +35,12 @@ site = ["jupyter>=1.1,<2", "pyyaml>=6.0,<7"]
 [tool.setuptools.packages.find]
 # Flat-layout auto-discovery would fail at the repo root; discovery is explicit.
 where = ["app"]
-include = ["causal_shap*", "stages*"]
+include = ["causal_shap*", "stages*", "workbench*"]
+
+[tool.setuptools.package-data]
+workbench = [
+    "data/simcausal_train.csv",
+    "data/ground_truth_edges.csv",
+    "data/true_total_effects.json",
+    "data/README.md",
+]

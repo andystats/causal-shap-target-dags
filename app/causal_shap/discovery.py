@@ -4,7 +4,7 @@ Adapted from the author's Instats workshop (Module 3, "Causal Discovery
 Playground"). The live path wraps causal-learn's PC and GES and returns a
 named-edge ``PDAG``; DirectLiNGAM (causal-learn) and NOTEARS (gcastle) are
 provided for precomputed appendix artifacts only. Every causal-learn call is
-kept minimal and funnelled through one adapter (``_general_graph_to_pdag``) so
+kept minimal and funnelled through one adapter (``causal_learn_graph_to_pdag``) so
 that 0.x API drift is isolated to a single tested function.
 """
 
@@ -53,7 +53,7 @@ class GraphComparison:
 # ---------------------------------------------------------------------------
 # causal-learn adapter (the API-instability firewall)
 # ---------------------------------------------------------------------------
-def _general_graph_to_pdag(graph, columns: Sequence[str]) -> PDAG:
+def causal_learn_graph_to_pdag(graph, columns: Sequence[str]) -> PDAG:
     """Convert a causal-learn GeneralGraph to a named-edge PDAG.
 
     Endpoint encoding: TAIL(-1)-ARROW(1) is a directed edge; TAIL-TAIL is
@@ -81,7 +81,7 @@ def _general_graph_to_pdag(graph, columns: Sequence[str]) -> PDAG:
     )
 
 
-def _apply_constraints(
+def apply_constraints(
     pdag: PDAG,
     forbidden_edges: Sequence[tuple[str, str]],
     required_edges: Sequence[tuple[str, str]],
@@ -117,6 +117,38 @@ def _apply_constraints(
     )
 
 
+def direct_lingam_adjacency_to_pdag(
+    adjacency_matrix: np.ndarray,
+    columns: Sequence[str],
+    threshold: float = 0.0,
+) -> PDAG:
+    """Convert DirectLiNGAM's coefficient matrix to a named directed graph.
+
+    ``DirectLiNGAM.adjacency_matrix_`` uses ``[child, parent]`` indexing.  This
+    adapter makes the orientation explicit at the library boundary so callers
+    cannot accidentally interpret the matrix as ordinary ``[source, target]``
+    adjacency.
+    """
+    matrix = np.asarray(adjacency_matrix, dtype=float)
+    n_columns = len(columns)
+    if matrix.shape != (n_columns, n_columns):
+        raise ValueError(
+            "DirectLiNGAM adjacency matrix shape does not match the columns: "
+            f"{matrix.shape} != {(n_columns, n_columns)}"
+        )
+    directed = {
+        (columns[parent], columns[child])
+        for child in range(n_columns)
+        for parent in range(n_columns)
+        if child != parent and abs(matrix[child, parent]) > threshold
+    }
+    return PDAG(
+        nodes=tuple(columns),
+        directed_edges=frozenset(directed),
+        undirected_edges=frozenset(),
+    )
+
+
 def _run_causal_learn(
     algorithm: str,
     df: pd.DataFrame,
@@ -145,22 +177,16 @@ def _run_causal_learn(
     elif algorithm == "direct_lingam":
         from causallearn.search.FCMBased import lingam
 
-        model = lingam.DirectLiNGAM()
+        model = lingam.DirectLiNGAM(random_state=params.get("random_state"))
         model.fit(data)
-        directed = {
-            (columns[parent], columns[child])
-            for child in range(len(columns))
-            for parent in range(len(columns))
-            if model.adjacency_matrix_[child, parent] != 0.0
-        }
-        pdag = PDAG(nodes=tuple(columns), directed_edges=frozenset(directed), undirected_edges=frozenset())
-        pdag = _apply_constraints(pdag, forbidden_edges, required_edges)
+        pdag = direct_lingam_adjacency_to_pdag(model.adjacency_matrix_, columns)
+        pdag = apply_constraints(pdag, forbidden_edges, required_edges)
         return DiscoveryResult(algorithm=algorithm, pdag=pdag, params=params, n_rows=len(df))
     else:
         raise ValueError(f"Unknown causal-learn algorithm: {algorithm}")
 
-    pdag = _general_graph_to_pdag(graph, columns)
-    pdag = _apply_constraints(pdag, forbidden_edges, required_edges)
+    pdag = causal_learn_graph_to_pdag(graph, columns)
+    pdag = apply_constraints(pdag, forbidden_edges, required_edges)
     return DiscoveryResult(algorithm=algorithm, pdag=pdag, params=params, n_rows=len(df))
 
 
@@ -187,9 +213,16 @@ def run_direct_lingam(
     df: pd.DataFrame,
     forbidden_edges: Sequence[tuple[str, str]] = (),
     required_edges: Sequence[tuple[str, str]] = (),
+    random_state: int | None = None,
 ) -> DiscoveryResult:
     """DirectLiNGAM (linear non-Gaussian) discovery. Precompute-only appendix."""
-    return _run_causal_learn("direct_lingam", df, {"method": "direct_lingam"}, forbidden_edges, required_edges)
+    return _run_causal_learn(
+        "direct_lingam",
+        df,
+        {"method": "direct_lingam", "random_state": random_state},
+        forbidden_edges,
+        required_edges,
+    )
 
 
 def run_notears(
@@ -222,13 +255,122 @@ def run_notears(
         if abs(matrix[i, j]) >= threshold
     }
     pdag = PDAG(nodes=tuple(columns), directed_edges=frozenset(directed), undirected_edges=frozenset())
-    pdag = _apply_constraints(pdag, forbidden_edges, required_edges)
+    pdag = apply_constraints(pdag, forbidden_edges, required_edges)
     return DiscoveryResult(algorithm="notears", pdag=pdag, params={"threshold": threshold}, n_rows=len(df))
 
 
 # ---------------------------------------------------------------------------
 # Graph post-processing and quality metrics (ported from Module 3)
 # ---------------------------------------------------------------------------
+def deterministic_consistent_extension(pdag: PDAG) -> nx.DiGraph:
+    """Return a lexicographically deterministic consistent DAG extension.
+
+    The Dor--Tarsi sink-removal construction preserves the PDAG skeleton and
+    every compelled direction while introducing no new unshielded colliders.
+    Failure is explicit: this function never deletes an arbitrary edge merely
+    to make a cyclic or non-extendable graph acyclic.
+    """
+    directed = set(pdag.directed_edges)
+    undirected = {tuple(sorted(edge)) for edge in pdag.undirected_edges}
+    directed_pairs = {tuple(sorted(edge)) for edge in directed}
+    overlap = directed_pairs & undirected
+    if overlap:
+        raise ValueError(
+            f"PDAG marks edges as both directed and undirected: {sorted(overlap)}"
+        )
+
+    directed_graph = nx.DiGraph()
+    directed_graph.add_nodes_from(pdag.nodes)
+    directed_graph.add_edges_from(directed)
+    if not nx.is_directed_acyclic_graph(directed_graph):
+        raise ValueError("PDAG directed component is cyclic")
+
+    original_skeleton = set(pdag.skeleton)
+    extension_edges = set(directed)
+    active = set(pdag.nodes)
+
+    def adjacent(left: str, right: str) -> bool:
+        pair = tuple(sorted((left, right)))
+        return (
+            pair in undirected
+            or (left, right) in directed
+            or (right, left) in directed
+        )
+
+    while active:
+        chosen: str | None = None
+        chosen_neighbors: set[str] = set()
+        for node in sorted(active):
+            children = {
+                target
+                for source, target in directed
+                if source == node and target in active
+            }
+            if children:
+                continue
+            parents = {
+                source
+                for source, target in directed
+                if target == node and source in active
+            }
+            neighbors = {
+                right if left == node else left
+                for left, right in undirected
+                if node in (left, right)
+                and (right if left == node else left) in active
+            }
+            neighborhood = parents | neighbors
+            if all(
+                adjacent(neighbor, other)
+                for neighbor in neighbors
+                for other in neighborhood - {neighbor}
+            ):
+                chosen = node
+                chosen_neighbors = neighbors
+                break
+
+        if chosen is None:
+            raise ValueError("PDAG has no consistent DAG extension")
+
+        extension_edges.update((neighbor, chosen) for neighbor in chosen_neighbors)
+        directed = {
+            (source, target)
+            for source, target in directed
+            if source != chosen and target != chosen
+        }
+        undirected = {
+            (left, right)
+            for left, right in undirected
+            if left != chosen and right != chosen
+        }
+        active.remove(chosen)
+
+    extension = nx.DiGraph()
+    extension.add_nodes_from(pdag.nodes)
+    extension.add_edges_from(extension_edges)
+    if not nx.is_directed_acyclic_graph(extension):
+        raise ValueError("consistent-extension construction produced a cycle")
+    if set(pdag.directed_edges) - set(extension.edges):
+        raise ValueError("consistent extension lost a compelled directed edge")
+    if {tuple(sorted(edge)) for edge in extension.edges} != original_skeleton:
+        raise ValueError("consistent extension changed the PDAG skeleton")
+
+    for collider in extension.nodes:
+        parents = sorted(extension.predecessors(collider))
+        for index, left in enumerate(parents):
+            for right in parents[index + 1 :]:
+                if tuple(sorted((left, right))) in original_skeleton:
+                    continue
+                if (
+                    (left, collider) not in pdag.directed_edges
+                    or (right, collider) not in pdag.directed_edges
+                ):
+                    raise ValueError(
+                        "consistent extension introduced an unshielded collider"
+                    )
+    return extension
+
+
 def enforce_dag(
     directed_edges: Sequence[tuple[str, str]],
     nodes: Sequence[str],
