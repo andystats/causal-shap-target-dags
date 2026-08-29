@@ -5,7 +5,9 @@ import unittest
 import networkx as nx
 import numpy as np
 
+from causal_shap.structural_value import ExogenousDraws, NodeSpec
 from causal_shap.teaching_dags import (
+    TeachingDAG,
     layered_ladder,
     simulate_dataframe,
     toy_chain_fork_collider,
@@ -49,6 +51,42 @@ class TeachingDAGTests(unittest.TestCase):
         first = simulate_dataframe(dag, n=500, seed=20260728)
         second = simulate_dataframe(dag, n=500, seed=20260728)
         np.testing.assert_allclose(first.to_numpy(), second.to_numpy())
+
+
+class ExogenousNoiseByKindTests(unittest.TestCase):
+    """Continuous nodes add scaled noise; binary nodes threshold against it."""
+
+    def test_continuous_dags_draw_exactly_as_before(self) -> None:
+        # Regression guard for the frozen teaching data: every shipped teaching
+        # DAG is continuous, so the draw sequence must be unchanged.
+        for dag in (toy_chain_fork_collider(), layered_ladder()):
+            rng = np.random.default_rng(20260727)
+            legacy = ExogenousDraws(
+                {spec.name: rng.standard_normal(400) for spec in dag.specs}
+            )
+            expected = dag.scm().simulate(legacy)
+            produced = simulate_dataframe(dag, n=400, seed=20260727)
+            for name in produced.columns:
+                np.testing.assert_allclose(produced[name].to_numpy(), expected[name])
+
+    def test_binary_root_realizes_its_stated_probability(self) -> None:
+        # Standard-normal draws compared against a probability would realize
+        # P(Z < 0.35) = 0.637 rather than 0.35.
+        dag = TeachingDAG(
+            name="binary_root",
+            specs=(
+                NodeSpec("Exposure", "binary", root_probability=0.35),
+                NodeSpec(
+                    "Y", "continuous", parents=("Exposure",), coefficients=(1.0,), noise_sd=0.5
+                ),
+            ),
+            outcome="Y",
+            features=("Exposure",),
+            true_total_effects={"Exposure": 1.0},
+        )
+        data = simulate_dataframe(dag, n=200000, seed=20260727)
+        self.assertEqual(set(np.unique(data["Exposure"])), {0.0, 1.0})
+        self.assertAlmostEqual(data["Exposure"].mean(), 0.35, places=2)
 
 
 if __name__ == "__main__":

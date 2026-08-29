@@ -178,9 +178,27 @@ def layered_ladder() -> TeachingDAG:
 
 
 def simulate_dataframe(dag: TeachingDAG, n: int, seed: int) -> pd.DataFrame:
-    """Draw an observational sample (all nodes) from a teaching DAG."""
+    """Draw an observational sample (all nodes) from a teaching DAG.
+
+    Exogenous noise is drawn to match how each node kind consumes it:
+    continuous nodes add ``noise_sd * noise`` to their mean, whereas binary
+    nodes compare the draw against a probability (``structural_value.py:159``).
+    Feeding standard-normal draws to a binary node would realize a rate of
+    P(Z < p) rather than p, so a root asking for 0.35 would come out near 0.64.
+    Every current teaching DAG is continuous, so this draws exactly as before
+    and leaves the frozen teaching data unchanged.
+    """
     scm = dag.scm()
     rng = np.random.default_rng(seed)
-    exogenous = ExogenousDraws({spec.name: rng.standard_normal(n) for spec in dag.specs})
+    exogenous = ExogenousDraws(
+        {
+            spec.name: (
+                rng.standard_normal(n)
+                if spec.kind == "continuous"
+                else rng.random(n)
+            )
+            for spec in dag.specs
+        }
+    )
     simulated = scm.simulate(exogenous)
     return pd.DataFrame({name: simulated[name] for name in scm.order})
