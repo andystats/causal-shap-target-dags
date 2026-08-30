@@ -43,11 +43,14 @@ jobs:
       - name: Compile and test
         working-directory: app
         run: |
-          python -m compileall -q causal_shap stages tests workbench app.py
+          python -m compileall -q causal_shap stages tests workbench hub app.py
           python -m unittest discover -s tests -v
       - name: Smoke-test Workbench app
         working-directory: app/workbench
         run: python -c "import app"
+      - name: Smoke-test Hub app
+        working-directory: app
+        run: python -c "import hub.app"
       - name: Smoke-test M1-M5 battery runner
         run: python analysis/run_m1_m5_battery.py --example toy --output-dir "${{ runner.temp }}/battery-smoke"
       - name: Validate bundles and frozen output
