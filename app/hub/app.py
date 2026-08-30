@@ -248,7 +248,7 @@ app_ui = ui.page_fluid(
                         class_="code-details",
                     ),
                     ui.output_ui("shap_preflight"),
-                    ui.HTML(education.learn("arms", "ancestors", "knobs")),
+                    ui.HTML(education.learn("arms", "ancestors", "knobs", "doshapley")),
                 ),
                 ui.output_ui("shap_body"),
                 col_widths=(4, 8),
@@ -275,7 +275,7 @@ app_ui = ui.page_fluid(
                         "direction keeps its refusal reason rather than vanishing."
                     )),
                     ui.HTML(education.learn("cost_sheet", "grid", "budget",
-                                            "alpha_floor", "benefit")),
+                                            "alpha_floor", "benefit", "routes")),
                 ),
                 ui.output_ui("policy_body"),
                 col_widths=(4, 8),
@@ -283,6 +283,7 @@ app_ui = ui.page_fluid(
         ),
         id="stage_nav",
     ),
+    ui.HTML(education.references()),
 )
 
 
@@ -1340,7 +1341,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         flags = flags_result.get()
         m1 = (graph_summary or {}).get("m1") or discover_payload.get("m1")
 
-        return report.build_report(
+        rendered = report.build_report(
             dataset_label=chosen.label if chosen else "Uploaded CSV",
             dataset_note=chosen.note if chosen else "",
             n_rows=len(data) if data is not None else 0,
@@ -1364,6 +1365,8 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
                 ("Price and dice", snips["policy"].get()),
             ],
         )
+        return rendered.replace(
+            "</body>", education.references(collapsible=False) + "</body>")
 
     @render.download(
         filename=lambda: (

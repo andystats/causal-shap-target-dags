@@ -178,6 +178,35 @@ TOPICS: dict[str, tuple[str, str]] = {
         "effect on the outcome, with the screening reasons reported for every "
         "node that never got priced.",
     ),
+    "doshapley": (
+        "Decision-grade attribution: do-Shapley",
+        "This stage's attributions explain the fitted model under the current "
+        "graph: a survey instrument for triage. When the attribution itself "
+        "must carry decision weight, do-Shapley values (Jung et al. 2022) "
+        "define the shares on the real outcome, give graphical identification "
+        "conditions, and come with double/debiased-ML estimators. Full "
+        "citations sit in References below the tabs.",
+    ),
+    "routes": (
+        "Alternate routes to the same question",
+        "This stage simulates each shift through the calibrated SCM: the "
+        "full-model pole, as DoWhy-GCM does (Bl\u00f6baum et al. 2024). The "
+        "published alternatives are considerations the hub is meant to stage, "
+        "not competitors. (1) Targeted estimation: each shortlisted "
+        "\u00b1shift is a modified treatment policy, estimable double-"
+        "robustly from its DAG-derived adjustment set alone (D\u00edaz "
+        "Mu\u00f1oz &amp; van der Laan 2012; Haneuse &amp; Rotnitzky 2013; "
+        "D\u00edaz et al. 2023; Kennedy 2019), in the spirit of Marschak's "
+        "Maxim (Marschak 1953; Heckman 2010): trust one functional per "
+        "lever, not every equation. That is the decision-grade upgrade for "
+        "any lever that survives this screen. (2) Single-estimand "
+        "identification tools: DoWhy (Sharma &amp; Kiciman 2020), Ananke "
+        "(Lee et al. 2023). (3) Choosing where to intervene under "
+        "constraints: policy learning (Athey &amp; Wager 2021), causal "
+        "bandits (Lattimore et al. 2016; Lee &amp; Bareinboim 2018), and "
+        "cost-aware causal Bayesian optimization (Aglietti et al. 2020). "
+        "Full citations in References below the tabs.",
+    ),
     "sandbox": (
         "The local sandbox",
         "Runs Python against the loaded data on THIS machine only (df, pd, "
@@ -236,6 +265,84 @@ and flagged above z &gt; 1, per channel. A flag means "look here again",
 never "this node is causal": only the surgeon's ledger changes the graph.</p>
 </div></details>
 """
+
+
+REFERENCE_LIST: tuple[str, ...] = (
+    "Marschak J (1953). Economic measurements for policy and prediction. In "
+    "Hood WC &amp; Koopmans TC (eds.), Studies in Econometric Method, Cowles "
+    "Commission Monograph 14. Wiley, 1-26.",
+    "Heckman JJ (2010). Building bridges between structural and program "
+    "evaluation approaches to evaluating policy. Journal of Economic "
+    "Literature 48(2), 356-398.",
+    "Heckman JJ &amp; Vytlacil EJ (2007). Econometric evaluation of social "
+    "programs. In Handbook of Econometrics, vol. 6B. Elsevier.",
+    "Robins JM, Rotnitzky A &amp; Zhao LP (1994). Estimation of regression "
+    "coefficients when some regressors are not always observed. JASA "
+    "89(427), 846-866.",
+    "van der Laan MJ &amp; Rubin D (2006). Targeted maximum likelihood "
+    "learning. The International Journal of Biostatistics 2(1), Article 11.",
+    "Chernozhukov V, Chetverikov D, Demirer M, Duflo E, Hansen C, Newey W "
+    "&amp; Robins J (2018). Double/debiased machine learning for treatment "
+    "and structural parameters. The Econometrics Journal 21(1), C1-C68.",
+    "Pearl J (1995). Causal diagrams for empirical research (with "
+    "discussion). Biometrika 82(4), 669-688.",
+    "Shpitser I &amp; Pearl J (2006). Identification of joint interventional "
+    "distributions in recursive semi-Markovian causal models. AAAI-06.",
+    "Heskes T, Sijben E, Bucur IG &amp; Claassen T (2020). Causal Shapley "
+    "values: exploiting causal knowledge to explain individual predictions "
+    "of complex models. NeurIPS 33.",
+    "Frye C, Rowat C &amp; Feige I (2020). Asymmetric Shapley values: "
+    "incorporating causal knowledge into model-agnostic explainability. "
+    "NeurIPS 33.",
+    "Jung Y, Kasiviswanathan S, Tian J, Janzing D, Bl\u00f6baum P &amp; "
+    "Bareinboim E (2022). On measuring causal contributions via "
+    "do-interventions. ICML, PMLR 162, 10476-10501.",
+    "Bl\u00f6baum P, G\u00f6tz P, Budhathoki K, Mastakouri AA &amp; "
+    "Janzing D (2024). DoWhy-GCM: an extension of DoWhy for causal "
+    "inference in graphical causal models. JMLR 25(147), 1-7.",
+    "Sharma A &amp; Kiciman E (2020). DoWhy: an end-to-end library for "
+    "causal inference. arXiv:2011.04216.",
+    "Lee JJR, Bhattacharya R, Nabi R &amp; Shpitser I (2023). Ananke: a "
+    "Python package for causal inference using graphical models. "
+    "arXiv:2301.11477.",
+    "D\u00edaz Mu\u00f1oz I &amp; van der Laan M (2012). Population "
+    "intervention causal effects based on stochastic interventions. "
+    "Biometrics 68(2), 541-549.",
+    "Haneuse S &amp; Rotnitzky A (2013). Estimation of the effect of "
+    "interventions that modify the received treatment. Statistics in "
+    "Medicine 32(30), 5260-5277.",
+    "D\u00edaz I, Williams N, Hoffman KL &amp; Schenck EJ (2023). "
+    "Nonparametric causal effects based on longitudinal modified treatment "
+    "policies. JASA 118(542), 846-857.",
+    "Kennedy EH (2019). Nonparametric causal effects based on incremental "
+    "propensity score interventions. JASA 114(526), 645-656.",
+    "Athey S &amp; Wager S (2021). Policy learning with observational data. "
+    "Econometrica 89(1), 133-161.",
+    "Lattimore F, Lattimore T &amp; Reid MD (2016). Causal bandits: "
+    "learning good interventions via causal inference. NeurIPS 29.",
+    "Lee S &amp; Bareinboim E (2018). Structural causal bandits: where to "
+    "intervene? NeurIPS 31.",
+    "Aglietti V, Lu X, Paleyes A &amp; Gonz\u00e1lez J (2020). Causal "
+    "Bayesian optimization. AISTATS, PMLR 108, 3155-3164.",
+)
+
+
+def references(*, collapsible: bool = True) -> str:
+    """The methods bibliography, shared by the hub footer and the report."""
+    items = "".join(f'<li style="margin:3px 0">{entry}</li>'
+                    for entry in REFERENCE_LIST)
+    body = (
+        '<ol style="font-size:.8rem;margin:0 0 0 18px;line-height:1.5">'
+        f"{items}</ol>"
+    )
+    if not collapsible:
+        return f"<h2>References</h2>{body}"
+    return (
+        '<details class="code-details"><summary>'
+        "References (methods cited in the Learn notes)</summary>"
+        '<div style="border:1px solid #111;padding:10px 14px;margin-top:6px;'
+        'background:#fff">' + body + "</div></details>"
+    )
 
 
 def learn(*keys: str, title: str = "Learn: what these controls mean") -> str:
