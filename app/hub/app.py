@@ -162,6 +162,7 @@ app_ui = ui.page_fluid(
                         ui.input_action_button("act_reset", "Reset graph", class_="btn-sm"),
                         style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px",
                     ),
+                    ui.output_ui("add_edge_form"),
                     ui.HTML(skin.code_card(snippets.surgery_snippet())),
                 ),
                 ui.output_ui("scorecard"),
@@ -694,6 +695,48 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     @reactive.event(input.act_remove)
     def _remove():
         _surgery("remove")
+
+    @render.ui
+    def add_edge_form():
+        graph = current_graph.get()
+        if graph is None:
+            return ui.HTML("")
+        nodes = list(graph.nodes)
+        return ui.div(
+            ui.HTML('<h4 style="font-family:ui-monospace,Consolas,monospace;'
+                    'font-size:11px;text-transform:uppercase;letter-spacing:.07em;'
+                    'color:var(--muted);margin:14px 0 4px">Assert a missing edge</h4>'),
+            ui.div(
+                ui.input_select("add_from", None, nodes, width="42%"),
+                ui.HTML('<span style="align-self:center">→</span>'),
+                ui.input_select("add_to", None, nodes,
+                                selected=nodes[1] if len(nodes) > 1 else nodes[0],
+                                width="42%"),
+                style="display:flex;gap:6px",
+            ),
+            ui.input_action_button("act_add", "Add edge", class_="btn-sm"),
+        )
+
+    @reactive.effect
+    @reactive.event(input.act_add)
+    def _add_edge():
+        graph = current_graph.get()
+        if graph is None:
+            return
+        try:
+            revised = theater.apply_surgery(
+                graph, "add", (input.add_from(), input.add_to()), input.rationale()
+            )
+        except ValueError as error:
+            ui.notification_show(str(error), type="error", duration=6)
+            return
+        current_graph.set(revised)
+        graph_gen.set(graph_gen.get() + 1)
+        picked.set("")
+        ui.notification_show(
+            f"added {input.add_from()} → {input.add_to()}: recorded in the ledger.",
+            type="message",
+        )
 
     @reactive.effect
     @reactive.event(input.act_reset)

@@ -66,10 +66,11 @@ result = provider.flags(NodeFlagRequest(
 
 
 def surgery_snippet() -> str:
-    return """# Stage 5 - graph surgery (executed by hub.theater.apply_surgery per click)
+    return """# Stage 5 - graph surgery (executed by hub.theater.apply_surgery per action)
 from causal_shap.graph_state import ConstraintEntry
 
-# Each operation rebuilds the edge sets and calls:
+# Flip / Require / Forbid / Remove act on a clicked edge; Add asserts a
+# missing one. Every operation rebuilds the edge sets and calls:
 revised = graph.with_constraints(
     directed_edges, undirected_pairs,
     ledger=(ConstraintEntry(edge, kind, applied="post_hoc", rationale=...),),

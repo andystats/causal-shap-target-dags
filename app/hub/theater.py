@@ -14,11 +14,18 @@ crossings. No physics, so the graph never squirms between renders.
 from __future__ import annotations
 
 import html
+from itertools import count
 from typing import Mapping
 
 import networkx as nx
 
 from causal_shap.graph_state import GraphState
+
+# Every render gets its own marker ids. Two graphs on one page (the theater
+# plus the sealed answer key) sharing "#th-arrow" resolve to whichever defs
+# comes FIRST in the document - and when that one sits in a hidden tab pane,
+# browsers refuse to paint it and every arrowhead silently disappears.
+_MARKER_IDS = count()
 
 INK = "#111111"
 AMBER = "#b45309"
@@ -126,12 +133,13 @@ def render_theater(
     max_x = max((x + widths[n] for n, (x, y) in positions.items()), default=400) + 60
     max_y = max((y for _, y in positions.values()), default=200) + 60
 
+    mk = f"th{next(_MARKER_IDS)}"
     parts: list[str] = []
     parts.append(
-        '<defs><marker id="th-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
+        f'<defs><marker id="{mk}-arrow" viewBox="0 0 10 10" refX="9" refY="5" '
         'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
         f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{INK}"/></marker>'
-        '<marker id="th-arrow-sel" viewBox="0 0 10 10" refX="9" refY="5" '
+        f'<marker id="{mk}-arrow-sel" viewBox="0 0 10 10" refX="9" refY="5" '
         'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
         f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{AMBER}"/></marker></defs>'
     )
@@ -148,7 +156,7 @@ def render_theater(
         stroke = AMBER if is_selected else INK
         width = 2.6 if is_selected else 1.4
         dash = ' stroke-dasharray="6 4"' if dashed else ""
-        marker = "th-arrow-sel" if is_selected else "th-arrow"
+        marker = f"{mk}-arrow-sel" if is_selected else f"{mk}-arrow"
         tooltip = html.escape(f"{a} → {b}") + (
             " (orientation chosen, not identified)" if dashed else ""
         )
@@ -222,21 +230,36 @@ def apply_surgery(
 ) -> GraphState:
     """One operation on the current graph, with honest pair bookkeeping.
 
-    The rules encode the ``graph_state`` invariant that every unresolved pair
-    keeps a directed representative: touching an edge whose pair is unresolved
-    adjudicates that pair, so the pair leaves ``undirected_pairs`` and the
-    ledger records what the human decided. A cycle-creating flip raises from
-    ``GraphState`` itself, naming the cycle.
+    ``add`` asserts a brand-new edge; the other operations act on an existing
+    one. The rules encode the ``graph_state`` invariant that every unresolved
+    pair keeps a directed representative: touching an edge whose pair is
+    unresolved adjudicates that pair, so the pair leaves ``undirected_pairs``
+    and the ledger records what the human decided. A cycle-creating add or
+    flip raises from ``GraphState`` itself, naming the cycle.
     """
     from causal_shap.graph_state import ConstraintEntry
 
     a, b = edge
-    if (a, b) not in state.directed_edges:
-        raise ValueError(f"No such edge: {a} → {b}")
     pair = tuple(sorted(edge))
     was_unresolved = pair in set(state.undirected_pairs)
     directed = set(state.directed_edges)
     pairs = tuple(p for p in state.undirected_pairs if p != pair)
+
+    if action == "add":
+        if a == b:
+            raise ValueError("An edge needs two different nodes")
+        if (a, b) in state.directed_edges:
+            raise ValueError(f"Edge already exists: {a} → {b}")
+        if (b, a) in state.directed_edges:
+            raise ValueError(
+                f"The reverse edge {b} → {a} exists; select it and Flip instead"
+            )
+        directed.add((a, b))
+        ledger = (ConstraintEntry((a, b), "required", "post_hoc", rationale),)
+        return state.with_constraints(frozenset(directed), tuple(state.undirected_pairs), ledger)
+
+    if (a, b) not in state.directed_edges:
+        raise ValueError(f"No such edge: {a} → {b}")
 
     if action == "flip":
         directed.discard((a, b))
