@@ -113,6 +113,7 @@ def render_theater(
     *,
     halos: Mapping[str, str] | None = None,
     display_names: Mapping[str, str] | None = None,
+    tooltips: Mapping[str, str] | None = None,
     selected: str = "",
     height: int = 460,
     interactive: bool = True,
@@ -122,9 +123,14 @@ def render_theater(
     The SVG autofits its content through the viewBox; there is deliberately no
     wheel zoom or drag pan, which fought the page scroll. ``interactive=False``
     drops the click bridge entirely, for answer-key displays and reports.
+
+    ``display_names`` relabels nodes (short names only; labels wider than the
+    box clutter the plate); ``tooltips`` carries longer prose, e.g. data-
+    dictionary descriptions, into the hover title without touching the label.
     """
     halos = halos or {}
     display_names = display_names or {}
+    tooltips = tooltips or {}
     graph = state.digraph()
     positions = layered_layout(graph, outcome)
     unresolved = set(state.undirected_pairs)
@@ -193,7 +199,7 @@ def render_theater(
             f'<text x="{x:.0f}" y="{y + 4:.0f}" text-anchor="middle" '
             f'font-family="Georgia, serif" font-size="11.5" fill="{INK}">'
             f"{html.escape(_label(node, display_names))}</text>"
-            f"<title>{html.escape(str(display_names.get(node, node)))}</title></g>"
+            f"<title>{html.escape(str(tooltips.get(node) or display_names.get(node, node)))}</title></g>"
         )
 
     svg_id = ' id="theater-svg"' if interactive else ""

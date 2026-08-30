@@ -585,7 +585,8 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         m1_html = _m1_html(m1, graph.n_undirected_pairs) if m1 else ""
         discovered_svg = theater.render_theater(
             graph, None, input.outcome(),
-            display_names=dict(chosen.display_names()) if chosen else dictionary.get(),
+            display_names=dict(chosen.display_names()) if chosen else {},
+            tooltips=dictionary.get(),
             interactive=False, height=280,
         )
         return skin.card(
@@ -718,7 +719,8 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         return ui.HTML(theater.render_theater(
             graph, live_focus(), input.outcome(),
             halos=halos,
-            display_names=dict(chosen.display_names()) if chosen else dictionary.get(),
+            display_names=dict(chosen.display_names()) if chosen else {},
+            tooltips=dictionary.get(),
             selected=picked.get(),
         ))
 
@@ -1246,7 +1248,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         chosen = bundle()
         data = raw_data()
         graph = current_graph.get()
-        display = dict(chosen.display_names()) if chosen else dictionary.get()
+        display = dict(chosen.display_names()) if chosen else {}
         outcome = input.outcome()
 
         graph_summary = None
@@ -1258,7 +1260,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             )
             current_svg = theater.render_theater(
                 graph, live_focus(), outcome, display_names=display,
-                interactive=False, height=360,
+                tooltips=dictionary.get(), interactive=False, height=360,
             )
         truth_svg = ""
         if chosen is not None and chosen.truth_graph() is not None:
