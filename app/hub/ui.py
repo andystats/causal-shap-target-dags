@@ -43,8 +43,6 @@ body { background: var(--paper); color: var(--ink); font-family: var(--serif);
 .map-station.optional { border-style: dashed; background: var(--paper); }
 .map-station:hover { background: var(--amber-soft); }
 .map-station b { display: block; font-size: .68rem; letter-spacing: .08em; }
-.map-station .why { display: block; font-family: var(--serif); font-style: italic;
-  font-size: .68rem; color: var(--muted); margin: 2px 0 3px; }
 .pill { display: inline-block; font-family: var(--mono); font-size: .62rem;
   padding: 1px 7px; border: 1px solid var(--line); letter-spacing: .04em;
   margin: 0 4px 4px 0; }

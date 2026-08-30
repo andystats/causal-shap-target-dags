@@ -33,16 +33,16 @@ if find_spec("detector_docs_local"):
 else:
     DETECTOR_DOCS_HTML = ""
 
-# The station strip doubles as the simplified workflow ladder: each station
-# carries its one-line reason for existing (adapted from assets/ladder.svg).
+# The station strip is the simplified workflow ladder: names and status only,
+# the narration lives in each tab's Learn dropdown.
 STATIONS = (
-    ("Data", "data", "one row per unit"),
-    ("Naive SHAP", "naive", "the homunculus: proximity bias"),
-    ("Discover", "discover", "a tool, not an oracle"),
-    ("Surgical Prep", "flags", "optional: any evidence"),
-    ("Graph Surgery", "surgery", "the surgeon decides"),
-    ("Causal SHAP", "attribute", "propagate do(X=x)"),
-    ("Price & Dice", "policy", "levers, not ears"),
+    ("Data", "data"),
+    ("Naive SHAP", "naive"),
+    ("Discover", "discover"),
+    ("Surgical Prep", "flags"),
+    ("Graph Surgery", "surgery"),
+    ("Causal SHAP", "attribute"),
+    ("Price & Dice", "policy"),
 )
 
 THEATER_KEY = """
@@ -58,7 +58,12 @@ THEATER_KEY = """
 """
 
 MAP_JS = """
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 <script>
+// Sliders initialized inside a collapsed <details> get zero width; nudge them.
+document.addEventListener('toggle', function() {
+  window.dispatchEvent(new Event('resize'));
+}, true);
 document.addEventListener('click', function(event) {
   const station = event.target.closest('.map-station');
   if (station && window.Shiny) {
@@ -126,11 +131,16 @@ app_ui = ui.page_fluid(
             "Naive SHAP",
             ui.layout_columns(
                 ui.div(
-                    ui.input_select("model_type", "Model",
-                                    {"gbm": "Gradient boosting", "rf": "Random forest",
-                                     "linear": "Linear / logistic"}),
                     ui.input_action_button("run_naive", "Run naive SHAP",
                                            class_="btn-sm"),
+                    ui.tags.details(
+                        ui.tags.summary("Advanced settings"),
+                        ui.input_select("model_type", "Model",
+                                        {"gbm": "Gradient boosting",
+                                         "rf": "Random forest",
+                                         "linear": "Linear / logistic"}),
+                        class_="code-details",
+                    ),
                     ui.HTML(skin.note(
                         "The benchmark: what the fitted predictor listened to. "
                         "The causal stages will argue with this chart."
@@ -147,10 +157,14 @@ app_ui = ui.page_fluid(
                 ui.div(
                     ui.input_radio_buttons("algorithm", "Algorithm",
                                            {"pc": "PC (Fisher-Z)", "ges": "GES (BIC)"}),
-                    ui.input_slider("alpha", "PC significance α", min=0.01, max=0.2,
-                                    value=0.05, step=0.01),
                     ui.input_action_button("run_discover", "Discover structure",
                                            class_="btn-sm"),
+                    ui.tags.details(
+                        ui.tags.summary("Advanced settings"),
+                        ui.input_slider("alpha", "PC significance α", min=0.01,
+                                        max=0.2, value=0.05, step=0.01),
+                        class_="code-details",
+                    ),
                     ui.output_ui("adopt_truth_control"),
                     ui.HTML(education.learn("pc", "ges", "alpha_pc", "cpdag")),
                 ),
@@ -216,10 +230,21 @@ app_ui = ui.page_fluid(
                     ui.input_radio_buttons("arm", "Attribution arm",
                                            {"structural": "structural (do-propagation)",
                                             "nonparametric": "nonparametric (conditional models)"}),
-                    ui.input_slider("n_perms", "Permutations", 8, 128, 32, step=8),
-                    ui.input_slider("n_instances", "Explained rows", 8, 128, 32, step=8),
-                    ui.input_slider("n_background", "Background draws", 8, 64, 16, step=8),
                     ui.input_action_button("run_shap", "Run causal SHAP", class_="btn-sm"),
+                    ui.tags.details(
+                        ui.tags.summary("Advanced settings"),
+                        ui.input_slider("n_perms", "Permutations", 8, 128, 32, step=8),
+                        ui.input_slider("n_instances", "Explained rows", 8, 128, 32,
+                                        step=8),
+                        ui.input_slider("n_background", "Background draws", 8, 64, 16,
+                                        step=8),
+                        ui.HTML(skin.note(
+                            "Monte Carlo budget, not science settings; the defaults "
+                            "are the proven demo scale and rerun reproducibly. Scale "
+                            "them up off-stage for smoother numbers."
+                        )),
+                        class_="code-details",
+                    ),
                     ui.output_ui("shap_preflight"),
                     ui.HTML(education.learn("arms", "ancestors", "knobs")),
                 ),
@@ -232,10 +257,15 @@ app_ui = ui.page_fluid(
             ui.layout_columns(
                 ui.div(
                     ui.output_ui("policy_controls"),
-                    ui.input_file("cost_upload_file", "Replace cost sheet (CSV)",
-                                  accept=[".csv"], multiple=False),
                     ui.input_action_button("run_policy", "Rank affordable actions",
                                            class_="btn-sm"),
+                    ui.tags.details(
+                        ui.tags.summary("Advanced settings"),
+                        ui.output_ui("policy_advanced"),
+                        ui.input_file("cost_upload_file", "Replace cost sheet (CSV)",
+                                      accept=[".csv"], multiple=False),
+                        class_="code-details",
+                    ),
                     ui.output_ui("cost_preview"),
                     ui.HTML(skin.note(
                         "Each lever appears twice: it is priced in both allowed "
@@ -1083,9 +1113,14 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
                                    {"increase": "increase outcome",
                                     "decrease": "decrease outcome"},
                                    selected=direction),
-            ui.input_slider("policy_alpha", "Confidence floor α", min=0.001, max=0.999,
-                            value=alpha, step=0.001),
         )
+
+    @render.ui
+    def policy_advanced():
+        chosen = bundle()
+        alpha = chosen.default_alpha if chosen else 0.05
+        return ui.input_slider("policy_alpha", "Confidence floor α", min=0.001,
+                               max=0.999, value=alpha, step=0.001)
 
     @render.ui
     def cost_preview():
@@ -1192,13 +1227,12 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             "info": ("as discovered", "info"), state.EMPTY: ("·", "info"),
         }
         stations = []
-        for index, (label, key, why) in enumerate(STATIONS, start=1):
+        for index, (label, key) in enumerate(STATIONS, start=1):
             text, kind = chips.get(statuses[key], ("·", "info"))
             optional = " optional" if key == "flags" else ""
             stations.append(
                 f'<div class="map-station{optional}" data-stage="{html.escape(label)}">'
                 f"<b>{index} · {html.escape(label).upper()}</b>"
-                f'<span class="why">{html.escape(why)}</span>'
                 f"{skin.pill(text, kind)}</div>"
             )
         return ui.HTML(f'<div class="map-strip">{"".join(stations)}</div>')

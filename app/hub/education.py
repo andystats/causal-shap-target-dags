@@ -1,9 +1,10 @@
 """Stage-side education: every control gets an explanation on demand.
 
-Each topic is a short, honest paragraph in the study guide's voice, with the
-occasional formula in plain HTML (no rendering dependency, so the hub works
-offline). Tabs compose their own reader from topic keys; the drop-down reuses
-the code-card visual so "learn" and "show the code" sit as siblings.
+Each topic is a short, honest paragraph in the study guide's voice. Formulas
+are written in TeX and typeset by MathJax (loaded from a CDN in app.py); with
+no network they degrade to readable TeX source rather than breaking. Tabs
+compose their own reader from topic keys; the drop-down reuses the code-card
+visual so "learn" and "show the code" sit as siblings.
 """
 
 from __future__ import annotations
@@ -11,9 +12,9 @@ from __future__ import annotations
 import html
 
 _PHI = (
-    '<p style="font-family:var(--mono);font-size:.78rem;margin:6px 0">'
-    "φ<sub>i</sub> = Σ<sub>S ⊆ F∖{i}</sub> "
-    "[|S|!·(|F|−|S|−1)!/|F|!] · [v(S ∪ {i}) − v(S)]</p>"
+    r"\[ \phi_i \;=\; \sum_{S \subseteq F \setminus \{i\}}"
+    r" \frac{|S|!\,(|F|-|S|-1)!}{|F|!}\,"
+    r"\bigl[\,v(S \cup \{i\}) - v(S)\,\bigr] \]"
 )
 
 TOPICS: dict[str, tuple[str, str]] = {
@@ -44,14 +45,18 @@ TOPICS: dict[str, tuple[str, str]] = {
         "PC algorithm",
         "Constraint-based discovery (Spirtes-Glymour-Scheines): start from a "
         "complete undirected graph, delete edges that fail conditional-"
-        "independence tests (Fisher-Z here), then orient what logic compels "
+        "independence tests (Fisher-Z here, "
+        r"\( z = \tfrac{1}{2}\sqrt{n-|S|-3}\;"
+        r"\ln\tfrac{1+\hat\rho}{1-\hat\rho} \)"
+        "), then orient what logic compels "
         "(colliders first, then propagation). Fast and interpretable; "
         "directions are often left open, and that honesty is the CPDAG.",
     ),
     "ges": (
         "GES algorithm",
         "Score-based discovery: greedily add then prune edges to maximize a "
-        "penalized fit score (BIC). Same output object as PC, an equivalence "
+        "penalized fit score, "
+        r"\( \mathrm{BIC} = \log L - \tfrac{k}{2}\log n \). Same output object as PC, an equivalence "
         "class, found by a different route; the two disagreeing on real data "
         "is a measurement, not a malfunction.",
     ),
@@ -106,7 +111,9 @@ TOPICS: dict[str, tuple[str, str]] = {
     "arms": (
         "Attribution arms",
         "Structural: calibrate linear/logistic equations on the current graph, "
-        "then evaluate v(S) = E[f(X) | do(X<sub>S</sub> = x<sub>S</sub>)] by "
+        "then evaluate "
+        r"\( v(S) = \mathbb{E}\bigl[f(X) \mid do(X_S = x_S)\bigr] \)"
+        " by "
         "propagating each coalition through the equations (the frozen record's "
         "engine). Nonparametric: fit small conditional models P(X|parents) and "
         "propagate by sampling, for data where linearity is indefensible. Both "
@@ -146,14 +153,18 @@ TOPICS: dict[str, tuple[str, str]] = {
     "alpha_floor": (
         "Confidence floor α",
         "An action is feasible only if the share of units it actually helps "
-        "is at least 1 − α. With a rare binary outcome most units cannot "
+        "is at least "
+        r"\( 1 - \alpha \). With a rare binary outcome most units cannot "
         "change under any single lever, so a strict floor rules out "
         "everything; the renal default is therefore permissive, and the "
         "per-unit column is shown so you can judge.",
     ),
     "budget": (
         "Budget as the objective",
-        "The optimum is the largest expected benefit that fits the budget. "
+        "The optimum is the largest expected benefit that fits the budget, "
+        r"\( \max_a \; \mathbb{E}[\Delta Y(a)] \;\text{s.t.}\;"
+        r" \mathrm{cost}(a) \le B \)"
+        ". "
         "The benefit/cost ratio is shown as a diagnostic but never optimized: "
         "under per-unit costs the ratio is dose-invariant, so arbitrarily "
         "tiny cheap actions would tie for first. Slide the budget and watch "
