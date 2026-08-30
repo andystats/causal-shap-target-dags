@@ -80,8 +80,19 @@ revised = graph.with_constraints(
 
 
 def shap_snippet(arm: str, features: Sequence[str], outcome: str, model_type: str,
-                 n_perms: int, n_background: int, n_instances: int, seed: int) -> str:
+                 n_perms: int, n_background: int, n_instances: int, seed: int,
+                 *, graph_source: str = "?", graph_fingerprint: str = "?",
+                 n_edges: int = 0, n_ledger: int = 0) -> str:
+    surgery_line = (
+        f"  {n_ledger} surgical judgement(s) in its ledger" if n_ledger
+        else "  no surgeries: the graph is as discovered"
+    )
     head = f"""# Stage 6 - causal SHAP, {arm} arm (executed by hub.stages.run_causal_shap)
+# INPUT GRAPH: {graph_source}, {n_edges} edges, fingerprint {graph_fingerprint[:12]}
+#{surgery_line}
+graph = current_graph          # exactly the object the surgery stage produced
+attributed = [f for f in features        # the graph GOVERNS eligibility:
+              if f in nx.ancestors(graph.digraph(), {outcome!r})]
 features = {_tuple_lines(features)}"""
     if arm == "structural":
         return head + f"""

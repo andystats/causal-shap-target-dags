@@ -14,6 +14,7 @@ import html
 import os
 import traceback
 from datetime import datetime
+from importlib.util import find_spec
 from pathlib import Path
 
 import pandas as pd
@@ -21,9 +22,16 @@ from shiny import App, reactive, render, req, ui
 
 from causal_shap.action_costs import CostModel
 from causal_shap.seeds import SEED_ACTION_ABDUCTION, SEED_HUB_DEMO
-from hub import report, snippets, stages, state, theater
+from hub import education, report, snippets, stages, state, theater
 from hub import ui as skin
 from hub.datasets import DATASETS, UPLOAD_ID, HubDataset, sd_cost_specs
+
+# The public hub ships a vendor-neutral detector explainer; a local, excluded
+# module supplies the specific story on machines that have the runtime.
+if find_spec("detector_docs_local"):
+    from detector_docs_local import DETECTOR_DOCS_HTML
+else:
+    DETECTOR_DOCS_HTML = ""
 
 # The station strip doubles as the simplified workflow ladder: each station
 # carries its one-line reason for existing (adapted from assets/ladder.svg).
@@ -31,11 +39,23 @@ STATIONS = (
     ("Data", "data", "one row per unit"),
     ("Naive SHAP", "naive", "the homunculus: proximity bias"),
     ("Discover", "discover", "a tool, not an oracle"),
-    ("Flags", "flags", "where to look twice"),
-    ("Theater", "surgery", "the surgeon decides"),
+    ("Surgical Prep", "flags", "optional: any evidence"),
+    ("Graph Surgery", "surgery", "the surgeon decides"),
     ("Causal SHAP", "attribute", "propagate do(X=x)"),
     ("Price & Dice", "policy", "levers, not ears"),
 )
+
+THEATER_KEY = """
+<div class="hub-card" style="padding:9px 15px"><h4>KEY</h4>
+<div style="font-size:.78rem;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+<span><span style="display:inline-block;width:16px;height:11px;background:#fdf3e7;border:1.5px solid #b45309;vertical-align:-1px"></span> outcome</span>
+<span><span style="display:inline-block;width:16px;height:11px;background:#fff;border:1.5px solid #1e4d8c;vertical-align:-1px"></span> nominated lever (last node clicked)</span>
+<span><span style="display:inline-block;width:16px;height:11px;background:#fff;border:2.5px solid #b45309;vertical-align:-1px"></span> selected for surgery</span>
+<span><span style="display:inline-block;width:22px;border-bottom:2px dashed #111;vertical-align:3px"></span> orientation chosen, not identified (unresolved pair)</span>
+<span><span style="display:inline-block;width:12px;height:12px;border:2px dashed #b45309;border-radius:50%;vertical-align:-2px"></span><span style="display:inline-block;width:12px;height:12px;border:2px dashed #1e4d8c;border-radius:50%;vertical-align:-2px;margin-left:2px"></span><span style="display:inline-block;width:12px;height:12px;border:2px dashed #94a3b8;border-radius:50%;vertical-align:-2px;margin-left:2px"></span>
+ dashed halo rings = Surgical Prep flags by channel (amber = h0, blue = h1, grey = eig): "look here again", never a causal claim</span>
+</div></div>
+"""
 
 MAP_JS = """
 <script>
@@ -88,6 +108,16 @@ app_ui = ui.page_fluid(
                 ui.div(
                     ui.output_ui("data_summary"),
                     ui.output_ui("dict_table"),
+                    ui.div(
+                        ui.input_text_area(
+                            "sandbox_code", "Local sandbox (runs on this machine only)",
+                            value="df.describe().T.round(2)", rows=4, width="100%"),
+                        ui.input_action_button("run_sandbox_code", "Run in sandbox",
+                                               class_="btn-sm"),
+                        ui.output_ui("sandbox_out"),
+                        ui.HTML(education.learn("sandbox", title="Learn: the sandbox")),
+                        style="border:1px solid var(--ink);padding:13px 15px;margin-bottom:13px",
+                    ),
                 ),
                 col_widths=(5, 7),
             ),
@@ -105,6 +135,7 @@ app_ui = ui.page_fluid(
                         "The benchmark: what the fitted predictor listened to. "
                         "The causal stages will argue with this chart."
                     )),
+                    ui.HTML(education.learn("shap", "naive", "holdout")),
                 ),
                 ui.output_ui("naive_body"),
                 col_widths=(4, 8),
@@ -121,6 +152,7 @@ app_ui = ui.page_fluid(
                     ui.input_action_button("run_discover", "Discover structure",
                                            class_="btn-sm"),
                     ui.output_ui("adopt_truth_control"),
+                    ui.HTML(education.learn("pc", "ges", "alpha_pc", "cpdag")),
                 ),
                 ui.div(
                     ui.output_ui("discover_body"),
@@ -130,26 +162,32 @@ app_ui = ui.page_fluid(
             ),
         ),
         ui.nav_panel(
-            "Flags",
+            "Surgical Prep",
             ui.layout_columns(
                 ui.div(
+                    ui.HTML(skin.pill("optional station", "info")),
                     ui.input_select("flag_provider", "Detector",
                                     {"auto": "auto-select", "null": "none (honest empty)",
                                      "precomputed": "frozen tables", "local": "local live"}),
                     ui.input_action_button("run_flags", "Run depth detector",
                                            class_="btn-sm"),
                     ui.HTML(skin.note(
-                        "A per-node depth signal: where to distrust the current "
-                        "attribution and look again. Advisory, never a causal claim."
+                        "Optional: gather node-level evidence from ANY source (a "
+                        "depth detector, the literature, expert priors) to decide "
+                        "where the surgeon looks first. Advisory, never a causal "
+                        "claim; skipping this stage blocks nothing downstream."
                     )),
+                    ui.HTML(education.learn("prep", "channels")),
                 ),
                 ui.output_ui("flags_body"),
                 col_widths=(4, 8),
             ),
+            ui.output_ui("detector_docs"),
         ),
         ui.nav_panel(
-            "Theater",
+            "Graph Surgery",
             ui.output_ui("theater_view"),
+            ui.HTML(THEATER_KEY),
             ui.layout_columns(
                 ui.div(
                     ui.output_ui("selection_info"),
@@ -165,6 +203,7 @@ app_ui = ui.page_fluid(
                     ),
                     ui.output_ui("add_edge_form"),
                     ui.HTML(skin.code_card(snippets.surgery_snippet())),
+                    ui.HTML(education.learn("surgery", "ledger", "cpdag")),
                 ),
                 ui.output_ui("scorecard"),
                 col_widths=(5, 7),
@@ -182,6 +221,7 @@ app_ui = ui.page_fluid(
                     ui.input_slider("n_background", "Background draws", 8, 64, 16, step=8),
                     ui.input_action_button("run_shap", "Run causal SHAP", class_="btn-sm"),
                     ui.output_ui("shap_preflight"),
+                    ui.HTML(education.learn("arms", "ancestors", "knobs")),
                 ),
                 ui.output_ui("shap_body"),
                 col_widths=(4, 8),
@@ -197,6 +237,13 @@ app_ui = ui.page_fluid(
                     ui.input_action_button("run_policy", "Rank affordable actions",
                                            class_="btn-sm"),
                     ui.output_ui("cost_preview"),
+                    ui.HTML(skin.note(
+                        "Each lever appears twice: it is priced in both allowed "
+                        "directions (its +shift and its -shift), and the losing "
+                        "direction keeps its refusal reason rather than vanishing."
+                    )),
+                    ui.HTML(education.learn("cost_sheet", "grid", "budget",
+                                            "alpha_floor", "benefit")),
                 ),
                 ui.output_ui("policy_body"),
                 col_widths=(4, 8),
@@ -366,6 +413,41 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         rows = [{"column": k, "description": v} for k, v in entries.items()]
         return ui.HTML(skin.card("Data dictionary", skin.table(rows, ["column", "description"])))
 
+    sandbox_result = reactive.Value(None)
+
+    @reactive.effect
+    @reactive.event(input.run_sandbox_code)
+    def _run_sandbox():
+        frame = raw_data()
+        if frame is None:
+            ui.notification_show("Load a dataset first.", type="warning")
+            return
+        sandbox_result.set(stages.run_sandbox(input.sandbox_code(), frame))
+
+    @render.ui
+    def sandbox_out():
+        result = sandbox_result.get()
+        if result is None:
+            return ui.HTML("")
+        parts = []
+        if not result["ok"]:
+            parts.append(skin.pill(result["text"], "bad"))
+        else:
+            parts.append(
+                '<pre style="font-size:.72rem;white-space:pre-wrap;'
+                'max-height:280px;overflow:auto;margin:8px 0 0">'
+                f'{html.escape(result["text"])}</pre>'
+            )
+            parts.extend(
+                f'<img src="data:image/png;base64,{figure}" style="max-width:100%">'
+                for figure in result["figures"]
+            )
+        return ui.HTML("".join(parts))
+
+    @render.ui
+    def detector_docs():
+        return ui.HTML(DETECTOR_DOCS_HTML or education.GENERIC_DETECTOR_DOCS)
+
     # ----------------------------------------------------------- extended tasks
     @reactive.extended_task
     async def naive_task(kwargs: dict):
@@ -508,7 +590,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         )
         return skin.card(
             "Discovered structure", "".join(parts), banner, m1_html, discovered_svg,
-            skin.note("Operate on this graph in the Theater."),
+            skin.note("Operate on this graph in Graph Surgery."),
         )
 
     @render.ui
@@ -877,7 +959,11 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         snips["attribute"].set(snippets.shap_snippet(
             input.arm(), features(), input.outcome(), input.model_type(),
             int(input.n_perms()), int(input.n_background()), int(input.n_instances()),
-            SEED_HUB_DEMO))
+            SEED_HUB_DEMO,
+            graph_source=graph.provenance.source.upper(),
+            graph_fingerprint=graph.fingerprint(),
+            n_edges=len(graph.directed_edges),
+            n_ledger=len(graph.provenance.constraint_ledger)))
         _launch(shap_task, "attribute",
                 state.fingerprint(data_fp(), features(), input.outcome(),
                                   graph.fingerprint(), input.arm(), input.model_type(),
@@ -938,7 +1024,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             semantics = skin.note(
                 "The graph governs eligibility: a feature with no directed path "
                 "to the outcome under the current DAG is zero by construction, "
-                "exactly as in the frozen record. Flip an edge in the Theater and "
+                "exactly as in the frozen record. Flip an edge in Graph Surgery and "
                 "eligibility changes with it — the attribution is conditional on "
                 "the hypothesis. Price &amp; Dice then prices the survivors on the "
                 "outcome itself."
@@ -1106,8 +1192,9 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         stations = []
         for index, (label, key, why) in enumerate(STATIONS, start=1):
             text, kind = chips.get(statuses[key], ("·", "info"))
+            optional = " optional" if key == "flags" else ""
             stations.append(
-                f'<div class="map-station" data-stage="{html.escape(label)}">'
+                f'<div class="map-station{optional}" data-stage="{html.escape(label)}">'
                 f"<b>{index} · {html.escape(label).upper()}</b>"
                 f'<span class="why">{html.escape(why)}</span>'
                 f"{skin.pill(text, kind)}</div>"

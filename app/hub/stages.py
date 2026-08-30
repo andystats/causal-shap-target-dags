@@ -506,6 +506,49 @@ def run_policy(
 
 
 # ---------------------------------------------------------------------------
+# Local sandbox (this machine only; nothing here feeds the pipeline)
+# ---------------------------------------------------------------------------
+def run_sandbox(code: str, df: pd.DataFrame) -> dict[str, object]:
+    """Execute exploration code against the loaded data, locally.
+
+    Last expression's repr (or printed output) comes back as text; matplotlib
+    figures are captured as base64. Deliberately no sandboxing beyond scope:
+    this is the analyst's own machine and their own data.
+    """
+    import contextlib
+    import io as io_module
+
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    plt.close("all")
+    namespace = {"df": df, "pd": pd, "np": np, "plt": plt}
+    buffer = io_module.StringIO()
+    result_text = ""
+    try:
+        with contextlib.redirect_stdout(buffer):
+            try:
+                value = eval(compile(code, "<sandbox>", "eval"), namespace)
+                if value is not None:
+                    result_text = repr(value)
+            except SyntaxError:
+                exec(compile(code, "<sandbox>", "exec"), namespace)
+    except Exception as error:
+        return {"ok": False, "text": f"{type(error).__name__}: {error}", "figures": []}
+
+    printed = buffer.getvalue()
+    figures = [
+        _figure_to_base64(plt.figure(num)) for num in plt.get_fignums()
+    ]
+    text = "\n".join(part for part in (printed.rstrip(), result_text) if part)
+    if len(text) > 8000:
+        text = text[:8000] + "\n… (truncated)"
+    return {"ok": True, "text": text or "(no output)", "figures": figures}
+
+
+# ---------------------------------------------------------------------------
 # Charts (hub palette, base64 PNG; None when matplotlib is absent)
 # ---------------------------------------------------------------------------
 def _figure_to_base64(figure) -> str:

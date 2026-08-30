@@ -40,6 +40,7 @@ body { background: var(--paper); color: var(--ink); font-family: var(--serif);
   border-right: none; padding: 7px 12px 6px; background: var(--paper);
   cursor: pointer; min-width: 118px; }
 .map-station:last-child { border-right: 1px solid var(--ink); }
+.map-station.optional { border-style: dashed; background: var(--paper); }
 .map-station:hover { background: var(--amber-soft); }
 .map-station b { display: block; font-size: .68rem; letter-spacing: .08em; }
 .map-station .why { display: block; font-family: var(--serif); font-style: italic;
