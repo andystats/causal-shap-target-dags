@@ -84,7 +84,8 @@ app_ui = ui.page_fluid(
     ui.div(
         ui.download_button("download_report", "Export session report",
                            class_="btn-sm"),
-        style="margin:0 0 10px",
+        ui.input_action_button("goto_next", "Next", class_="btn-sm", disabled=True),
+        style="margin:0 0 10px;display:flex;gap:8px",
     ),
     ui.navset_tab(
         ui.nav_panel(
@@ -132,7 +133,7 @@ app_ui = ui.page_fluid(
             ui.layout_columns(
                 ui.div(
                     ui.input_action_button("run_naive", "Run naive SHAP",
-                                           class_="btn-sm"),
+                                           class_="btn-sm btn-go"),
                     ui.tags.details(
                         ui.tags.summary("Advanced settings"),
                         ui.input_select("model_type", "Model",
@@ -158,7 +159,7 @@ app_ui = ui.page_fluid(
                     ui.input_radio_buttons("algorithm", "Algorithm",
                                            {"pc": "PC (Fisher-Z)", "ges": "GES (BIC)"}),
                     ui.input_action_button("run_discover", "Discover structure",
-                                           class_="btn-sm"),
+                                           class_="btn-sm btn-go"),
                     ui.tags.details(
                         ui.tags.summary("Advanced settings"),
                         ui.input_slider("alpha", "PC significance α", min=0.01,
@@ -184,7 +185,7 @@ app_ui = ui.page_fluid(
                                     {"auto": "auto-select", "null": "none (honest empty)",
                                      "precomputed": "frozen tables", "local": "local live"}),
                     ui.input_action_button("run_flags", "Run depth detector",
-                                           class_="btn-sm"),
+                                           class_="btn-sm btn-go"),
                     ui.HTML(skin.note(
                         "Optional: gather node-level evidence from ANY source (a "
                         "depth detector, the literature, expert priors) to decide "
@@ -230,7 +231,8 @@ app_ui = ui.page_fluid(
                     ui.input_radio_buttons("arm", "Attribution arm",
                                            {"structural": "structural (do-propagation)",
                                             "nonparametric": "nonparametric (conditional models)"}),
-                    ui.input_action_button("run_shap", "Run causal SHAP", class_="btn-sm"),
+                    ui.input_action_button("run_shap", "Run causal SHAP",
+                                           class_="btn-sm btn-go"),
                     ui.tags.details(
                         ui.tags.summary("Advanced settings"),
                         ui.input_slider("n_perms", "Permutations", 8, 128, 32, step=8),
@@ -258,7 +260,7 @@ app_ui = ui.page_fluid(
                 ui.div(
                     ui.output_ui("policy_controls"),
                     ui.input_action_button("run_policy", "Rank affordable actions",
-                                           class_="btn-sm"),
+                                           class_="btn-sm btn-go"),
                     ui.tags.details(
                         ui.tags.summary("Advanced settings"),
                         ui.output_ui("policy_advanced"),
@@ -1273,6 +1275,37 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     @reactive.event(input.goto_stage)
     def _goto():
         ui.update_navs("stage_nav", selected=input.goto_stage())
+
+    @reactive.effect
+    def _sync_next_button():
+        """Light the Next button when the current stage has what the next needs."""
+        labels = [label for label, _ in STATIONS]
+        current = input.stage_nav()
+        if current not in labels or current == labels[-1]:
+            ui.update_action_button("goto_next", label="Next", disabled=True)
+            return
+        key = dict(STATIONS)[current]
+        graph_ready = current_graph.get() is not None
+        ready = {
+            "data": raw_data() is not None,
+            "naive": _task_status(naive_task, "naive") == state.OK,
+            "discover": graph_ready,
+            "flags": graph_ready,      # optional station: a graph is all Surgery needs
+            "surgery": graph_ready,
+            "attribute": _task_status(shap_task, "attribute") == state.OK,
+        }[key]
+        ui.update_action_button(
+            "goto_next", label=f"Next: {labels[labels.index(current) + 1]} →",
+            disabled=not ready,
+        )
+
+    @reactive.effect
+    @reactive.event(input.goto_next)
+    def _goto_next():
+        labels = [label for label, _ in STATIONS]
+        current = input.stage_nav()
+        if current in labels and current != labels[-1]:
+            ui.update_navs("stage_nav", selected=labels[labels.index(current) + 1])
 
     # ----------------------------------------------------------- session report
     def _task_payload(task):

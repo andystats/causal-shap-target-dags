@@ -82,6 +82,11 @@ body { background: var(--paper); color: var(--ink); font-family: var(--serif);
   border-radius: 0 !important; background: var(--paper) !important;
   color: var(--ink) !important; letter-spacing: .06em; padding: 6px 12px !important; }
 .btn:hover, .btn-sm:hover { background: var(--amber-soft) !important; }
+.btn-go, #goto_next:not([disabled]) { background: var(--green-soft) !important;
+  color: var(--green) !important; border-color: var(--green) !important;
+  font-weight: bold; }
+.btn-go:hover, #goto_next:not([disabled]):hover { background: #d3e9dc !important; }
+#goto_next[disabled] { opacity: .45; }
 .form-select, .form-control { font-family: var(--mono); font-size: .76rem;
   border: 1px solid var(--ink); border-radius: 0; }
 
