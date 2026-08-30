@@ -202,12 +202,26 @@ def build_report(
             )
         changes = sorted(comparison["rank_changes"].items(),
                          key=lambda p: -abs(p[1]["change"]))
-        parts.append(_table(
-            [{"feature": name, "naive rank": d["standard_rank"],
-              "causal rank": d["causal_rank"], "change": d["change"]}
-             for name, d in changes],
-            ["feature", "naive rank", "causal rank", "change"],
-        ))
+        truth = comparison.get("true_effects") or {}
+        truth_total = sum(abs(v) for v in truth.values()) or None
+        change_rows = []
+        for name, d in changes:
+            row = {"feature": name, "naive rank": d["standard_rank"],
+                   "causal rank": d["causal_rank"], "change": d["change"]}
+            if truth_total and name in truth:
+                row["true effect %"] = 100.0 * abs(truth[name]) / truth_total
+            change_rows.append(row)
+        change_columns = ["feature", "naive rank", "causal rank", "change"]
+        if truth_total:
+            change_columns.append("true effect %")
+            parts.append(
+                '<div class="note">Causal SHAP explains the model under do(): '
+                "a proxy the model relies on keeps some credit, because setting it "
+                "really does move the prediction. The outcome-zero for such a proxy "
+                "appears in the true-effect column, and in the priced interventions, "
+                "where benefit is simulated on the outcome itself.</div>"
+            )
+        parts.append(_table(change_rows, change_columns))
         parts.append(_figure(shap.get("plot"), "naive vs causal attribution"))
 
     # ---- policy ----------------------------------------------------------

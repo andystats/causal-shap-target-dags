@@ -844,21 +844,37 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         changes = sorted(
             comparison["rank_changes"].items(), key=lambda p: -abs(p[1]["change"])
         )
-        rows = [
-            {
+        truth = comparison.get("true_effects") or {}
+        truth_total = sum(abs(v) for v in truth.values()) or None
+        rows = []
+        for name, detail in changes[:12]:
+            row = {
                 "feature": name,
                 "naive rank": detail["standard_rank"],
                 "causal rank": detail["causal_rank"],
                 "Δ": detail["change"],
             }
-            for name, detail in changes[:12]
-        ]
+            if truth_total and name in truth:
+                row["true effect %"] = 100.0 * abs(truth[name]) / truth_total
+            rows.append(row)
+        columns = ["feature", "naive rank", "causal rank", "Δ"]
+        semantics = ""
+        if truth_total:
+            columns.append("true effect %")
+            semantics = skin.note(
+                "Causal SHAP explains the MODEL under do(): a proxy the model "
+                "relies on keeps some credit, because setting it really does move "
+                "the prediction. The outcome-zero for such a proxy lives in the "
+                "true-effect column here, and in Price &amp; Dice, where benefit "
+                "is simulated on the outcome itself."
+            )
         return skin.card(
             "Attribution under the current graph",
             "".join(pills),
             skin.note(html.escape(payload["arm_note"])),
             skin.figure(payload["plot"], "comparison"),
-            skin.table(rows, ["feature", "naive rank", "causal rank", "Δ"]),
+            skin.table(rows, columns),
+            semantics,
         )
 
     # ------------------------------------------------------------- policy stage
