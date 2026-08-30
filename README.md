@@ -89,7 +89,7 @@ app and are validated against the frozen outputs.
 
 ## Quickstart
 
-Run the interactive app (no torch, no server-side model):
+Run the guided causal-discovery hub (no torch, no server-side model):
 
 ```bash
 git clone https://github.com/andystats/causal-shap-target-dags.git
@@ -97,6 +97,15 @@ cd causal-shap-target-dags
 python3.13 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e ".[discovery]"
+python -m shiny run --port 8002 --app-dir app hub.app:app  # open http://localhost:8002
+```
+
+The hub walks data upload, naive SHAP, structure discovery, an optional
+evidence-gathering stage (bring your own detector or priors), interactive
+graph surgery, graph-governed causal SHAP, and budget-constrained
+intervention ranking. The older teaching app remains available:
+
+```bash
 cd app && shiny run app.py  # open http://127.0.0.1:8000
 ```
 
