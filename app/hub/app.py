@@ -25,14 +25,16 @@ from hub import report, snippets, stages, state, theater
 from hub import ui as skin
 from hub.datasets import DATASETS, UPLOAD_ID, HubDataset, sd_cost_specs
 
+# The station strip doubles as the simplified workflow ladder: each station
+# carries its one-line reason for existing (adapted from assets/ladder.svg).
 STATIONS = (
-    ("Data", "data"),
-    ("Naive SHAP", "naive"),
-    ("Discover", "discover"),
-    ("Flags", "flags"),
-    ("Theater", "surgery"),
-    ("Causal SHAP", "attribute"),
-    ("Price & Dice", "policy"),
+    ("Data", "data", "one row per unit"),
+    ("Naive SHAP", "naive", "the homunculus: proximity bias"),
+    ("Discover", "discover", "a tool, not an oracle"),
+    ("Flags", "flags", "where to look twice"),
+    ("Theater", "surgery", "the surgeon decides"),
+    ("Causal SHAP", "attribute", "propagate do(X=x)"),
+    ("Price & Dice", "policy", "levers, not ears"),
 )
 
 MAP_JS = """
@@ -50,9 +52,8 @@ app_ui = ui.page_fluid(
     ui.HTML(skin.HUB_CSS),
     ui.HTML(MAP_JS),
     ui.HTML(
-        '<div class="hub-header"><h1>Guided Causal Discovery Hub</h1>'
-        '<div class="sub">naive attribution → discovery → depth flags → surgery '
-        "→ causal attribution → priced interventions</div></div>"
+        '<div class="hub-header"><h1><b>CAUSAL SHAP</b> HUB</h1>'
+        '<div class="sub">GUIDED CAUSAL DISCOVERY · v0.2<br>the machine is the map</div></div>'
     ),
     ui.output_ui("map_strip"),
     ui.div(
@@ -375,6 +376,10 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         return await asyncio.to_thread(lambda: stages.run_discovery(**kwargs))
 
     @reactive.extended_task
+    async def flags_task(kwargs: dict):
+        return await asyncio.to_thread(lambda: stages.run_flags(**kwargs))
+
+    @reactive.extended_task
     async def shap_task(kwargs: dict):
         return await asyncio.to_thread(lambda: stages.run_causal_shap(**kwargs))
 
@@ -485,17 +490,26 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
 
     def _discover_html(payload: dict) -> str:
         graph = payload["graph"]
+        chosen = bundle()
         parts = [
             skin.pill(f"{len(graph.directed_edges)} edges", "info"),
             skin.pill(f"{graph.n_undirected_pairs} pairs undirected", "warn"),
         ]
         banner = skin.note(
-            "The algorithm returns an equivalence class. Dashed edges in the "
-            "theater are one deterministic representative — choices, not findings."
+            "The algorithm returns an equivalence class. Dashed edges are one "
+            "deterministic representative — choices, not findings."
         )
         m1 = payload.get("m1")
         m1_html = _m1_html(m1, graph.n_undirected_pairs) if m1 else ""
-        return skin.card("Discovered structure", "".join(parts), banner, m1_html)
+        discovered_svg = theater.render_theater(
+            graph, None, input.outcome(),
+            display_names=dict(chosen.display_names()) if chosen else dictionary.get(),
+            interactive=False, height=280,
+        )
+        return skin.card(
+            "Discovered structure", "".join(parts), banner, m1_html, discovered_svg,
+            skin.note("Operate on this graph in the Theater."),
+        )
 
     @render.ui
     def truth_view():
@@ -525,29 +539,52 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         )
 
     # ------------------------------------------------------------- flags stage
+    flags_launch_fp = reactive.Value("")
+
     @reactive.effect
     @reactive.event(input.run_flags)
     def _run_flags():
+        if flags_task.status() == "running":
+            ui.notification_show("Detector already running.", type="warning")
+            return
         chosen = bundle()
         root = os.environ.get("CAUSAL_SHAP_BLOCK_ROOT", "")
         preference = None if input.flag_provider() == "auto" else input.flag_provider()
         snips["flags"].set(snippets.flags_snippet(
             chosen.flags_id if chosen else "upload", input.outcome(), preference))
-        try:
-            payload = stages.run_flags(
-                chosen.flags_id if chosen else "upload",
-                input.outcome(), features(),
-                block_root=Path(root) if root else None,
-                preference=preference,
-            )
-            flags_result.set(state.StageResult(status=state.OK, payload=payload,
-                                               fingerprint=_flags_fp()))
-        except Exception as error:  # a broken provider must not take the app down
-            flags_result.set(state.StageResult(status=state.ERROR, error=str(error),
-                                               traceback=traceback.format_exc(limit=4)))
+        flags_launch_fp.set(_flags_fp())
+        flags_task.invoke(dict(
+            flags_id=chosen.flags_id if chosen else "upload",
+            outcome=input.outcome(), feature_names=features(),
+            block_root=Path(root) if root else None,
+            preference=preference,
+            data=analysis_data(),   # a live detector trains on it
+        ))
+
+    @reactive.effect
+    def _harvest_flags():
+        status = flags_task.status()
+        if status == "success":
+            flags_result.set(state.StageResult(
+                status=state.OK, payload=flags_task.value.get(),
+                fingerprint=flags_launch_fp.get(),
+            ))
+        elif status == "error":
+            error = flags_task.error.get()
+            flags_result.set(state.StageResult(
+                status=state.ERROR, error=f"{type(error).__name__}: {error}",
+            ))
 
     @render.ui
     def flags_body():
+        if flags_task.status() == "running":
+            return ui.HTML(
+                skin.card("Working…",
+                          skin.pill("detector running on a worker", "warn"),
+                          skin.note("A live run trains a model from scratch; "
+                                    "minutes, not seconds."))
+                + skin.code_card(snips["flags"].get())
+            )
         result = flags_result.get()
         if result.status == state.EMPTY:
             return ui.HTML(skin.note("Run the detector to see per-node depth flags."))
@@ -646,10 +683,42 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     def selection_info():
         node = _selected_node()
         if node is not None:
+            graph = current_graph.get()
+            digraph = graph.digraph()
+            parents = sorted(digraph.predecessors(node))
+            children = sorted(digraph.successors(node))
+            unresolved = sorted(
+                other for pair in graph.undirected_pairs if node in pair
+                for other in pair if other != node
+            )
+            lines = (
+                '<p style="font-family:var(--mono);font-size:.74rem;line-height:2;margin:6px 0">'
+                f"parents&nbsp;&nbsp;: {html.escape(', '.join(parents) or '—')}<br>"
+                f"children&nbsp;: {html.escape(', '.join(children) or '—')}<br>"
+                f"unresolved: {html.escape(', '.join(unresolved) or '—')}</p>"
+            )
+            fingerprint = ""
+            flags = flags_result.get()
+            if flags.status == state.OK and flags.payload:
+                record = next(
+                    (r for r in flags.payload.get("records", [])
+                     if str(r.get("feature")) == node), None,
+                )
+                if record:
+                    fingerprint = "".join(
+                        skin.pill(f"{ch} z {record[f'{ch}_z']:+.2f}"
+                                  + (" ⚑" if record[f"{ch}_flagged"] else ""),
+                                  "warn" if record[f"{ch}_flagged"] else "info")
+                        for ch in ("h0", "h1", "eig")
+                    )
             return ui.HTML(skin.card(
-                "Candidate lever", skin.pill(node, "info"),
-                skin.note("The scorecard now tells this node's identification "
-                          "story. Click another node to interrogate it instead."),
+                "Node inspector",
+                skin.pill("candidate lever", "info"),
+                lines,
+                fingerprint,
+                skin.note("The scorecard tells this node's identification "
+                          "story. Click another node to switch."),
+                annotation=node,
             ))
         edge = _selected_edge()
         if edge is not None:
@@ -836,6 +905,11 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             skin.pill(f"arm: {payload['arm']}", "info"),
             skin.pill(f"τ naive-vs-causal {comparison['kendall_tau']:.2f}", "info"),
         ]
+        excluded = payload.get("excluded") or ()
+        if excluded:
+            pills.append(skin.pill(
+                f"structurally zero under this DAG: {', '.join(excluded)}", "warn"
+            ))
         tau_naive = comparison.get("tau_vs_truth_standard")
         tau_causal = comparison.get("tau_vs_truth_causal")
         if tau_naive is not None:
@@ -862,11 +936,12 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         if truth_total:
             columns.append("true effect %")
             semantics = skin.note(
-                "Causal SHAP explains the MODEL under do(): a proxy the model "
-                "relies on keeps some credit, because setting it really does move "
-                "the prediction. The outcome-zero for such a proxy lives in the "
-                "true-effect column here, and in Price &amp; Dice, where benefit "
-                "is simulated on the outcome itself."
+                "The graph governs eligibility: a feature with no directed path "
+                "to the outcome under the current DAG is zero by construction, "
+                "exactly as in the frozen record. Flip an edge in the Theater and "
+                "eligibility changes with it — the attribution is conditional on "
+                "the hypothesis. Price &amp; Dice then prices the survivors on the "
+                "outcome itself."
             )
         return skin.card(
             "Attribution under the current graph",
@@ -1005,9 +1080,12 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     def map_strip():
         graph = current_graph.get()
         flags = flags_result.get()
-        flags_status = (
-            "stale" if flags.ok and flags.fingerprint != _flags_fp() else flags.status
-        )
+        if flags_task.status() == "running":
+            flags_status = "running"
+        elif flags.ok and flags.fingerprint != _flags_fp():
+            flags_status = "stale"
+        else:
+            flags_status = flags.status
         statuses = {
             "data": state.OK if raw_data() is not None else state.EMPTY,
             "naive": _task_status(naive_task, "naive"),
@@ -1026,12 +1104,13 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             "info": ("as discovered", "info"), state.EMPTY: ("·", "info"),
         }
         stations = []
-        for index, (label, key) in enumerate(STATIONS, start=1):
+        for index, (label, key, why) in enumerate(STATIONS, start=1):
             text, kind = chips.get(statuses[key], ("·", "info"))
             stations.append(
                 f'<div class="map-station" data-stage="{html.escape(label)}">'
-                f"<b>{index} · {html.escape(label)}</b>"
-                f'{skin.pill(text, kind)}</div>'
+                f"<b>{index} · {html.escape(label).upper()}</b>"
+                f'<span class="why">{html.escape(why)}</span>'
+                f"{skin.pill(text, kind)}</div>"
             )
         return ui.HTML(f'<div class="map-strip">{"".join(stations)}</div>')
 

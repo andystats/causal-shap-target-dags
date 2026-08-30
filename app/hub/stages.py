@@ -220,6 +220,7 @@ def run_flags(
     *,
     block_root: Path | None,
     preference: str | None = None,
+    data: pd.DataFrame | None = None,
 ) -> dict[str, object]:
     import importlib.util
 
@@ -234,10 +235,25 @@ def run_flags(
 
     from causal_shap.node_flags import NodeFlagRequest, select_flag_provider
 
-    provider = select_flag_provider(preference, block_root=block_root)
+    try:
+        provider = select_flag_provider(preference, block_root=block_root)
+    except (ValueError, RuntimeError) as error:
+        # A misconfigured detector is an answerable state, not a stack trace.
+        return {
+            "status": "unavailable",
+            "message": (
+                f"{error}. To enable the live arm on this machine, set "
+                "CAUSAL_SHAP_FLAG_PROVIDER=module:ClassName in run_hub.local.bat "
+                "and restart the hub."
+            ),
+            "records": [],
+            "halos": {},
+            "provenance": "",
+        }
     result = provider.flags(
         NodeFlagRequest(
-            dataset_id=flags_id, outcome=outcome, feature_names=tuple(feature_names)
+            dataset_id=flags_id, outcome=outcome,
+            feature_names=tuple(feature_names), data=data,
         )
     )
     halos = {name: "h0" for name in result.flagged("h0")} if result.ran else {}
@@ -314,7 +330,17 @@ def run_causal_shap(
     n_instances: int = 32,
     seed: int = SEED_HUB_DEMO,
 ) -> dict[str, object]:
-    """Attribute on the CURRENT graph, refitting the model on this feature tuple."""
+    """Attribute on the CURRENT graph; the graph decides who gets attributed.
+
+    This mirrors the frozen record's methodology, where the NASA attribution
+    runs over the outcome's ancestors: a feature with no directed path to the
+    outcome under the current graph has a structural causal share of exactly
+    zero, by construction rather than estimation. That is what makes surgery
+    matter here - flip an edge and a node's very eligibility changes.
+
+    The naive benchmark deliberately stays on the FULL feature set: it is the
+    thing being argued with.
+    """
     features = tuple(features)
     fit = fit_outcome_model(data, features, outcome, model_type=model_type, seed=seed)
     naive_df = compute_standard_shap(
@@ -323,6 +349,18 @@ def run_causal_shap(
     )
 
     digraph = graph.digraph()
+    ancestors = nx.ancestors(digraph, outcome) if outcome in digraph else set()
+    attributed = tuple(f for f in features if f in ancestors)
+    excluded = tuple(f for f in features if f not in ancestors)
+    if not attributed:
+        raise ValueError(
+            "No selected feature is an ancestor of the outcome under the "
+            "current graph; there is nothing to causally attribute"
+        )
+    causal_fit = (
+        fit_outcome_model(data, attributed, outcome, model_type=model_type, seed=seed)
+        if excluded else fit
+    )
     if arm == "structural":
         fitted = fit_linear_logistic_scm(
             data[list(graph.nodes)].dropna(), digraph, seed=seed,
@@ -330,19 +368,20 @@ def run_causal_shap(
         )
         scm = fitted.scm
         scm_frame = data[list(scm.order)].dropna()
-        complete = data[list(features)].dropna()
+        complete = data[list(attributed)].dropna()
         evaluation = complete.sample(min(n_instances, len(complete)), random_state=seed)
         background_rows = scm_frame.sample(min(n_background, len(scm_frame)), random_state=seed + 1)
         background = scm.recover_exogenous(background_rows, seed=seed)
         feature_edges = [
-            (a, b) for a, b in digraph.edges if a in set(features) and b in set(features)
+            (a, b) for a, b in digraph.edges
+            if a in set(attributed) and b in set(attributed)
         ]
         result = compute_structural_asymmetric_shap(
-            prediction_callable(fit.model, list(features)),
+            prediction_callable(causal_fit.model, list(attributed)),
             scm,
             evaluation,
             background,
-            list(features),
+            list(attributed),
             feature_edges,
             n_permutations=n_perms,
             seed=seed,
@@ -350,7 +389,8 @@ def run_causal_shap(
         causal_df = result.values
         arm_note = (
             f"structural do()-propagation on a {fitted.grade}-grade SCM calibrated "
-            f"to this data on the current graph ({graph.provenance.source})"
+            f"to this data on the current graph ({graph.provenance.source}); "
+            f"attributed over the outcome's {len(attributed)} ancestors"
         )
     elif arm == "nonparametric":
         # The engine draws from process-global NumPy randomness; unseeded, an
@@ -362,12 +402,22 @@ def run_causal_shap(
         stdlib_random.seed(seed)
         np.random.seed(seed)
         causal_df = _causal_shap_engine(
-            fit.model, data.dropna(subset=list(features)), digraph, list(features),
-            outcome, n_perms=n_perms, n_background=n_background, n_instances=n_instances,
+            causal_fit.model, data.dropna(subset=list(attributed)), digraph,
+            list(attributed), outcome,
+            n_perms=n_perms, n_background=n_background, n_instances=n_instances,
         )
-        arm_note = "nonparametric conditional-model propagation (GBM P(X|parents))"
+        arm_note = (
+            "nonparametric conditional-model propagation (GBM P(X|parents)); "
+            f"attributed over the outcome's {len(attributed)} ancestors"
+        )
     else:
         raise ValueError(f"Unknown attribution arm: {arm!r}")
+
+    # Non-ancestors carry their structural zero into every downstream view.
+    causal_df = causal_df.copy()
+    for name in excluded:
+        causal_df[name] = 0.0
+    causal_df = causal_df[list(features)]
 
     comparison = compare_shap_rankings(
         naive_df, causal_df, dict(truth_effects) if truth_effects else None
@@ -378,6 +428,8 @@ def run_causal_shap(
         "arm": arm,
         "arm_note": arm_note,
         "fit": fit,
+        "attributed": attributed,
+        "excluded": excluded,
         "naive_importance": naive_importance,
         "causal_importance": causal_importance,
         "comparison": comparison,

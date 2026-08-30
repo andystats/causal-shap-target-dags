@@ -215,11 +215,11 @@ def build_report(
         if truth_total:
             change_columns.append("true effect %")
             parts.append(
-                '<div class="note">Causal SHAP explains the model under do(): '
-                "a proxy the model relies on keeps some credit, because setting it "
-                "really does move the prediction. The outcome-zero for such a proxy "
-                "appears in the true-effect column, and in the priced interventions, "
-                "where benefit is simulated on the outcome itself.</div>"
+                '<div class="note">The graph governs eligibility: a feature with '
+                "no directed path to the outcome under the working DAG has causal "
+                "share zero by construction. Attribution is conditional on the "
+                "hypothesized graph; the priced interventions then act on the "
+                "outcome itself.</div>"
             )
         parts.append(_table(change_rows, change_columns))
         parts.append(_figure(shap.get("plot"), "naive vs causal attribution"))
