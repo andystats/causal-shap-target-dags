@@ -13,13 +13,15 @@ import asyncio
 import html
 import os
 import traceback
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 from shiny import App, reactive, render, req, ui
 
 from causal_shap.action_costs import CostModel
-from hub import stages, state, theater
+from causal_shap.seeds import SEED_ACTION_ABDUCTION, SEED_HUB_DEMO
+from hub import report, snippets, stages, state, theater
 from hub import ui as skin
 from hub.datasets import DATASETS, UPLOAD_ID, HubDataset, sd_cost_specs
 
@@ -53,6 +55,11 @@ app_ui = ui.page_fluid(
         "→ causal attribution → priced interventions</div></div>"
     ),
     ui.output_ui("map_strip"),
+    ui.div(
+        ui.download_button("download_report", "Export session report",
+                           class_="btn-sm"),
+        style="margin:0 0 10px",
+    ),
     ui.navset_tab(
         ui.nav_panel(
             "Data",
@@ -114,7 +121,10 @@ app_ui = ui.page_fluid(
                                            class_="btn-sm"),
                     ui.output_ui("adopt_truth_control"),
                 ),
-                ui.output_ui("discover_body"),
+                ui.div(
+                    ui.output_ui("discover_body"),
+                    ui.output_ui("truth_view"),
+                ),
                 col_widths=(4, 8),
             ),
         ),
@@ -152,6 +162,7 @@ app_ui = ui.page_fluid(
                         ui.input_action_button("act_reset", "Reset graph", class_="btn-sm"),
                         style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px",
                     ),
+                    ui.HTML(skin.code_card(snippets.surgery_snippet())),
                 ),
                 ui.output_ui("scorecard"),
                 col_widths=(5, 7),
@@ -207,6 +218,10 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     flags_result = reactive.Value(state.StageResult())
     cost_override = reactive.Value(None)
     fps = {name: reactive.Value("") for name in ("naive", "discover", "attribute", "policy")}
+    # "What actually ran": captured at launch from the same values the worker
+    # receives, so the card can never drift from the computation.
+    snips = {name: reactive.Value("")
+             for name in ("naive", "discover", "flags", "attribute", "policy")}
 
     # ------------------------------------------------------------------ data
     @reactive.calc
@@ -381,13 +396,16 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             data=analysis_data(), features=features(), outcome=input.outcome(),
             model_type=input.model_type(),
         )
+        snips["naive"].set(snippets.naive_snippet(
+            features(), input.outcome(), input.model_type(), 100, SEED_HUB_DEMO))
         _launch(naive_task, "naive",
                 state.fingerprint(data_fp(), features(), input.outcome(), input.model_type()),
                 kwargs)
 
     @render.ui
     def naive_body():
-        return _task_body(naive_task, "Run naive SHAP to open the story.", _naive_html)
+        return _task_body(naive_task, "Run naive SHAP to open the story.", _naive_html,
+                          code=snips["naive"].get())
 
     def _naive_html(payload: dict) -> str:
         fit = payload["fit"]
@@ -415,6 +433,8 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         )
         fingerprint = state.fingerprint(data_fp(), features(), input.outcome(),
                                         input.algorithm(), input.alpha())
+        snips["discover"].set(snippets.discover_snippet(
+            features(), input.outcome(), input.algorithm(), float(input.alpha())))
         discover_launch.set((graph_gen.get(), fingerprint))
         _launch(discover_task, "discover", fingerprint, kwargs)
 
@@ -460,7 +480,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     @render.ui
     def discover_body():
         return _task_body(discover_task, "Run discovery, or adopt the truth graph.",
-                          _discover_html)
+                          _discover_html, code=snips["discover"].get())
 
     def _discover_html(payload: dict) -> str:
         graph = payload["graph"]
@@ -475,6 +495,25 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         m1 = payload.get("m1")
         m1_html = _m1_html(m1, graph.n_undirected_pairs) if m1 else ""
         return skin.card("Discovered structure", "".join(parts), banner, m1_html)
+
+    @render.ui
+    def truth_view():
+        chosen = bundle()
+        if chosen is None or chosen.truth_graph() is None:
+            return ui.HTML("")
+        truth = chosen.truth_graph()
+        svg = theater.render_theater(
+            truth, None, input.outcome(),
+            display_names=dict(chosen.display_names()),
+            interactive=False, height=300,
+        )
+        return ui.HTML(
+            "<details class='code-details'><summary>Sealed answer key (known truth)"
+            "</summary>" + skin.note(
+                "The graph the data were generated from. Discovery never sees it; "
+                "it exists so every claim in this session is checkable."
+            ) + svg + "</details>"
+        )
 
     def _m1_html(m1: dict, n_undirected: int) -> str:
         caveat = " (representative-dependent)" if n_undirected else ""
@@ -491,6 +530,8 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         chosen = bundle()
         root = os.environ.get("CAUSAL_SHAP_BLOCK_ROOT", "")
         preference = None if input.flag_provider() == "auto" else input.flag_provider()
+        snips["flags"].set(snippets.flags_snippet(
+            chosen.flags_id if chosen else "upload", input.outcome(), preference))
         try:
             payload = stages.run_flags(
                 chosen.flags_id if chosen else "upload",
@@ -721,6 +762,10 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             n_perms=int(input.n_perms()), n_background=int(input.n_background()),
             n_instances=int(input.n_instances()),
         )
+        snips["attribute"].set(snippets.shap_snippet(
+            input.arm(), features(), input.outcome(), input.model_type(),
+            int(input.n_perms()), int(input.n_background()), int(input.n_instances()),
+            SEED_HUB_DEMO))
         _launch(shap_task, "attribute",
                 state.fingerprint(data_fp(), features(), input.outcome(),
                                   graph.fingerprint(), input.arm(), input.model_type(),
@@ -739,7 +784,8 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
 
     @render.ui
     def shap_body():
-        return _task_body(shap_task, "Run causal SHAP once a graph exists.", _shap_html)
+        return _task_body(shap_task, "Run causal SHAP once a graph exists.", _shap_html,
+                          code=snips["attribute"].get())
 
     def _shap_html(payload: dict) -> str:
         comparison = payload["comparison"]
@@ -851,6 +897,9 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             specs=cost_specs(), budget=float(input.budget()),
             direction=input.direction(), alpha=float(input.policy_alpha()),
         )
+        snips["policy"].set(snippets.policy_snippet(
+            input.outcome(), float(input.budget()), input.direction(),
+            float(input.policy_alpha()), SEED_ACTION_ABDUCTION))
         _launch(policy_task, "policy",
                 state.fingerprint(data_fp(), graph.fingerprint(), input.outcome(),
                                   input.budget(), input.direction(),
@@ -859,7 +908,8 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
 
     @render.ui
     def policy_body():
-        return _task_body(policy_task, "Price the levers once a graph exists.", _policy_html)
+        return _task_body(policy_task, "Price the levers once a graph exists.", _policy_html,
+                          code=snips["policy"].get())
 
     def _policy_html(payload: dict) -> str:
         ranking = payload["ranking"]
@@ -963,19 +1013,90 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     def _goto():
         ui.update_navs("stage_nav", selected=input.goto_stage())
 
+    # ----------------------------------------------------------- session report
+    def _task_payload(task):
+        return task.value.get() if task.status() == "success" else None
+
+    def _assemble_report() -> str:
+        chosen = bundle()
+        data = raw_data()
+        graph = current_graph.get()
+        display = dict(chosen.display_names()) if chosen else dictionary.get()
+        outcome = input.outcome()
+
+        graph_summary = None
+        current_svg = ""
+        if graph is not None:
+            graph_summary = stages.surgery_scorecard(
+                graph, live_focus(), outcome,
+                chosen.truth_graph() if chosen else None,
+            )
+            current_svg = theater.render_theater(
+                graph, live_focus(), outcome, display_names=display,
+                interactive=False, height=360,
+            )
+        truth_svg = ""
+        if chosen is not None and chosen.truth_graph() is not None:
+            truth_svg = theater.render_theater(
+                chosen.truth_graph(), None, outcome, display_names=display,
+                interactive=False, height=360,
+            )
+
+        discover_payload = _task_payload(discover_task) or {}
+        flags = flags_result.get()
+        m1 = (graph_summary or {}).get("m1") or discover_payload.get("m1")
+
+        return report.build_report(
+            dataset_label=chosen.label if chosen else "Uploaded CSV",
+            dataset_note=chosen.note if chosen else "",
+            n_rows=len(data) if data is not None else 0,
+            outcome=outcome,
+            features=features() if data is not None else (),
+            naive=_task_payload(naive_task),
+            discover_m1=m1,
+            graph_summary=graph_summary,
+            truth_svg=truth_svg,
+            current_svg=current_svg,
+            flags=flags.payload if flags.status == state.OK else None,
+            shap=_task_payload(shap_task),
+            policy=_task_payload(policy_task),
+            code_appendix=[
+                ("Naive SHAP", snips["naive"].get()),
+                ("Discovery", snips["discover"].get()),
+                ("Depth flags", snips["flags"].get()),
+                ("Graph surgery", snippets.surgery_snippet()
+                 if graph is not None and graph.provenance.source == "recovered" else ""),
+                ("Causal SHAP", snips["attribute"].get()),
+                ("Price and dice", snips["policy"].get()),
+            ],
+        )
+
+    @render.download(
+        filename=lambda: (
+            f"hub_report_{input.dataset_choice()}_{datetime.now():%Y%m%d_%H%M}.html"
+        )
+    )
+    def download_report():
+        yield _assemble_report()
+
     # ------------------------------------------------------------ shared render
-    def _task_body(task, placeholder: str, renderer):
+    def _task_body(task, placeholder: str, renderer, code: str = ""):
         status = task.status()
         if status == "initial":
             return ui.HTML(skin.note(placeholder))
         if status == "running":
-            return ui.HTML(skin.card("Working…", skin.pill("running on a worker", "warn")))
+            return ui.HTML(
+                skin.card("Working…", skin.pill("running on a worker", "warn"))
+                + skin.code_card(code)
+            )
         if status == "error":
             error = task.error.get()
-            return ui.HTML(skin.error_box(f"{type(error).__name__}: {error}"))
+            return ui.HTML(
+                skin.error_box(f"{type(error).__name__}: {error}") + skin.code_card(code)
+            )
         if status == "cancelled":
             return ui.HTML(skin.note("Cancelled."))
-        return ui.HTML(renderer(task.value.get()))
+        return ui.HTML(renderer(task.value.get()) + skin.code_card(code))
 
 
 app = App(app_ui, server)

@@ -47,6 +47,13 @@ body { background: var(--paper); color: var(--ink); font-family: Georgia, serif;
 .nav-tabs .nav-link.active { color: var(--ink); font-weight: 700;
   border-bottom: 2px solid var(--amber); }
 .figure-img { max-width: 100%; border: 1px solid var(--line); border-radius: 4px; }
+.code-details { margin: 8px 0; }
+.code-details summary { font-family: ui-monospace, Consolas, monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); cursor: pointer; }
+.code-block { background: #1b1a16; color: #e8e4da; border-radius: 5px; padding: 10px 12px;
+  font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; line-height: 1.5;
+  overflow-x: auto; margin: 6px 0 0; white-space: pre; }
+.theater-static svg { background: #fdfcfa; }
 </style>
 """
 
@@ -92,6 +99,16 @@ def _cell(value: object) -> str:
     if isinstance(value, bool):
         return "✓" if value else "—"
     return html.escape(str(value))
+
+
+def code_card(snippet: str) -> str:
+    """Collapsible 'what actually ran' block; snippet text is escaped."""
+    if not snippet:
+        return ""
+    return (
+        '<details class="code-details"><summary>Show the code that ran</summary>'
+        f'<pre class="code-block">{html.escape(snippet)}</pre></details>'
+    )
 
 
 def figure(b64: str | None, alt: str) -> str:

@@ -108,8 +108,14 @@ def render_theater(
     display_names: Mapping[str, str] | None = None,
     selected: str = "",
     height: int = 460,
+    interactive: bool = True,
 ) -> str:
-    """Return the theater as self-contained HTML (SVG + bridge + pan/zoom)."""
+    """Return the theater as self-contained HTML.
+
+    The SVG autofits its content through the viewBox; there is deliberately no
+    wheel zoom or drag pan, which fought the page scroll. ``interactive=False``
+    drops the click bridge entirely, for answer-key displays and reports.
+    """
     halos = halos or {}
     display_names = display_names or {}
     graph = state.digraph()
@@ -182,11 +188,15 @@ def render_theater(
             f"<title>{html.escape(str(display_names.get(node, node)))}</title></g>"
         )
 
+    svg_id = ' id="theater-svg"' if interactive else ""
     svg = (
-        f'<svg id="theater-svg" viewBox="0 0 {max_x:.0f} {max_y:.0f}" '
+        f'<svg{svg_id} viewBox="0 0 {max_x:.0f} {max_y:.0f}" '
         f'style="width:100%;height:{height}px;background:#fdfcfa;border:1px solid #e2ddd6;'
         f'border-radius:6px" xmlns="http://www.w3.org/2000/svg">{"".join(parts)}</svg>'
     )
+
+    if not interactive:
+        return f'<div class="theater-static">{svg}</div>'
 
     script = """
 <script>
@@ -199,25 +209,6 @@ def render_theater(
       Shiny.setInputValue('theater_pick', target.dataset.id, {priority: 'event'});
     }
   });
-  let view = svg.viewBox.baseVal;
-  svg.addEventListener('wheel', function(event) {
-    event.preventDefault();
-    const scale = event.deltaY > 0 ? 1.12 : 0.89;
-    const cx = view.x + view.width / 2, cy = view.y + view.height / 2;
-    view.width *= scale; view.height *= scale;
-    view.x = cx - view.width / 2; view.y = cy - view.height / 2;
-  }, {passive: false});
-  let drag = null;
-  svg.addEventListener('mousedown', function(event) {
-    drag = {x: event.clientX, y: event.clientY, vx: view.x, vy: view.y};
-  });
-  window.addEventListener('mousemove', function(event) {
-    if (!drag) return;
-    const k = view.width / svg.clientWidth;
-    view.x = drag.vx - (event.clientX - drag.x) * k;
-    view.y = drag.vy - (event.clientY - drag.y) * k;
-  });
-  window.addEventListener('mouseup', function() { drag = null; });
 })();
 </script>"""
     return f'<div id="theater-wrap">{svg}{script}</div>'
