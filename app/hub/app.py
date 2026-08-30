@@ -196,8 +196,12 @@ app_ui = ui.page_fluid(
 
 def server(input, output, session):  # noqa: C901 - the wiring hub
     upload_frame = reactive.Value(None)
+    upload_gen = reactive.Value(0)          # bumps per upload: same-schema files differ
     dictionary = reactive.Value({})
     current_graph = reactive.Value(None)
+    baseline_graph = reactive.Value(None)   # what Reset restores; dataset-scoped
+    graph_gen = reactive.Value(0)           # bumps when the graph story changes underfoot
+    discover_launch = reactive.Value((-1, ""))
     picked = reactive.Value("")
     flags_result = reactive.Value(state.StageResult())
     cost_override = reactive.Value(None)
@@ -231,15 +235,20 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
 
     @reactive.calc
     def analysis_data() -> pd.DataFrame:
+        # NOT complete-cased here: one sparse, deselected column must not
+        # delete the cohort. Every stage drops rows on its own required
+        # columns only.
         data = raw_data()
         req(data is not None)
-        return data[numeric_columns()].dropna()
+        return data[numeric_columns()]
 
     @reactive.calc
     def data_fp() -> str:
         data = raw_data()
         req(data is not None)
-        return state.fingerprint(input.dataset_choice(), data.shape, tuple(data.columns))
+        return state.fingerprint(
+            input.dataset_choice(), data.shape, tuple(data.columns), upload_gen.get()
+        )
 
     @reactive.effect
     @reactive.event(input.data_upload)
@@ -247,9 +256,14 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         files = input.data_upload()
         if files:
             upload_frame.set(pd.read_csv(files[0]["datapath"]))
+            upload_gen.set(upload_gen.get() + 1)
             current_graph.set(None)
+            baseline_graph.set(None)
+            graph_gen.set(graph_gen.get() + 1)
             picked.set("")
             cost_override.set(None)
+            dictionary.set({})
+            flags_result.set(state.StageResult())
 
     @reactive.effect
     @reactive.event(input.dict_upload)
@@ -260,7 +274,14 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         sheet = pd.read_csv(files[0]["datapath"])
         lower = {c.lower(): c for c in sheet.columns}
         if "column" in lower and "description" in lower:
-            dictionary.set(dict(zip(sheet[lower["column"]], sheet[lower["description"]])))
+            entries = {
+                str(column).strip(): str(description)
+                for column, description in zip(
+                    sheet[lower["column"]], sheet[lower["description"]]
+                )
+                if pd.notna(description) and str(description).strip()
+            }
+            dictionary.set(entries)
         else:
             ui.notification_show(
                 "Dictionary needs 'column' and 'description' columns", type="warning"
@@ -270,13 +291,18 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     @reactive.event(input.dataset_choice)
     def _reset_on_dataset_change():
         current_graph.set(None)
+        baseline_graph.set(None)
+        graph_gen.set(graph_gen.get() + 1)
         picked.set("")
         cost_override.set(None)
+        dictionary.set({})
         flags_result.set(state.StageResult())
 
     @render.ui
     def pickers():
         columns = numeric_columns()
+        if not columns:
+            return ui.HTML(skin.note("No usable numeric columns in this data."))
         chosen = bundle()
         outcome = chosen.default_outcome if chosen else columns[-1]
         exposure = chosen.default_exposure if chosen else columns[0]
@@ -362,7 +388,9 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     def _naive_html(payload: dict) -> str:
         fit = payload["fit"]
         shares = sorted(payload["shares"].items(), key=lambda p: -p[1])
-        top = ", ".join(f"{name} {share:.1f}%" for name, share in shares[:3])
+        top = ", ".join(
+            f"{html.escape(str(name))} {share:.1f}%" for name, share in shares[:3]
+        )
         return skin.card(
             "What the model listened to",
             skin.pill(f"{fit.model_type} · {fit.task}", "info"),
@@ -381,16 +409,26 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             algorithm=input.algorithm(), alpha=float(input.alpha()),
             truth=chosen.truth_graph() if chosen else None,
         )
-        _launch(discover_task, "discover",
-                state.fingerprint(data_fp(), features(), input.outcome(),
-                                  input.algorithm(), input.alpha()),
-                kwargs)
+        fingerprint = state.fingerprint(data_fp(), features(), input.outcome(),
+                                        input.algorithm(), input.alpha())
+        discover_launch.set((graph_gen.get(), fingerprint))
+        _launch(discover_task, "discover", fingerprint, kwargs)
 
     @reactive.effect
     def _adopt_discovered():
-        if discover_task.status() == "success":
-            current_graph.set(discover_task.value.get()["graph"])
-            picked.set("")
+        # Adopt a finished discovery only if nothing changed underfoot: same
+        # dataset/inputs, and no surgery or truth adoption raced the run.
+        # A stale success stays in the task (the map chip says stale); it must
+        # never clobber a newer graph and silently discard its ledger.
+        if discover_task.status() != "success":
+            return
+        launch_gen, launch_fp = discover_launch.get()
+        if launch_gen != graph_gen.get() or launch_fp != _live_fp("discover"):
+            return
+        adopted = discover_task.value.get()["graph"]
+        current_graph.set(adopted)
+        baseline_graph.set(adopted)
+        picked.set("")
 
     @render.ui
     def adopt_truth_control():
@@ -408,7 +446,10 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     def _adopt_truth():
         chosen = bundle()
         if chosen and chosen.truth_graph() is not None:
-            current_graph.set(chosen.truth_graph())
+            truth = chosen.truth_graph()
+            current_graph.set(truth)
+            baseline_graph.set(truth)
+            graph_gen.set(graph_gen.get() + 1)
             picked.set("")
             ui.notification_show("Adopted the answer-key graph.", type="message")
 
@@ -454,7 +495,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
                 preference=preference,
             )
             flags_result.set(state.StageResult(status=state.OK, payload=payload,
-                                               fingerprint=data_fp()))
+                                               fingerprint=_flags_fp()))
         except Exception as error:  # a broken provider must not take the app down
             flags_result.set(state.StageResult(status=state.ERROR, error=str(error),
                                                traceback=traceback.format_exc(limit=4)))
@@ -485,6 +526,13 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         return ui.HTML(skin.card("Depth flags", *body))
 
     # ----------------------------------------------------------- theater stage
+    def _flags_fp() -> str:
+        try:
+            return state.fingerprint(data_fp(), input.outcome(), features(),
+                                     input.flag_provider())
+        except Exception:
+            return "unready"
+
     @render.ui
     def theater_view():
         graph = current_graph.get()
@@ -495,7 +543,13 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             ))
         chosen = bundle()
         flags = flags_result.get()
-        halos = flags.payload["halos"] if flags.status == state.OK and flags.payload else {}
+        # Halos only while the flag run still matches the live inputs; stale
+        # rings on a different dataset's graph would be a quiet lie.
+        halos_live = (
+            flags.status == state.OK and flags.payload
+            and flags.fingerprint == _flags_fp()
+        )
+        halos = flags.payload["halos"] if halos_live else {}
         return ui.HTML(theater.render_theater(
             graph, input.exposure(), input.outcome(),
             halos=halos,
@@ -508,22 +562,39 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     def _pick():
         picked.set(input.theater_pick())
 
+    def _selected_edge() -> tuple[str, str] | None:
+        # Selections are indices into the canonical edge order, never names:
+        # uploaded column names are untrusted and may contain anything.
+        selection = picked.get()
+        graph = current_graph.get()
+        if graph is None or not selection.startswith("edge:"):
+            return None
+        try:
+            index = int(selection[5:])
+            return theater.sorted_edges(graph)[index]
+        except (ValueError, IndexError):
+            return None
+
+    def _selected_node() -> str | None:
+        selection = picked.get()
+        graph = current_graph.get()
+        if graph is None or not selection.startswith("node:"):
+            return None
+        try:
+            return graph.nodes[int(selection[5:])]
+        except (ValueError, IndexError):
+            return None
+
     @render.ui
     def selection_info():
-        selection = picked.get()
-        if not selection:
-            return ui.HTML(skin.note("Click an edge to operate on it."))
-        kind, _, name = selection.partition(":")
-        if kind == "node":
-            return ui.HTML(skin.card("Selected node", skin.pill(name, "info")))
-        return ui.HTML(skin.card("Selected edge", skin.pill(name.replace("→", " → "), "warn")))
-
-    def _selected_edge() -> tuple[str, str] | None:
-        selection = picked.get()
-        if selection.startswith("edge:"):
-            a, _, b = selection[5:].partition("→")
-            return (a, b)
-        return None
+        node = _selected_node()
+        if node is not None:
+            return ui.HTML(skin.card("Selected node", skin.pill(node, "info")))
+        edge = _selected_edge()
+        if edge is not None:
+            return ui.HTML(skin.card("Selected edge",
+                                     skin.pill(f"{edge[0]} → {edge[1]}", "warn")))
+        return ui.HTML(skin.note("Click an edge to operate on it."))
 
     def _surgery(action: str):
         graph = current_graph.get()
@@ -537,6 +608,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             ui.notification_show(str(error), type="error", duration=6)
             return
         current_graph.set(revised)
+        graph_gen.set(graph_gen.get() + 1)
         picked.set("")
         ui.notification_show(f"{action}: recorded in the ledger.", type="message")
 
@@ -563,11 +635,14 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     @reactive.effect
     @reactive.event(input.act_reset)
     def _reset():
-        if discover_task.status() == "success":
-            current_graph.set(discover_task.value.get()["graph"])
-        else:
-            chosen = bundle()
-            current_graph.set(chosen.truth_graph() if chosen else None)
+        # Restore this dataset's own baseline, never whatever discovery last
+        # succeeded on some other dataset.
+        restored = baseline_graph.get()
+        if restored is None:
+            ui.notification_show("Nothing to reset to yet.", type="warning")
+            return
+        current_graph.set(restored)
+        graph_gen.set(graph_gen.get() + 1)
         picked.set("")
 
     @render.ui
@@ -624,8 +699,9 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         )
         _launch(shap_task, "attribute",
                 state.fingerprint(data_fp(), features(), input.outcome(),
-                                  graph.fingerprint(), input.arm(), input.n_perms(),
-                                  input.n_background(), input.n_instances()),
+                                  graph.fingerprint(), input.arm(), input.model_type(),
+                                  input.n_perms(), input.n_background(),
+                                  input.n_instances()),
                 kwargs)
 
     @render.ui
@@ -673,6 +749,14 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         )
 
     # ------------------------------------------------------------- policy stage
+    def _specs_fp(specs) -> str:
+        # Sorted keys alone would miss a price edit on an existing node; every
+        # decision-relevant field belongs in the fingerprint.
+        return state.fingerprint(tuple(
+            (s.node, s.manipulable, s.min_shift, s.max_shift, s.fixed_cost, s.unit_cost)
+            for s in (specs[k] for k in sorted(specs))
+        ))
+
     @reactive.calc
     def cost_specs():
         override = cost_override.get()
@@ -746,7 +830,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         _launch(policy_task, "policy",
                 state.fingerprint(data_fp(), graph.fingerprint(), input.outcome(),
                                   input.budget(), input.direction(),
-                                  input.policy_alpha(), tuple(sorted(cost_specs()))),
+                                  input.policy_alpha(), _specs_fp(cost_specs())),
                 kwargs)
 
     @render.ui
@@ -787,11 +871,15 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     @render.ui
     def map_strip():
         graph = current_graph.get()
+        flags = flags_result.get()
+        flags_status = (
+            "stale" if flags.ok and flags.fingerprint != _flags_fp() else flags.status
+        )
         statuses = {
             "data": state.OK if raw_data() is not None else state.EMPTY,
             "naive": _task_status(naive_task, "naive"),
             "discover": _task_status(discover_task, "discover"),
-            "flags": flags_result.get().status,
+            "flags": flags_status,
             "surgery": (
                 state.OK if graph is not None and graph.provenance.source == "recovered"
                 else (state.EMPTY if graph is None else "info")
@@ -838,11 +926,11 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             if name == "attribute":
                 return state.fingerprint(data_fp(), features(), input.outcome(),
                                          graph.fingerprint(), input.arm(),
-                                         input.n_perms(), input.n_background(),
-                                         input.n_instances())
+                                         input.model_type(), input.n_perms(),
+                                         input.n_background(), input.n_instances())
             return state.fingerprint(data_fp(), graph.fingerprint(), input.outcome(),
                                      input.budget(), input.direction(),
-                                     input.policy_alpha(), tuple(sorted(cost_specs())))
+                                     input.policy_alpha(), _specs_fp(cost_specs()))
         except Exception:
             return "unready"
 

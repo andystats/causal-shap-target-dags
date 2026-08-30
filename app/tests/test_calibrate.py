@@ -139,6 +139,32 @@ class CalibrateValidationTests(unittest.TestCase):
         fitted = fit_linear_logistic_scm(data, dag.graph, seed=SEED_SCM_CALIBRATION)
         self.assertTrue(any("constant" in warning for warning in fitted.warnings))
 
+    def test_single_class_binary_child_gets_zero_effects_not_a_crash(self) -> None:
+        # A rare child can go single-class after complete-case filtering;
+        # logistic regression refuses one-class targets, so the fit falls back
+        # to zero parent effects with a clipped-logit intercept.
+        dag = binary_dag()
+        data = simulate_dataframe(dag, n=400, seed=SEED_SCM_CALIBRATION)
+        data["Event"] = 0.0
+        fitted = fit_linear_logistic_scm(data, dag.graph, seed=SEED_SCM_CALIBRATION)
+        event = fitted.scm.specs["Event"]
+        self.assertEqual(event.coefficients, (0.0, 0.0))
+        self.assertLess(event.intercept, -10.0)  # logit of a clipped near-zero rate
+        self.assertTrue(any("single class" in warning for warning in fitted.warnings))
+
+    def test_collinear_parents_are_flagged_as_not_identified(self) -> None:
+        # Minimum-norm least squares happily splits one true coefficient
+        # across two identical columns; the warning is what stops those
+        # numbers being read as intervention effects.
+        import networkx as nx
+
+        rng = np.random.default_rng(SEED_SCM_CALIBRATION)
+        a = rng.standard_normal(500)
+        data = pd.DataFrame({"A": a, "B": a, "C": 1.5 * a + 0.1 * rng.standard_normal(500)})
+        graph = nx.DiGraph([("A", "C"), ("B", "C")])
+        fitted = fit_linear_logistic_scm(data, graph, seed=SEED_SCM_CALIBRATION)
+        self.assertTrue(any("collinear" in warning for warning in fitted.warnings))
+
 
 if __name__ == "__main__":
     unittest.main()

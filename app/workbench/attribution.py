@@ -338,11 +338,13 @@ def compute_causal_shap_fast(model, data, dag, feature_names, outcome_var,
 # STANDARD SHAP (wrapper)
 # =============================================================================
 
-def compute_standard_shap(model, data, feature_names, n_background=100):
+def compute_standard_shap(model, data, feature_names, n_background=100, seed=None):
     """
     Compute standard (non-causal) SHAP values using the shap library.
 
-    Returns DataFrame of SHAP values.
+    Returns DataFrame of SHAP values. Pass ``seed`` for reproducible values:
+    the model-agnostic explainer is stochastic for wider feature sets, and an
+    unseeded rerun on identical inputs can shift attributions visibly.
     """
     if not SHAP_AVAILABLE:
         raise ImportError("shap package not installed. pip install shap")
@@ -351,7 +353,7 @@ def compute_standard_shap(model, data, feature_names, n_background=100):
     bg_sample = bg_data.sample(min(n_background, len(bg_data)), random_state=42)
 
     predict = prediction_callable(model, feature_names)
-    explainer = shap.Explainer(predict, bg_sample)
+    explainer = shap.Explainer(predict, bg_sample, seed=seed)
     sample = bg_data.sample(min(100, len(bg_data)), random_state=42)
     shap_values = explainer(sample)
 

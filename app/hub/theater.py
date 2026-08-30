@@ -13,6 +13,7 @@ crossings. No physics, so the graph never squirms between renders.
 
 from __future__ import annotations
 
+import html
 from typing import Mapping
 
 import networkx as nx
@@ -80,8 +81,18 @@ def layered_layout(graph: nx.DiGraph, outcome: str) -> dict[str, tuple[float, fl
 
 
 def _label(name: str, display_names: Mapping[str, str]) -> str:
-    text = display_names.get(name, name)
+    text = str(display_names.get(name, name))
     return text if len(text) <= 22 else text[:20] + "…"
+
+
+def sorted_edges(state: GraphState) -> list[tuple[str, str]]:
+    """The canonical edge order shared by the renderer and the click handler.
+
+    Elements are addressed by index, never by name: uploaded column names are
+    untrusted text and must not travel through DOM attributes or be parsed
+    back out of a click payload.
+    """
+    return sorted(state.directed_edges)
 
 
 def _node_width(name: str, display_names: Mapping[str, str]) -> float:
@@ -119,33 +130,35 @@ def render_theater(
         f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{AMBER}"/></marker></defs>'
     )
 
-    for a, b in sorted(graph.edges):
+    for index, (a, b) in enumerate(sorted_edges(state)):
         xa, ya = positions[a]
         xb, yb = positions[b]
         x1, y1 = xa + widths[a] / 2, ya
         x2, y2 = xb - widths[b] / 2 - 3, yb
         bend = max(30.0, (x2 - x1) * 0.45)
         path = f"M {x1:.0f} {y1:.0f} C {x1 + bend:.0f} {y1:.0f}, {x2 - bend:.0f} {y2:.0f}, {x2:.0f} {y2:.0f}"
-        edge_id = f"{a}→{b}"
-        is_selected = selected == f"edge:{edge_id}"
+        is_selected = selected == f"edge:{index}"
         dashed = tuple(sorted((a, b))) in unresolved
         stroke = AMBER if is_selected else INK
         width = 2.6 if is_selected else 1.4
         dash = ' stroke-dasharray="6 4"' if dashed else ""
         marker = "th-arrow-sel" if is_selected else "th-arrow"
+        tooltip = html.escape(f"{a} → {b}") + (
+            " (orientation chosen, not identified)" if dashed else ""
+        )
         parts.append(
-            f'<g class="th-edge" data-id="edge:{edge_id}" style="cursor:pointer">'
+            f'<g class="th-edge" data-id="edge:{index}" style="cursor:pointer">'
             f'<path d="{path}" fill="none" stroke="transparent" stroke-width="12"/>'
             f'<path d="{path}" fill="none" stroke="{stroke}" stroke-width="{width}"'
             f'{dash} marker-end="url(#{marker})"/>'
-            f"<title>{a} → {b}" + (" (orientation chosen, not identified)" if dashed else "") + "</title></g>"
+            f"<title>{tooltip}</title></g>"
         )
 
-    for node in graph.nodes:
+    for node_index, node in enumerate(state.nodes):
         x, y = positions[node]
         width = widths[node]
         left, top = x - width / 2, y - NODE_HEIGHT / 2
-        is_selected = selected == f"node:{node}"
+        is_selected = selected == f"node:{node_index}"
         fill = AMBER_SOFT if node == outcome else "#ffffff"
         border = AMBER if node == outcome else (BLUE if node == exposure else INK)
         border_width = 2.4 if node in (outcome, exposure) or is_selected else 1.3
@@ -160,13 +173,13 @@ def render_theater(
                 f'stroke="{HALO_COLORS[channel]}" stroke-width="2" stroke-dasharray="3 3"/>'
             )
         parts.append(
-            f'<g class="th-node" data-id="node:{node}" style="cursor:pointer">{halo}'
+            f'<g class="th-node" data-id="node:{node_index}" style="cursor:pointer">{halo}'
             f'<rect x="{left:.0f}" y="{top:.0f}" width="{width:.0f}" height="{NODE_HEIGHT}" '
             f'rx="6" fill="{fill}" stroke="{border}" stroke-width="{border_width}"/>'
             f'<text x="{x:.0f}" y="{y + 4:.0f}" text-anchor="middle" '
             f'font-family="Georgia, serif" font-size="11.5" fill="{INK}">'
-            f"{_label(node, display_names)}</text>"
-            f"<title>{display_names.get(node, node)}</title></g>"
+            f"{html.escape(_label(node, display_names))}</text>"
+            f"<title>{html.escape(str(display_names.get(node, node)))}</title></g>"
         )
 
     svg = (

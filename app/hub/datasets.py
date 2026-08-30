@@ -114,9 +114,12 @@ def sd_cost_specs(data: pd.DataFrame, outcome: str) -> dict[str, ActionSpec]:
     pre-hidden here — letting the ancestor screen refuse them, with its reason
     on display, is the point of the screening table.
     """
+    import numpy as np
+
     specs: dict[str, ActionSpec] = {}
     for node in data.columns:
-        series = data[node]
+        series = data[node].dropna()
+        spread = float(series.std()) if len(series) > 1 else float("nan")
         if node == outcome:
             specs[node] = ActionSpec(node, manipulable=False)
         elif set(series.unique()) <= {0, 1}:
@@ -124,8 +127,11 @@ def sd_cost_specs(data: pd.DataFrame, outcome: str) -> dict[str, ActionSpec]:
                 node, manipulable=False,
                 ethical_note="binary lever: set-point actions are future work",
             )
+        elif not np.isfinite(spread) or spread <= 0:
+            specs[node] = ActionSpec(
+                node, manipulable=False, ethical_note="no usable spread in the data"
+            )
         else:
-            spread = float(series.std())
             specs[node] = ActionSpec(node, True, -spread, spread, fixed_cost=0.0, unit_cost=1.0)
     return specs
 

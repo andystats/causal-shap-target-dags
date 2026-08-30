@@ -90,6 +90,20 @@ def fit_linear_logistic_scm(
             specs.append(NodeSpec(node, "binary", root_probability=probability))
             rows.append(_row(node, kind, 0, "rate", probability))
         elif kind == "binary":
+            if len(np.unique(observed)) < 2:
+                # A rare child can go single-class after complete-case
+                # filtering; logistic regression would refuse it outright.
+                # Zero coefficients with a clipped-logit intercept preserve
+                # the observed rate without inventing parent effects.
+                rate = float(np.clip(observed.mean(), 1e-6, 1 - 1e-6))
+                intercept = float(np.log(rate / (1.0 - rate)))
+                specs.append(
+                    NodeSpec(node, "binary", parents=parents,
+                             coefficients=(0.0,) * len(parents), intercept=intercept)
+                )
+                rows.append(_row(node, kind, len(parents), "rate", observed.mean()))
+                warnings.append(f"{node}: single class observed; parent effects set to zero")
+                continue
             intercept, coefficients, auc = _fit_logistic(data, node, parents, seed)
             specs.append(
                 NodeSpec(node, "binary", parents=parents, coefficients=coefficients,
@@ -105,7 +119,14 @@ def fit_linear_logistic_scm(
             specs.append(NodeSpec(node, "continuous", noise_sd=noise_sd))
             rows.append(_row(node, kind, 0, "sd", noise_sd))
         else:
-            intercept, coefficients, r2, resid_sd = _fit_ols(data, node, parents)
+            intercept, coefficients, r2, resid_sd, full_rank = _fit_ols(data, node, parents)
+            if not full_rank:
+                # Least squares still returns a minimum-norm solution, but the
+                # coefficients are not unique and must not be read as
+                # intervention effects without a second look.
+                warnings.append(
+                    f"{node}: collinear parents; coefficients are not uniquely identified"
+                )
             if resid_sd < _MIN_NOISE_SD:
                 resid_sd = _MIN_NOISE_SD
                 warnings.append(f"{node}: deterministic in its parents; noise floored")
@@ -140,16 +161,23 @@ def _node_kind(node: str, observed: np.ndarray) -> str:
 
 def _fit_ols(
     data: pd.DataFrame, node: str, parents: tuple[str, ...]
-) -> tuple[float, tuple[float, ...], float, float]:
+) -> tuple[float, tuple[float, ...], float, float, bool]:
     design = np.column_stack(
         [np.ones(len(data))] + [data[parent].to_numpy(dtype=float) for parent in parents]
     )
     target = data[node].to_numpy(dtype=float)
-    solution, *_ = np.linalg.lstsq(design, target, rcond=None)
+    solution, _, rank, _ = np.linalg.lstsq(design, target, rcond=None)
     residuals = target - design @ solution
     total_variance = float(target.var())
     r2 = 1.0 - float(residuals.var()) / total_variance if total_variance > 0 else 0.0
-    return float(solution[0]), tuple(float(c) for c in solution[1:]), r2, float(residuals.std())
+    full_rank = int(rank) == design.shape[1]
+    return (
+        float(solution[0]),
+        tuple(float(c) for c in solution[1:]),
+        r2,
+        float(residuals.std()),
+        full_rank,
+    )
 
 
 def _fit_logistic(

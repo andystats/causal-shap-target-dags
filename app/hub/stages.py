@@ -71,29 +71,37 @@ def fit_outcome_model(
     has no AUC, and pretending otherwise was a documented plan defect.
     """
     from sklearn.metrics import r2_score, roc_auc_score
+    from sklearn.model_selection import train_test_split
 
     frame = data[list(features) + [outcome]].dropna()
     X, y = frame[list(features)], frame[outcome]
     is_binary = len(y.unique()) <= 2
     model_class, kwargs = _model_class(model_type, is_binary)
 
-    rng = np.random.default_rng(seed)
-    order = rng.permutation(len(frame))
-    cut = int(len(frame) * 0.75)
-    train, hold = order[:cut], order[cut:]
-
-    probe = model_class(**kwargs).fit(X.iloc[train], y.iloc[train])
-    if is_binary:
-        held = y.iloc[hold]
-        if len(held.unique()) == 2:
-            stat = float(roc_auc_score(held, probe.predict_proba(X.iloc[hold])[:, 1]))
+    # Stratify when we can: an unstratified split of a rare binary outcome can
+    # hand the trainer a single class and crash it mid-demo.
+    can_split = len(frame) >= 8 and (not is_binary or y.value_counts().min() >= 2)
+    if can_split:
+        stratify = y if is_binary else None
+        X_train, X_hold, y_train, y_hold = train_test_split(
+            X, y, test_size=0.25, random_state=seed, stratify=stratify
+        )
+        probe = model_class(**kwargs).fit(X_train, y_train)
+        if is_binary:
+            if len(y_hold.unique()) == 2:
+                stat = float(roc_auc_score(y_hold, probe.predict_proba(X_hold)[:, 1]))
+            else:
+                stat = float("nan")
+            stat_name = "holdout AUC"
         else:
-            stat = float("nan")
-        stat_name = "holdout AUC"
+            stat = float(r2_score(y_hold, probe.predict(X_hold)))
+            stat_name = "holdout R2"
     else:
-        stat = float(r2_score(y.iloc[hold], probe.predict(X.iloc[hold])))
-        stat_name = "holdout R2"
+        stat = float("nan")
+        stat_name = "holdout AUC" if is_binary else "holdout R2"
 
+    if is_binary and y.value_counts().min() < 1:
+        raise ValueError(f"Outcome {outcome} has a single class; nothing to model")
     model = model_class(**kwargs).fit(X, y)
     return ModelFit(
         model=model,
@@ -139,7 +147,10 @@ def run_naive_shap(
     seed: int = SEED_HUB_DEMO,
 ) -> dict[str, object]:
     fit = fit_outcome_model(data, features, outcome, model_type=model_type, seed=seed)
-    shap_df = compute_standard_shap(fit.model, data, list(features), n_background=n_background)
+    shap_df = compute_standard_shap(
+        fit.model, data.dropna(subset=list(features)), list(features),
+        n_background=n_background, seed=seed,
+    )
     importance = mean_abs_shap(shap_df)
     total = float(importance.sum())
     shares = {name: 100.0 * value / total for name, value in importance.items()} if total else {}
@@ -300,7 +311,10 @@ def run_causal_shap(
     """Attribute on the CURRENT graph, refitting the model on this feature tuple."""
     features = tuple(features)
     fit = fit_outcome_model(data, features, outcome, model_type=model_type, seed=seed)
-    naive_df = compute_standard_shap(fit.model, data, list(features), n_background=100)
+    naive_df = compute_standard_shap(
+        fit.model, data.dropna(subset=list(features)), list(features),
+        n_background=100, seed=seed,
+    )
 
     digraph = graph.digraph()
     if arm == "structural":
@@ -309,11 +323,9 @@ def run_causal_shap(
             n_undirected_pairs=graph.n_undirected_pairs,
         )
         scm = fitted.scm
-        rng = np.random.default_rng(seed)
         scm_frame = data[list(scm.order)].dropna()
-        evaluation = data[list(features)].dropna().sample(
-            min(n_instances, len(data)), random_state=seed
-        )
+        complete = data[list(features)].dropna()
+        evaluation = complete.sample(min(n_instances, len(complete)), random_state=seed)
         background_rows = scm_frame.sample(min(n_background, len(scm_frame)), random_state=seed + 1)
         background = scm.recover_exogenous(background_rows, seed=seed)
         feature_edges = [
@@ -335,9 +347,17 @@ def run_causal_shap(
             f"to this data on the current graph ({graph.provenance.source})"
         )
     elif arm == "nonparametric":
+        # The engine draws from process-global NumPy randomness; unseeded, an
+        # identical rerun changed tau-vs-truth from 0.33 to 0.0 in review.
+        # Pinning the globals here is a stopgap confined to this worker call;
+        # threading a local Generator through the engine is post-demo work.
+        import random as stdlib_random
+
+        stdlib_random.seed(seed)
+        np.random.seed(seed)
         causal_df = _causal_shap_engine(
-            fit.model, data, digraph, list(features), outcome,
-            n_perms=n_perms, n_background=n_background, n_instances=n_instances,
+            fit.model, data.dropna(subset=list(features)), digraph, list(features),
+            outcome, n_perms=n_perms, n_background=n_background, n_instances=n_instances,
         )
         arm_note = "nonparametric conditional-model propagation (GBM P(X|parents))"
     else:
@@ -385,21 +405,43 @@ def run_policy(
     fitted = fit_linear_logistic_scm(
         scm_frame, digraph, seed=seed, n_undirected_pairs=graph.n_undirected_pairs
     )
+
+    # Validate the sheet against the graph and the fitted node kinds before
+    # anything is priced. An unknown node would otherwise be mislabelled
+    # "not-an-ancestor", and a binary lever marked manipulable would get
+    # additive shifts the engine does not support.
+    known = set(graph.nodes)
+    binary_nodes = {
+        name for name, spec in fitted.scm.specs.items() if spec.kind == "binary"
+    }
+    usable: dict[str, object] = {}
+    rejected: list[dict[str, str]] = []
+    for name, spec in specs.items():
+        if name not in known:
+            rejected.append({"node": name, "screened_out": "not-in-graph"})
+        elif spec.manipulable and name in binary_nodes:
+            rejected.append({"node": name, "screened_out": "binary-lever-unsupported"})
+        else:
+            usable[name] = spec
+
     exogenous = abduct(fitted.scm, scm_frame, seed=seed)
     problem = InterventionProblem(
         scm=fitted.scm,
         outcome=outcome,
-        cost_model=CostModel(specs=dict(specs), budget=budget),
+        cost_model=CostModel(specs=usable, budget=budget),
         graph=digraph,
         direction=direction,
         alpha=alpha,
         n_undirected_pairs=graph.n_undirected_pairs,
     )
     ranking = rank_actions(problem, exogenous, seed=seed)
+    screened = pd.concat(
+        [ranking.screened_frame(), pd.DataFrame(rejected)], ignore_index=True
+    ) if rejected else ranking.screened_frame()
     return {
         "ranking": ranking,
         "table": ranking.to_frame(),
-        "screened": ranking.screened_frame(),
+        "screened": screened,
         "calibration": fitted,
         "pareto_plot": pareto_chart(ranking, budget),
     }
