@@ -259,11 +259,19 @@ app_ui = ui.page_fluid(
             ui.layout_columns(
                 ui.div(
                     ui.output_ui("policy_controls"),
+                    ui.input_radio_buttons(
+                        "estimation_arm", "Estimation arm",
+                        {"scm": "SCM (full-model do() contrast)",
+                         "semiparametric": "semiparametric (targeted AIPW per "
+                                           "surviving lever)"}),
                     ui.input_action_button("run_policy", "Rank affordable actions",
                                            class_="btn-sm btn-go"),
                     ui.tags.details(
                         ui.tags.summary("Advanced settings"),
                         ui.output_ui("policy_advanced"),
+                        ui.input_radio_buttons(
+                            "estimation_learner", "Nuisance learner (semiparametric arm)",
+                            {"gbm": "gradient boosting", "linear": "linear/logistic"}),
                         ui.input_file("cost_upload_file", "Replace cost sheet (CSV)",
                                       accept=[".csv"], multiple=False),
                         class_="code-details",
@@ -275,7 +283,8 @@ app_ui = ui.page_fluid(
                         "direction keeps its refusal reason rather than vanishing."
                     )),
                     ui.HTML(education.learn("cost_sheet", "grid", "budget",
-                                            "alpha_floor", "benefit", "routes")),
+                                            "alpha_floor", "benefit",
+                                            "estimation_arms", "routes")),
                 ),
                 ui.output_ui("policy_body"),
                 col_widths=(4, 8),
@@ -1156,14 +1165,18 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             data=analysis_data(), graph=graph, outcome=input.outcome(),
             specs=cost_specs(), budget=float(input.budget()),
             direction=input.direction(), alpha=float(input.policy_alpha()),
+            estimation_arm=input.estimation_arm(),
+            estimation_learner=input.estimation_learner(),
         )
         snips["policy"].set(snippets.policy_snippet(
             input.outcome(), float(input.budget()), input.direction(),
-            float(input.policy_alpha()), SEED_ACTION_ABDUCTION))
+            float(input.policy_alpha()), SEED_ACTION_ABDUCTION,
+            arm=input.estimation_arm(), learner=input.estimation_learner()))
         _launch(policy_task, "policy",
                 state.fingerprint(data_fp(), graph.fingerprint(), input.outcome(),
                                   input.budget(), input.direction(),
-                                  input.policy_alpha(), _specs_fp(cost_specs())),
+                                  input.policy_alpha(), _specs_fp(cost_specs()),
+                                  input.estimation_arm(), input.estimation_learner()),
                 kwargs)
 
     @render.ui
@@ -1176,6 +1189,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         best = ranking.best()
         fitted = payload["calibration"]
         pills = [
+            skin.pill(f"arm: {payload['arm']}", "info"),
             skin.pill(f"{ranking.n_candidates_evaluated} candidates", "info"),
             skin.pill(f"direction: {ranking.direction}", "info"),
             skin.pill(f"SCM grade: {fitted.grade}", "warn"),
@@ -1189,14 +1203,32 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             pills.insert(0, skin.pill("nothing feasible under these constraints", "bad"))
         table_rows = payload["table"].to_dict("records")
         screened_rows = payload["screened"].to_dict("records")
-        return skin.card(
+        cards = skin.card(
             "Affordable actions",
             "".join(pills),
+            skin.note(html.escape(payload["arm_note"])),
             skin.figure(payload["pareto_plot"], "pareto"),
             skin.table(table_rows,
                        ["action", "benefit", "cost", "ratio", "p_unit_benefit",
                         "feasible", "screened_out"]),
-        ) + skin.card(
+        )
+        if payload["arm"] == "semiparametric" and not payload["estimates_table"].empty:
+            estimate_rows = payload["estimates_table"].to_dict("records")
+            cards += skin.card(
+                "Targeted estimates — one functional per surviving lever",
+                skin.table(estimate_rows,
+                           ["action", "adjustment", "dr_benefit", "scm_benefit",
+                            "dr_se", "ci95", "feasibility", "notes"]),
+                skin.note(
+                    "Double-robust (cross-fitted AIPW) estimate of the modified "
+                    "treatment policy d(a) = a + δ, adjusted only for the lever's "
+                    "parents under the current graph. A 'caution' verdict means "
+                    "the shift asks for treatment values the data barely support "
+                    "(Haneuse &amp; Rotnitzky feasibility); read the note before "
+                    "trusting the number."
+                ),
+            )
+        return cards + skin.card(
             "Screened before pricing — nothing is dropped silently",
             skin.table(screened_rows, ["node", "screened_out"], limit=60),
         )
@@ -1268,7 +1300,8 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
                                          input.n_background(), input.n_instances())
             return state.fingerprint(data_fp(), graph.fingerprint(), input.outcome(),
                                      input.budget(), input.direction(),
-                                     input.policy_alpha(), _specs_fp(cost_specs()))
+                                     input.policy_alpha(), _specs_fp(cost_specs()),
+                                     input.estimation_arm(), input.estimation_learner())
         except Exception:
             return "unready"
 

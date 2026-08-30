@@ -243,6 +243,8 @@ def build_report(
             f"structural model against shared exogenous draws (SCM grade: "
             f"{_esc(fitted.grade)}), never read off an attribution score.</p>"
         )
+        if policy.get("arm_note"):
+            parts.append(f'<div class="note">{_esc(policy["arm_note"])}</div>')
         parts.append(
             '<div class="note">Cost sheet is ILLUSTRATIVE — not domain-reviewed. '
             "Outputs are recommendation candidates worth testing, not recommendations."
@@ -251,6 +253,17 @@ def build_report(
         parts.append(_table(policy["table"].to_dict("records"),
                             ["action", "benefit", "cost", "ratio",
                              "p_unit_benefit", "feasible", "screened_out"]))
+        estimates_table = policy.get("estimates_table")
+        if estimates_table is not None and not estimates_table.empty:
+            parts.append(
+                "<p><b>Targeted estimates</b> — one double-robust functional per "
+                "surviving lever (cross-fitted AIPW for the modified treatment "
+                "policy, adjustment set = the lever's parents under the working "
+                "graph), with Haneuse–Rotnitzky feasibility verdicts:</p>"
+            )
+            parts.append(_table(estimates_table.to_dict("records"),
+                                ["action", "adjustment", "dr_benefit", "scm_benefit",
+                                 "dr_se", "ci95", "feasibility", "notes"]))
         parts.append("<p><b>Screened before pricing</b> — nothing is dropped silently:</p>")
         parts.append(_table(policy["screened"].to_dict("records"),
                             ["node", "screened_out"], limit=60))

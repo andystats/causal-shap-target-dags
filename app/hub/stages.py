@@ -28,6 +28,7 @@ from causal_shap.evaluation import m1_concordance, m3_sufficiency_transfer
 from causal_shap.graph_state import GraphProvenance, GraphState
 from causal_shap.policy import ActionRanking, InterventionProblem, abduct, rank_actions
 from causal_shap.seeds import SEED_ACTION_ABDUCTION, SEED_HUB_DEMO
+from causal_shap.shift_estimation import ShiftEstimate, estimate_shift_effect, estimates_frame
 from causal_shap.structural_value import compute_structural_asymmetric_shap
 from workbench.attribution import (
     _causal_shap_engine,
@@ -449,6 +450,8 @@ def run_policy(
     budget: float | None,
     direction: str,
     alpha: float,
+    estimation_arm: str = "scm",
+    estimation_learner: str = "gbm",
     seed: int = SEED_ACTION_ABDUCTION,
 ) -> dict[str, object]:
     """Calibrate on the current graph, then price every candidate lever.
@@ -457,7 +460,18 @@ def run_policy(
     screening graph and the propagation model the same object; simulating a
     frozen bundled SCM after the user removed one of its edges would be
     quietly incoherent.
+
+    Two estimation arms, stamped on the result like the attribution arms. The
+    "scm" arm reports the paired do() contrast through the calibrated SCM,
+    trusting every equation at once. The "semiparametric" arm follows
+    Marschak's Maxim: the SCM survey still produces the shortlist, but each
+    surviving lever's ±shift is then re-estimated from the data as a modified
+    treatment policy, double-robustly and cross-fitted, using only that
+    lever's DAG-derived adjustment set, with feasibility diagnostics carried
+    on every estimate.
     """
+    if estimation_arm not in ("scm", "semiparametric"):
+        raise ValueError(f"Unknown estimation arm: {estimation_arm!r}")
     digraph = graph.digraph()
     scm_frame = data[list(graph.nodes)].dropna()
     fitted = fit_linear_logistic_scm(
@@ -496,13 +510,85 @@ def run_policy(
     screened = pd.concat(
         [ranking.screened_frame(), pd.DataFrame(rejected)], ignore_index=True
     ) if rejected else ranking.screened_frame()
+
+    if estimation_arm == "semiparametric":
+        estimates = _targeted_estimates(
+            scm_frame, digraph, ranking, outcome,
+            direction=direction, learner=estimation_learner, seed=seed,
+        )
+        count = (
+            f"{len(estimates)} surviving lever shifts were"
+            if len(estimates) != 1 else "the surviving lever shift was"
+        )
+        arm_note = (
+            f"semiparametric arm: the SCM survey produced the shortlist, then "
+            f"{count} re-estimated from the data as a modified treatment policy "
+            f"(cross-fitted AIPW, {estimation_learner} nuisances), each using "
+            "only its lever's parents under the current graph as the adjustment set"
+            if estimates else
+            "semiparametric arm: no action survived the SCM screen, so there was "
+            "no shortlisted lever to estimate"
+        )
+    else:
+        estimates = ()
+        arm_note = (
+            "scm arm: benefit is the paired do() contrast simulated through the "
+            "calibrated structural model, trusting every equation at once"
+        )
+
     return {
+        "arm": estimation_arm,
+        "arm_note": arm_note,
         "ranking": ranking,
         "table": ranking.to_frame(),
         "screened": screened,
         "calibration": fitted,
+        "estimates": estimates,
+        "estimates_table": _estimates_with_scm_benefit(estimates, ranking),
         "pareto_plot": pareto_chart(ranking, budget),
     }
+
+
+def _targeted_estimates(
+    frame: pd.DataFrame,
+    digraph: nx.DiGraph,
+    ranking: ActionRanking,
+    outcome: str,
+    *,
+    direction: str,
+    learner: str,
+    seed: int,
+) -> tuple[ShiftEstimate, ...]:
+    """One double-robust functional per shortlisted lever, Marschak's Maxim.
+
+    Only actions that survived the SCM screen are estimated: the structural
+    survey is the shortlist, the targeted estimator is the trusted number.
+    Single-lever actions only; the MTP estimand here is one shift at a time.
+    """
+    estimates: list[ShiftEstimate] = []
+    for item in ranking.feasible():
+        if len(item.touched) != 1:
+            continue
+        (lever, shift), = item.action.items()
+        estimates.append(
+            estimate_shift_effect(
+                frame, digraph, lever, shift, outcome,
+                direction=direction, learner=learner, seed=seed,
+            )
+        )
+    return tuple(estimates)
+
+
+def _estimates_with_scm_benefit(
+    estimates: Sequence[ShiftEstimate], ranking: ActionRanking
+) -> pd.DataFrame:
+    """The targeted table with the SCM's number alongside for comparison."""
+    table = estimates_frame(estimates)
+    if table.empty:
+        return table
+    scm_benefit = {item.label: item.benefit for item in ranking.evaluations}
+    table.insert(3, "scm_benefit", [scm_benefit.get(label) for label in table["action"]])
+    return table
 
 
 # ---------------------------------------------------------------------------

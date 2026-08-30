@@ -120,8 +120,8 @@ causal_df = _causal_shap_engine(model, data, digraph, list(features), {outcome!r
 
 
 def policy_snippet(outcome: str, budget: float, direction: str, alpha: float,
-                   seed: int) -> str:
-    return f"""# Stage 7 - price and dice (executed by hub.stages.run_policy)
+                   seed: int, *, arm: str = "scm", learner: str = "gbm") -> str:
+    head = f"""# Stage 7 - price and dice, {arm} arm (executed by hub.stages.run_policy)
 from causal_shap.calibrate import fit_linear_logistic_scm
 from causal_shap.policy import InterventionProblem, abduct, rank_actions
 from causal_shap.action_costs import CostModel
@@ -137,3 +137,17 @@ ranking = rank_actions(
     exogenous, seed={seed},
 )   # benefit = paired do() contrast on shared exogenous draws;
     # every screened node carries the rule that refused it"""
+    if arm != "semiparametric":
+        return head
+    return head + f"""
+
+from causal_shap.shift_estimation import estimate_shift_effect
+
+for action in ranking.feasible():        # Marschak's Maxim: the SCM surveys,
+    (lever, delta), = action.action.items()   # one functional per survivor
+    estimate = estimate_shift_effect(
+        data[graph_nodes].dropna(), digraph, lever, delta, {outcome!r},
+        direction={direction!r}, learner={learner!r}, seed={seed},
+    )   # cross-fitted AIPW for the modified treatment policy d(a) = a + delta,
+        # adjustment set = the lever's parents under the current graph;
+        # feasibility (support of A + delta, weight diagnostics) rides along"""

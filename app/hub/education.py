@@ -178,6 +178,31 @@ TOPICS: dict[str, tuple[str, str]] = {
         "effect on the outcome, with the screening reasons reported for every "
         "node that never got priced.",
     ),
+    "estimation_arms": (
+        "Estimation arms: full-model versus targeted",
+        "The SCM arm simulates every shift through the calibrated equations, "
+        "trusting the whole system at once. The semiparametric arm follows "
+        "Marschak's Maxim (Marschak 1953; Heckman 2010): let the SCM survey "
+        "and shortlist, then estimate ONE functional per surviving lever. "
+        "Each ±shift is a modified treatment policy "
+        r"\( d(a) = a + \delta \) (Haneuse &amp; Rotnitzky 2013), and its "
+        "effect "
+        r"\( \mathbb{E}[Y(A+\delta)] - \mathbb{E}[Y] \) is estimated "
+        "double-robustly by the cross-fitted one-step estimator "
+        r"\[ \hat\theta_\delta = \frac{1}{n}\sum_i \Bigl[\, \hat r(A_i, W_i)"
+        r"\,\bigl(Y_i - \hat m(A_i, W_i)\bigr) + \hat m(A_i + \delta, W_i)"
+        r" \,\Bigr] - \bar Y \]"
+        "(Díaz Muñoz &amp; van der Laan 2012; Díaz et al. "
+        "2023; cross-fitting per Chernozhukov et al. 2018), where "
+        r"\( \hat m \) is the outcome regression and \( \hat r \) the "
+        "treatment density ratio. The adjustment set W is the lever's "
+        "parents under the current graph: parents block every backdoor path "
+        "and can never be descendants, so post-lever variables (the "
+        "confounding trap for non-root levers) are excluded by construction. "
+        "Feasibility is checked, not assumed: units the shift would push "
+        "outside the observed treatment support, and concentrating density-"
+        "ratio weights, both flag the estimate with a caution.",
+    ),
     "doshapley": (
         "Decision-grade attribution: do-Shapley",
         "This stage's attributions explain the fitted model under the current "
@@ -198,8 +223,9 @@ TOPICS: dict[str, tuple[str, str]] = {
         "Mu\u00f1oz &amp; van der Laan 2012; Haneuse &amp; Rotnitzky 2013; "
         "D\u00edaz et al. 2023; Kennedy 2019), in the spirit of Marschak's "
         "Maxim (Marschak 1953; Heckman 2010): trust one functional per "
-        "lever, not every equation. That is the decision-grade upgrade for "
-        "any lever that survives this screen. (2) Single-estimand "
+        "lever, not every equation. This stage's semiparametric arm "
+        "implements exactly that route for the levers that survive the "
+        "screen. (2) Single-estimand "
         "identification tools: DoWhy (Sharma &amp; Kiciman 2020), Ananke "
         "(Lee et al. 2023). (3) Choosing where to intervene under "
         "constraints: policy learning (Athey &amp; Wager 2021), causal "
