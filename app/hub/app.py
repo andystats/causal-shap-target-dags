@@ -248,7 +248,7 @@ app_ui = ui.page_fluid(
                         class_="code-details",
                     ),
                     ui.output_ui("shap_preflight"),
-                    ui.HTML(education.learn("arms", "ancestors", "knobs", "doshapley")),
+                    ui.HTML(education.learn("arms", "ancestors", "knobs")),
                 ),
                 ui.output_ui("shap_body"),
                 col_widths=(4, 8),
@@ -259,16 +259,16 @@ app_ui = ui.page_fluid(
             ui.layout_columns(
                 ui.div(
                     ui.output_ui("policy_controls"),
-                    ui.input_radio_buttons(
-                        "estimation_arm", "Estimation arm",
-                        {"scm": "SCM (full-model do() contrast)",
-                         "semiparametric": "semiparametric (targeted AIPW per "
-                                           "surviving lever)"}),
                     ui.input_action_button("run_policy", "Rank affordable actions",
                                            class_="btn-sm btn-go"),
                     ui.tags.details(
                         ui.tags.summary("Advanced settings"),
                         ui.output_ui("policy_advanced"),
+                        ui.input_radio_buttons(
+                            "estimation_arm", "Estimation arm",
+                            {"scm": "SCM (full-model do() contrast)",
+                             "semiparametric": "semiparametric (targeted AIPW "
+                                               "per surviving lever)"}),
                         ui.input_radio_buttons(
                             "estimation_learner", "Nuisance learner (semiparametric arm)",
                             {"gbm": "gradient boosting", "linear": "linear/logistic"}),
@@ -284,15 +284,18 @@ app_ui = ui.page_fluid(
                     )),
                     ui.HTML(education.learn("cost_sheet", "grid", "budget",
                                             "alpha_floor", "benefit",
-                                            "estimation_arms", "routes")),
+                                            "estimation_arms")),
                 ),
                 ui.output_ui("policy_body"),
                 col_widths=(4, 8),
             ),
         ),
+        ui.nav_panel(
+            "Methods",
+            ui.HTML(education.methods_tab()),
+        ),
         id="stage_nav",
     ),
-    ui.HTML(education.references()),
 )
 
 

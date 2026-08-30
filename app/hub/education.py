@@ -371,6 +371,65 @@ def references(*, collapsible: bool = True) -> str:
     )
 
 
+_FUTURE_DIRECTIONS = (
+    "Targeted estimation arm for Price &amp; Dice: each shortlisted "
+    "\u00b1shift re-estimated double-robustly (AIPW/TMLE, cross-fitting) "
+    "from its DAG-derived adjustment set alone, with feasibility/positivity "
+    "checks surfaced. Tabled; the survey-then-target logic is in Methods "
+    "position above.",
+    "A do-Shapley attribution arm (Jung et al. 2022): decision-grade shares "
+    "on the real outcome where the graph class identifies them.",
+    "Longitudinal support: the hub is cross-sectional v1, one row per unit; "
+    "time-varying exposures and the longitudinal MTP literature (D\u00edaz "
+    "et al. 2023) are the natural extension.",
+    "Domain-reviewed cost sheets: every bundled sheet is illustrative until "
+    "a domain expert prices the levers.",
+    "Repeated-seed uncertainty over the whole pipeline, not only within "
+    "stages.",
+)
+
+
+def methods_tab() -> str:
+    """The Methods tab: position, alternate routes, future directions,
+    references. Everything here is reading, not controls."""
+    def section(title: str, body: str) -> str:
+        return (
+            f'<div class="hub-card"><h4>{html.escape(title)}</h4>'
+            f'<div style="font-size:.86rem">{body}</div></div>'
+        )
+
+    position = (
+        "<p>This hub is a central instrument for staging established causal "
+        "routes against one working problem: the spaceflight epidemiology of "
+        "renal stone risk. The claim is the application and the honest chain "
+        "(discovery \u2192 expert adjudication \u2192 graph-governed "
+        "attribution \u2192 costed intervention), not a new estimator. In "
+        "Marschak's terms (Marschak 1953; Heckman 2010): the causal-SHAP "
+        "stage is the deliberate anti-Marschak survey, trusting the whole "
+        "fitted system to map where credit can live; Price &amp; Dice then "
+        "asks one Marschak-honest question per surviving lever.</p>"
+    )
+    routes_body = f"<p>{TOPICS['routes'][1]}</p><p>{TOPICS['doshapley'][1]}</p>"
+    future = (
+        "<ul style='margin:0 0 0 18px'>"
+        + "".join(f"<li style='margin:4px 0'>{item}</li>"
+                  for item in _FUTURE_DIRECTIONS)
+        + "</ul>"
+    )
+    refs = (
+        '<ol style="font-size:.8rem;margin:0 0 0 18px;line-height:1.5">'
+        + "".join(f'<li style="margin:3px 0">{entry}</li>'
+                  for entry in REFERENCE_LIST)
+        + "</ol>"
+    )
+    return (
+        section("Position", position)
+        + section("Alternate routes, as considerations", routes_body)
+        + section("Future directions", future)
+        + section("References", refs)
+    )
+
+
 def learn(*keys: str, title: str = "Learn: what these controls mean") -> str:
     """A collapsible reader over the requested topics, code-card styled."""
     sections: list[str] = []
