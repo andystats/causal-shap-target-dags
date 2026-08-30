@@ -203,6 +203,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     graph_gen = reactive.Value(0)           # bumps when the graph story changes underfoot
     discover_launch = reactive.Value((-1, ""))
     picked = reactive.Value("")
+    focus_node = reactive.Value(None)       # candidate lever under interrogation
     flags_result = reactive.Value(state.StageResult())
     cost_override = reactive.Value(None)
     fps = {name: reactive.Value("") for name in ("naive", "discover", "attribute", "policy")}
@@ -259,6 +260,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             upload_gen.set(upload_gen.get() + 1)
             current_graph.set(None)
             baseline_graph.set(None)
+            focus_node.set(None)
             graph_gen.set(graph_gen.get() + 1)
             picked.set("")
             cost_override.set(None)
@@ -292,6 +294,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     def _reset_on_dataset_change():
         current_graph.set(None)
         baseline_graph.set(None)
+        focus_node.set(None)
         graph_gen.set(graph_gen.get() + 1)
         picked.set("")
         cost_override.set(None)
@@ -305,12 +308,13 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             return ui.HTML(skin.note("No usable numeric columns in this data."))
         chosen = bundle()
         outcome = chosen.default_outcome if chosen else columns[-1]
-        exposure = chosen.default_exposure if chosen else columns[0]
         features = [c for c in columns if c != outcome]
+        # Deliberately no lever/exposure picker here: which node is worth
+        # acting on is what the pipeline DISCOVERS. Candidate levers are
+        # interrogated by clicking nodes in the theater, and price-and-dice
+        # searches every manipulable ancestor without being told one.
         return ui.div(
-            ui.input_select("outcome", "Outcome", columns, selected=outcome),
-            ui.input_select("exposure", "Exposure (decision target)", columns,
-                            selected=exposure),
+            ui.input_select("outcome", "Outcome (the target)", columns, selected=outcome),
             ui.input_checkbox_group("features", f"Features ({len(features)})",
                                     columns, selected=features),
         )
@@ -551,7 +555,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         )
         halos = flags.payload["halos"] if halos_live else {}
         return ui.HTML(theater.render_theater(
-            graph, input.exposure(), input.outcome(),
+            graph, live_focus(), input.outcome(),
             halos=halos,
             display_names=dict(chosen.display_names()) if chosen else dictionary.get(),
             selected=picked.get(),
@@ -561,6 +565,17 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     @reactive.event(input.theater_pick)
     def _pick():
         picked.set(input.theater_pick())
+        # Clicking a node nominates it as the candidate lever under
+        # interrogation; the scorecard then tells ITS identification story.
+        node = _selected_node()
+        if node is not None:
+            focus_node.set(node)
+
+    @reactive.calc
+    def live_focus() -> str | None:
+        graph = current_graph.get()
+        node = focus_node.get()
+        return node if graph is not None and node in graph.nodes else None
 
     def _selected_edge() -> tuple[str, str] | None:
         # Selections are indices into the canonical edge order, never names:
@@ -589,12 +604,19 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
     def selection_info():
         node = _selected_node()
         if node is not None:
-            return ui.HTML(skin.card("Selected node", skin.pill(node, "info")))
+            return ui.HTML(skin.card(
+                "Candidate lever", skin.pill(node, "info"),
+                skin.note("The scorecard now tells this node's identification "
+                          "story. Click another node to interrogate it instead."),
+            ))
         edge = _selected_edge()
         if edge is not None:
             return ui.HTML(skin.card("Selected edge",
                                      skin.pill(f"{edge[0]} → {edge[1]}", "warn")))
-        return ui.HTML(skin.note("Click an edge to operate on it."))
+        return ui.HTML(skin.note(
+            "Click an edge to operate on it, or a node to interrogate it as a "
+            "candidate lever."
+        ))
 
     def _surgery(action: str):
         graph = current_graph.get()
@@ -652,7 +674,7 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
             return ui.HTML("")
         chosen = bundle()
         card = stages.surgery_scorecard(
-            graph, input.exposure(), input.outcome(),
+            graph, live_focus(), input.outcome(),
             chosen.truth_graph() if chosen else None,
         )
         source_kind = "ok" if card["source"] == "recovered" else "info"
@@ -664,7 +686,9 @@ def server(input, output, session):  # noqa: C901 - the wiring hub
         if "adjustment" in card:
             adjustment = ", ".join(card["adjustment"]) or "∅"
             valid = "ok" if card["adjustment_valid"] else "bad"
-            parts.append(skin.pill(f"adjust for: {adjustment}", valid))
+            parts.append(skin.pill(f"lever {card['focus']} → adjust for: {adjustment}", valid))
+        else:
+            parts.append(skin.pill("click a node to interrogate a candidate lever", "info"))
         if "m1" in card:
             parts.append(_m1_html(card["m1"], card["n_undirected"]))
         if "m3_valid_in_true" in card:

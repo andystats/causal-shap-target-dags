@@ -101,7 +101,7 @@ def _node_width(name: str, display_names: Mapping[str, str]) -> float:
 
 def render_theater(
     state: GraphState,
-    exposure: str,
+    focus: str | None,
     outcome: str,
     *,
     halos: Mapping[str, str] | None = None,
@@ -160,8 +160,8 @@ def render_theater(
         left, top = x - width / 2, y - NODE_HEIGHT / 2
         is_selected = selected == f"node:{node_index}"
         fill = AMBER_SOFT if node == outcome else "#ffffff"
-        border = AMBER if node == outcome else (BLUE if node == exposure else INK)
-        border_width = 2.4 if node in (outcome, exposure) or is_selected else 1.3
+        border = AMBER if node == outcome else (BLUE if node == focus else INK)
+        border_width = 2.4 if node in (outcome, focus) or is_selected else 1.3
         if is_selected:
             border = AMBER
         halo = ""

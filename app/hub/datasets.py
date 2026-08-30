@@ -2,7 +2,8 @@
 
 Everything computational is keyed by the data's own column names; prettier
 display names are a rendering concern only. Each dataset also carries the
-default decision framing (exposure, outcome, direction, confidence floor) and a
+default outcome framing (direction, confidence floor), a runbook-suggested
+focus node (documentation only; the app never presumes a lever), and a
 prefilled cost sheet, because a cost editor full of zeros demonstrates nothing.
 """
 
@@ -41,7 +42,7 @@ class HubDataset:
     load_data: Callable[[], pd.DataFrame]
     truth_graph: Callable[[], GraphState | None]
     truth_effects: Callable[[], dict[str, float] | None]
-    default_exposure: str
+    suggested_focus: str  # runbook hint only; never wired to a UI default
     default_outcome: str
     direction: str = "increase"
     default_alpha: float = 0.05
@@ -186,7 +187,7 @@ DATASETS: dict[str, HubDataset] = {
             load_data=_toy_data,
             truth_graph=_toy_truth_graph,
             truth_effects=_toy_truth_effects,
-            default_exposure="Hydration",
+            suggested_focus="Hydration",
             default_outcome="Y",
             cost_specs=_toy_cost_specs,
             note="The manuscript's teaching trap: ClinicVisit is caused by the "
@@ -199,7 +200,7 @@ DATASETS: dict[str, HubDataset] = {
             load_data=_simcausal_data,
             truth_graph=_simcausal_truth_graph,
             truth_effects=_simcausal_truth_effects,
-            default_exposure="Treatment",
+            suggested_focus="Treatment",
             default_outcome="Outcome",
             cost_specs=_simcausal_cost_specs,
             note="Frozen synthetic fixture with a 27-edge answer key; the "
@@ -213,7 +214,7 @@ DATASETS: dict[str, HubDataset] = {
             load_data=_renal_data,
             truth_graph=_renal_truth_graph,
             truth_effects=_renal_truth_effects,
-            default_exposure="altered_gravity",
+            suggested_focus="altered_gravity",
             default_outcome="nephrolithiasis",
             direction="decrease",
             default_alpha=0.999,

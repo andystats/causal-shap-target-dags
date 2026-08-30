@@ -262,10 +262,12 @@ def run_flags(
 # ---------------------------------------------------------------------------
 def surgery_scorecard(
     graph: GraphState,
-    exposure: str,
+    focus: str | None,
     outcome: str,
     truth: GraphState | None,
 ) -> dict[str, object]:
+    """Graph-level honesty always; a lever's identification story only when
+    the surgeon has nominated one by clicking it. No lever is presumed."""
     digraph = graph.digraph()
     card: dict[str, object] = {
         "source": graph.provenance.source,
@@ -277,16 +279,20 @@ def surgery_scorecard(
             for entry in graph.provenance.constraint_ledger
         ],
     }
-    if exposure in digraph and outcome in digraph:
-        candidates = identify_adjustment_sets(digraph, exposure, outcome)
+    if focus is not None and focus in digraph and outcome in digraph and focus != outcome:
+        card["focus"] = focus
+        candidates = identify_adjustment_sets(digraph, focus, outcome)
         minimal = candidates.get("minimal", {})
         card["adjustment"] = sorted(minimal.get("variables", []))
         card["adjustment_valid"] = bool(minimal.get("valid", False))
     if truth is not None:
         truth_view = _induced(truth, graph.nodes)
         card["m1"] = m1_concordance(digraph, truth_view)
-        if exposure in truth_view and outcome in truth_view:
-            m3 = m3_sufficiency_transfer(digraph, truth_view, exposure, outcome)
+        if (
+            focus is not None
+            and focus in truth_view and outcome in truth_view and focus != outcome
+        ):
+            m3 = m3_sufficiency_transfer(digraph, truth_view, focus, outcome)
             card["m3_valid_in_true"] = bool(m3.get("valid_in_true", False))
     return card
 
