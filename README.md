@@ -6,6 +6,11 @@
 > [ahhatype/causal-shap-spaceflight-renal-stones](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones)
 > (site: <https://ahhatype.github.io/causal-shap-spaceflight-renal-stones/>),
 > the single hub for the Space SHAP paper. Open issues and new work there.
+> The GitHub Pages site at <https://andystats.github.io/causal-shap-target-dags/>
+> is now rendered from the hub's `site/` by this repository's
+> `publish-site.yml` workflow; the original Target DAGs page is kept there
+> as `/target-dags.html`. The `site/` directory here was removed for that
+> reason.
 
 [![Python tests](https://github.com/andystats/causal-shap-target-dags/actions/workflows/python-tests.yml/badge.svg)](https://github.com/andystats/causal-shap-target-dags/actions/workflows/python-tests.yml)
 [![Companion site](https://img.shields.io/badge/GitHub%20Pages-open%20site-2563eb)](https://andystats.github.io/causal-shap-target-dags/)

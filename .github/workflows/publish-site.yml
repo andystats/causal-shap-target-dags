@@ -1,9 +1,17 @@
-name: Publish site
+name: Publish site from the hub
+
+# This repository's GitHub Pages serves the Space SHAP site, which is authored
+# in ahhatype/causal-shap-spaceflight-renal-stones under site/. Pages on that
+# repository is an owner-only setting, so the deploy runs here: check out the
+# hub's main, render, publish. Triggers: a push here, every six hours, or
+#   gh workflow run "Publish site from the hub" -R andystats/causal-shap-target-dags
 
 on:
   push:
     branches: [main]
-  pull_request:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,27 +23,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Render on every PR to catch broken references; do not deploy.
-  render-check:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: quarto-dev/quarto-actions/setup@v2
-      - name: Render static site (no analysis execution)
-        run: quarto render site
-
-  # Render and deploy from main.
   deploy:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out the hub
+        uses: actions/checkout@v4
+        with:
+          repository: ahhatype/causal-shap-spaceflight-renal-stones
+          ref: main
       - uses: quarto-dev/quarto-actions/setup@v2
-      - name: Render site
+      - name: Render the hub site (no analysis execution)
         run: quarto render site
       - uses: actions/upload-pages-artifact@v3
         with:
