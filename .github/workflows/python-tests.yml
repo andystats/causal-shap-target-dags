@@ -12,27 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Check contributor metadata
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          BEFORE_SHA: ${{ github.event.before }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.sha }}
-        run: |
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            RANGE="${PR_BASE_SHA}..${HEAD_SHA}"
-          elif [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
-            RANGE="${HEAD_SHA}^!"
-          else
-            RANGE="${BEFORE_SHA}..${HEAD_SHA}"
-          fi
-          if git log --format='%B' "$RANGE" | grep -Eiq '^Co-authored-by:.*(Claude|Anthropic)'; then
-            echo 'Automated assistants must not be listed as commit co-authors.' >&2
-            exit 1
-          fi
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"

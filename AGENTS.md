@@ -11,8 +11,8 @@
   work uncommitted.
 - Do not open an `agent/*` branch or draft pull request by default in this
   repository.
-- Attribute commits only to the humans responsible. Never add automated-assistant
-  authors, `Co-authored-by` trailers, or tool branding to commit metadata.
+- Commits are authored by the human responsible. Assistant `Co-authored-by`
+  trailers are allowed (relaxed 2026-09-03 alongside the move to the hub).
 
 ## Public-site convention
 
