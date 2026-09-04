@@ -4,7 +4,7 @@
 > and for its published site. Its code, frozen results, and documentation were
 > consolidated into
 > [ahhatype/causal-shap-spaceflight-renal-stones](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones)
-> (site: <https://ahhatype.github.io/causal-shap-spaceflight-renal-stones/>),
+> (public page: <https://andystats.github.io/causal-shap-target-dags/>),
 > the single hub for the Space SHAP paper. Open issues and new work there.
 > The GitHub Pages site at <https://andystats.github.io/causal-shap-target-dags/>
 > is now rendered from the hub's `site/` by this repository's
