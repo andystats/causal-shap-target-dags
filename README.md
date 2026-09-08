@@ -1,19 +1,23 @@
 # Causal SHAP for Target DAGs
 
-> **Development moved on 2026-09-03.** This repository is kept as provenance
-> and for its published site. Its code, frozen results, and documentation were
-> consolidated into
-> [ahhatype/causal-shap-spaceflight-renal-stones](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones)
-> (public page: <https://andystats.github.io/causal-shap-target-dags/>),
-> the single hub for the Space SHAP paper. Open issues and new work there.
-> The GitHub Pages site at <https://andystats.github.io/causal-shap-target-dags/>
-> is now rendered from the hub's `site/` by this repository's
-> `publish-site.yml` workflow; the original Target DAGs page is kept there
-> as `/target-dags.html`. The `site/` directory here was removed for that
-> reason.
+**The master repository is [ahhatype/causal-shap-spaceflight-renal-stones](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones).**
+
+As of 2026-09-07, the old Pages site is unpublished and its scheduled
+deployment is disabled. This repository remains as provenance; new work,
+reproducibility documentation and teaching materials belong in the master.
+No code or repository history was deleted to retire hosting.
+
+- [Reproducibility guide](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones/blob/main/REPRODUCIBILITY.md)
+- [Teaching companion](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones/tree/main/docs/classroom)
+- [Path-length math, response shape and references](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones/blob/main/docs/technical/path-length-and-response-shape.md)
+- [Preservation map and decision](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones/blob/main/docs/decisions/010-repository-companion.md)
+
+## Historical project description
+
+The material below records the earlier project. Follow the master
+repository for current claims, code, limitations and installation.
 
 [![Python tests](https://github.com/andystats/causal-shap-target-dags/actions/workflows/python-tests.yml/badge.svg)](https://github.com/andystats/causal-shap-target-dags/actions/workflows/python-tests.yml)
-[![Companion site](https://img.shields.io/badge/GitHub%20Pages-open%20site-2563eb)](https://andystats.github.io/causal-shap-target-dags/)
 
 **SHAP explains the model's ears. Target DAGs look for the system's levers.**
 
@@ -29,7 +33,7 @@ the outcome; constraining feature order to a DAG does not fix that on its own;
 an intervention-propagating structural value function is promising, but still
 needs larger runs and uncertainty estimates.
 
-- **[Focused demonstration](https://andystats.github.io/causal-shap-target-dags/):**
+- **[Focused demonstration](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones):**
   one application of the [archived ACIC Causal SHAP
   project](https://www.tao-rwd.com/acic-2026/causal-shap), moving from prediction
   through recommendation with the Markov explanation and three decisive
