@@ -1,5 +1,10 @@
 # Causal SHAP for Target DAGs
 
+> **Archived on 2026-10-10.** This repository is read-only. Everything it
+> tracked was ported to the master repository in September 2026 (its ADR 007),
+> and the retirement is recorded there (ADR 011). New work, experiments and the
+> manuscript companion live in the master repository.
+
 **The master repository is [ahhatype/causal-shap-spaceflight-renal-stones](https://github.com/ahhatype/causal-shap-spaceflight-renal-stones).**
 
 As of 2026-09-07, the old Pages site is unpublished and its scheduled
